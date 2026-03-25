@@ -78,14 +78,14 @@ const img = (seed) => `https://picsum.photos/seed/${seed}/800/1000`;
 //   3g /16p /19   4/20 = 20%      <30   lavender → purple
 //
 const GRADIENT_POSTS = [
-  { userIdx: 0, category: 'nature',  image: img('grad-hot1'),   caption: '🌡️ 95% — swipe Rad', rad: 18, bad:  1 },
-  { userIdx: 1, category: 'nature',  image: img('grad-hot2'),   caption: '🌡️ 85% — swipe Rad', rad: 16, bad:  3 },
-  { userIdx: 2, category: 'nature',  image: img('grad-hot3'),   caption: '🌡️ 75% — swipe Rad', rad: 14, bad:  5 },
-  { userIdx: 3, category: 'nature',  image: img('grad-hot4'),   caption: '🌡️ 65% — swipe Rad', rad: 12, bad:  7 },
-  { userIdx: 4, category: 'nature',  image: img('grad-hot5'),   caption: '🌡️ 55% — swipe Rad', rad: 10, bad:  9 },
-  { userIdx: 5, category: 'nature',  image: img('grad-hot6'),   caption: '🌡️ 45% — swipe Rad', rad:  8, bad: 11 },
-  { userIdx: 6, category: 'nature',  image: img('grad-hot7'),   caption: '🌡️ 35% — swipe Rad', rad:  6, bad: 13 },
-  { userIdx: 7, category: 'nature',  image: img('grad-hot8'),   caption: '🌡️ 20% — swipe Rad', rad:  3, bad: 16 },
+  { userIdx: 0, category: 'nature',  image: img('grad-hot1'),   caption: null, rad: 18, bad:  1 },
+  { userIdx: 1, category: 'nature',  image: img('grad-hot2'),   caption: null, rad: 16, bad:  3 },
+  { userIdx: 2, category: 'nature',  image: img('grad-hot3'),   caption: null, rad: 14, bad:  5 },
+  { userIdx: 3, category: 'nature',  image: img('grad-hot4'),   caption: null, rad: 12, bad:  7 },
+  { userIdx: 4, category: 'nature',  image: img('grad-hot5'),   caption: null, rad: 10, bad:  9 },
+  { userIdx: 5, category: 'nature',  image: img('grad-hot6'),   caption: null, rad:  8, bad: 11 },
+  { userIdx: 6, category: 'nature',  image: img('grad-hot7'),   caption: null, rad:  6, bad: 13 },
+  { userIdx: 7, category: 'nature',  image: img('grad-hot8'),   caption: null, rad:  3, bad: 16 },
 ];
 
 const POSTS = [
