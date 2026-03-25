@@ -6,6 +6,9 @@
 alter type public.vote_type rename value 'gas'  to 'rad';
 alter type public.vote_type rename value 'pass' to 'bad';
 
+-- ── Drop view that depends on gas_votes/pass_votes before renaming ────────────
+drop view if exists public.uploads_with_score;
+
 -- ── Rename columns on uploads ─────────────────────────────────────────────────
 alter table public.uploads rename column gas_votes  to rad_votes;
 alter table public.uploads rename column pass_votes to bad_votes;
