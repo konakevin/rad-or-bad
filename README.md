@@ -1,50 +1,59 @@
-# Welcome to your Expo app 👋
+# Rad or Bad
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A binary swipe rating app for iOS. Upload photos of anything — cars, fits, setups, food — and let the crowd decide: **Rad** or **Bad**. You have to rate 10 others before your own score unlocks.
 
-## Get started
+## Stack
 
-1. Install dependencies
+- **React Native** + Expo SDK 54, Expo Router (file-based routing)
+- **Styling:** NativeWind v4 (Tailwind CSS)
+- **State:** Zustand + TanStack Query
+- **Backend:** Supabase (Postgres, Auth, Storage)
+- **Animations:** Reanimated 3 + Gesture Handler
 
-   ```bash
-   npm install
-   ```
+## Features
 
-2. Start the app
+- Swipe-based feed with gesture and button voting
+- Temperature-based score gradient badges (red = hot, purple = cold)
+- Author diversity algorithm so the feed stays varied
+- Favorites / bookmarks
+- Follow system with feed boost for followed users
+- User profiles with post grid and saved posts
+- Upload with category tagging
 
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Getting Started
 
 ```bash
-npm run reset-project
+npm install
+npx expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+To run on iOS:
 
-## Learn more
+```bash
+npx expo run:ios
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+## Environment
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Create a `.env.local` file with your Supabase credentials:
 
-## Join the community
+```
+EXPO_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+```
 
-Join our community of developers creating universal apps.
+## Seed Data
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+To populate the database with test users and posts covering all rating tiers:
+
+```bash
+SUPABASE_SERVICE_ROLE_KEY=your-key node scripts/seed.js
+```
+
+## Feed Algorithm Tests
+
+```bash
+SUPABASE_SERVICE_ROLE_KEY=your-key node scripts/test-algorithm.js
+```
+
+28 test scenarios covering ranking, recency decay, author diversity, category weighting, and vote filtering.
