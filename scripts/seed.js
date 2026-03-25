@@ -149,18 +149,23 @@ function fail(msg) { console.error(`  ❌ ${msg}`); }
 
 async function cleanup() {
   console.log('🧹 Cleaning up existing test users...');
-  const emails = USERS.map((u) => u.email);
+  const usernames = USERS.map((u) => u.username);
+
+  // Find by username — handles email domain changes across runs
   const { data: existing } = await supabase
     .from('users')
     .select('id')
-    .in('email', emails);
+    .in('username', usernames);
 
-  if (!existing?.length) { log('Nothing to clean up.'); return; }
-
-  for (const { id } of existing) {
+  let removed = 0;
+  for (const { id } of existing ?? []) {
     await supabase.auth.admin.deleteUser(id);
+    removed++;
   }
-  log(`Removed ${existing.length} existing test user(s).`);
+  // Also clean up any uploads from previous runs by caption
+  const captions = POSTS.map((p) => p.caption).filter(Boolean);
+  if (captions.length) await supabase.from('uploads').delete().in('caption', captions);
+  log(removed ? `Removed ${removed} existing test user(s).` : 'Nothing to clean up.');
 }
 
 async function createUsers() {
