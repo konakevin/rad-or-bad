@@ -23,10 +23,10 @@ function getGradient(percent: number): [string, string] {
  * Returns the rating label, percentage, and temperature gradient for a photo.
  * Returns null if there are no votes yet.
  */
-export function getRating(gasVotes: number, totalVotes: number): Rating | null {
+export function getRating(radVotes: number, totalVotes: number): Rating | null {
   if (totalVotes === 0) return null;
 
-  const percent = Math.round((gasVotes / totalVotes) * 100);
+  const percent = Math.round((radVotes / totalVotes) * 100);
   const tier = RATING_TIERS.find((t) => percent >= t.minPercent)!;
 
   return { label: tier.label, percent, gradient: getGradient(percent) };

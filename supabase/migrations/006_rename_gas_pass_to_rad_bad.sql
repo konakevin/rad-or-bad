@@ -1,32 +1,62 @@
 -- =============================================
--- Dope or Nope — Feed Improvements
--- =============================================
--- 1. Pass vote penalty   — active dislikes reduce score beyond Wilson alone
--- 2. Smooth time decay   — continuous power-law curve, no cliff edges
---                          Formula: 1 + 3 / (age_hours/6 + 1)^1.2
--- 3. Author diversity    — cap each author at 2 posts in the feed
--- 4. Category affinity   — ±20% boost/penalty based on user's vote history
+-- Rad or Bad — Rename gas/pass to rad/bad
 -- =============================================
 
--- ── user_category_affinity ────────────────────────────────────────────────────
-create table if not exists public.user_category_affinity (
-  user_id    uuid references public.users(id) on delete cascade not null,
-  category   public.category not null,
-  rad_count  integer default 0 not null,
-  bad_count integer default 0 not null,
-  primary key (user_id, category)
-);
+-- ── Rename enum values ────────────────────────────────────────────────────────
+alter type public.vote_type rename value 'gas'  to 'rad';
+alter type public.vote_type rename value 'pass' to 'bad';
 
-create index if not exists affinity_user_idx
-  on public.user_category_affinity(user_id);
+-- ── Rename columns on uploads ─────────────────────────────────────────────────
+alter table public.uploads rename column gas_votes  to rad_votes;
+alter table public.uploads rename column pass_votes to bad_votes;
 
-alter table public.user_category_affinity enable row level security;
+-- ── Rename columns on user_category_affinity ──────────────────────────────────
+alter table public.user_category_affinity rename column gas_count  to rad_count;
+alter table public.user_category_affinity rename column pass_count to bad_count;
 
-create policy "Users can view own affinity"
-  on public.user_category_affinity for select
-  using (auth.uid() = user_id);
+-- ── Recreate uploads_with_score view ─────────────────────────────────────────
+create or replace view public.uploads_with_score as
+  select
+    *,
+    case
+      when total_votes = 0 then null
+      else round((rad_votes::decimal / total_votes) * 100, 1)
+    end as hotness_score
+  from public.uploads
+  where is_active = true and (is_approved = true or is_approved is null);
 
--- ── Affinity trigger ──────────────────────────────────────────────────────────
+-- ── Recreate handle_new_vote trigger function ─────────────────────────────────
+create or replace function public.handle_new_vote()
+returns trigger as $$
+begin
+  if new.vote = 'rad' then
+    update public.uploads
+    set total_votes = total_votes + 1, rad_votes = rad_votes + 1
+    where id = new.upload_id;
+  elsif new.vote = 'bad' then
+    update public.uploads
+    set total_votes = total_votes + 1, bad_votes = bad_votes + 1
+    where id = new.upload_id;
+  end if;
+
+  update public.users
+  set
+    total_ratings_given = total_ratings_given + 1,
+    critic_level = case
+      when total_ratings_given + 1 >= 10000 then 6
+      when total_ratings_given + 1 >= 5000  then 5
+      when total_ratings_given + 1 >= 1000  then 4
+      when total_ratings_given + 1 >= 500   then 3
+      when total_ratings_given + 1 >= 100   then 2
+      else 1
+    end
+  where id = new.voter_id;
+
+  return new;
+end;
+$$ language plpgsql security definer;
+
+-- ── Recreate handle_vote_affinity trigger function ────────────────────────────
 create or replace function public.handle_vote_affinity()
 returns trigger
 language plpgsql security definer as $$
@@ -45,42 +75,38 @@ begin
   values (
     new.voter_id,
     v_category,
-    case when new.vote = 'rad'  then 1 else 0 end,
+    case when new.vote = 'rad' then 1 else 0 end,
     case when new.vote = 'bad' then 1 else 0 end
   )
   on conflict (user_id, category) do update
   set
-    rad_count  = user_category_affinity.rad_count
-                 + case when new.vote = 'rad'  then 1 else 0 end,
+    rad_count = user_category_affinity.rad_count
+                + case when new.vote = 'rad' then 1 else 0 end,
     bad_count = user_category_affinity.bad_count
-                 + case when new.vote = 'bad' then 1 else 0 end;
+                + case when new.vote = 'bad' then 1 else 0 end;
 
   return new;
 end;
 $$;
 
-drop trigger if exists on_vote_update_affinity on public.votes;
-create trigger on_vote_update_affinity
-  after insert on public.votes
-  for each row execute function public.handle_vote_affinity();
+-- ── Recreate refresh_wilson_score trigger function ────────────────────────────
+create or replace function public.refresh_wilson_score()
+returns trigger
+language plpgsql as $$
+begin
+  new.wilson_score := public.wilson_lower_bound(new.rad_votes, new.total_votes);
+  return new;
+end;
+$$;
 
--- ── Backfill affinity from existing votes ─────────────────────────────────────
-insert into public.user_category_affinity (user_id, category, rad_count, bad_count)
-select
-  v.voter_id,
-  u.category,
-  cast(count(*) filter (where v.vote = 'rad')  as integer),
-  cast(count(*) filter (where v.vote = 'bad') as integer)
-from public.votes v
-join public.uploads u on u.id = v.upload_id
-where v.vote in ('rad', 'bad')
-group by v.voter_id, u.category
-on conflict (user_id, category) do update
-set
-  rad_count  = excluded.rad_count,
-  bad_count = excluded.bad_count;
+-- Update the wilson trigger to fire on rad_votes instead of gas_votes
+drop trigger if exists sync_wilson_score on public.uploads;
+create trigger sync_wilson_score
+  before update of rad_votes, total_votes on public.uploads
+  for each row
+  execute function public.refresh_wilson_score();
 
--- ── Updated get_feed ──────────────────────────────────────────────────────────
+-- ── Recreate get_feed with updated column names ───────────────────────────────
 create or replace function public.get_feed(
   p_user_id uuid,
   p_limit    integer default 50
@@ -94,7 +120,7 @@ returns table (
   created_at  timestamptz,
   total_votes integer,
   rad_votes   integer,
-  bad_votes  integer,
+  bad_votes   integer,
   username    text,
   feed_score  double precision
 )
@@ -163,8 +189,6 @@ as $$
         up.rad_votes,
         up.bad_votes,
         usr.username,
-        -- Quality × smooth decay × pass penalty + discovery bump
-        -- then × following boost × category affinity
         (
           (
             up.wilson_score

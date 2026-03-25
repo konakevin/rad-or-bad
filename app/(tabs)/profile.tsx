@@ -134,7 +134,7 @@ export default function ProfileScreen() {
 }
 
 function PostTile({ item }: { item: PostItem }) {
-  const rating = getRating(item.gas_votes, item.total_votes);
+  const rating = getRating(item.rad_votes, item.total_votes);
 
   return (
     <View style={styles.tile}>

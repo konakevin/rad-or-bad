@@ -10,7 +10,7 @@ export function useFavoritePosts() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('favorites')
-        .select('uploads(id, category, image_url, caption, total_votes, gas_votes, created_at)')
+        .select('uploads(id, category, image_url, caption, total_votes, rad_votes, created_at)')
         .eq('user_id', user!.id)
         .order('created_at', { ascending: false });
       if (error) throw error;

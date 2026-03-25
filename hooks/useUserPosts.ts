@@ -8,7 +8,7 @@ export interface PostItem {
   image_url: string;
   caption: string | null;
   total_votes: number;
-  gas_votes: number;
+  rad_votes: number;
   created_at: string;
 }
 
@@ -19,7 +19,7 @@ export function useUserPosts() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('uploads')
-        .select('id, category, image_url, caption, total_votes, gas_votes, created_at')
+        .select('id, category, image_url, caption, total_votes, rad_votes, created_at')
         .eq('user_id', user!.id)
         .order('created_at', { ascending: false });
       if (error) throw error;

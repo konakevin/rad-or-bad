@@ -117,7 +117,7 @@ export default function PublicProfileScreen() {
 }
 
 function PostTile({ item }: { item: PostItem }) {
-  const rating = getRating(item.gas_votes, item.total_votes);
+  const rating = getRating(item.rad_votes, item.total_votes);
   return (
     <View style={styles.tile}>
       <Image source={{ uri: item.image_url }} style={styles.tileImage} contentFit="cover" transition={150} />

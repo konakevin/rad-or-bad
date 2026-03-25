@@ -46,7 +46,7 @@ export function useUpload() {
           caption: caption.trim() || null,
           is_approved: true,
         })
-        .select('id, user_id, category, image_url, caption, created_at, total_votes, gas_votes, pass_votes')
+        .select('id, user_id, category, image_url, caption, created_at, total_votes, rad_votes, bad_votes')
         .single();
 
       if (error) throw error;
@@ -55,7 +55,7 @@ export function useUpload() {
       await supabase.from('votes').insert({
         voter_id: user!.id,
         upload_id: inserted.id,
-        vote: 'gas',
+        vote: 'rad',
       });
 
       const { data: userData } = await supabase

@@ -10,8 +10,8 @@ export interface FeedItem {
   caption: string | null;
   created_at: string;
   total_votes: number;
-  gas_votes: number;
-  pass_votes: number;
+  rad_votes: number;
+  bad_votes: number;
   username: string;
 }
 

@@ -28,7 +28,7 @@ export default function FeedScreen() {
   const pendingPost = useFeedStore((s) => s.pendingPost);
   const setPendingPost = useFeedStore((s) => s.setPendingPost);
   const [deck, setDeck] = useState<FeedItem[]>([]);
-  const [sessionVotes, setSessionVotes] = useState<Map<string, 'gas' | 'pass'>>(new Map());
+  const [sessionVotes, setSessionVotes] = useState<Map<string, 'rad' | 'bad'>>(new Map());
   const [cardAreaHeight, setCardAreaHeight] = useState(0);
   const loadedFeedKey = useRef('');
 
@@ -49,7 +49,7 @@ export default function FeedScreen() {
       if (alreadyIn) return prev;
       return [pendingPost as FeedItem, ...prev];
     });
-    setSessionVotes((prev) => new Map(prev).set(pendingPost.id, 'gas'));
+    setSessionVotes((prev) => new Map(prev).set(pendingPost.id, 'rad'));
     setPendingPost(null);
   }, [pendingPost]);
 
@@ -67,10 +67,10 @@ export default function FeedScreen() {
 
   // Vote on the top card — card stays, score badge fades in with optimistic score
   const handleVote = useCallback(
-    (item: FeedItem, vote: 'gas' | 'pass') => {
+    (item: FeedItem, vote: 'rad' | 'bad') => {
       if (sessionVotes.has(item.id)) return;
       Haptics.impactAsync(
-        vote === 'gas'
+        vote === 'rad'
           ? Haptics.ImpactFeedbackStyle.Medium
           : Haptics.ImpactFeedbackStyle.Light
       );
@@ -192,7 +192,7 @@ export default function FeedScreen() {
           <TouchableOpacity
             style={[styles.passButton, topItemVoted && styles.buttonVoted]}
             activeOpacity={0.8}
-            onPress={() => handleVote(topItem, 'pass')}
+            onPress={() => handleVote(topItem, 'bad')}
             disabled={topItemVoted}
           >
             <Text style={styles.passIcon}>👎</Text>
@@ -206,7 +206,7 @@ export default function FeedScreen() {
           <TouchableOpacity
             style={[styles.gasButton, topItemVoted && styles.buttonVoted]}
             activeOpacity={0.8}
-            onPress={() => handleVote(topItem, 'gas')}
+            onPress={() => handleVote(topItem, 'rad')}
             disabled={topItemVoted}
           >
             <Text style={styles.gasIcon}>🔥</Text>

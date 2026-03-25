@@ -78,14 +78,14 @@ const img = (seed) => `https://picsum.photos/seed/${seed}/800/1000`;
 //   3g /16p /19   4/20 = 20%      <30   lavender → purple
 //
 const GRADIENT_POSTS = [
-  { userIdx: 0, category: 'nature',  image: img('grad-hot1'),   caption: '🌡️ 95% — swipe Gas', gas: 18, pass:  1 },
-  { userIdx: 1, category: 'nature',  image: img('grad-hot2'),   caption: '🌡️ 85% — swipe Gas', gas: 16, pass:  3 },
-  { userIdx: 2, category: 'nature',  image: img('grad-hot3'),   caption: '🌡️ 75% — swipe Gas', gas: 14, pass:  5 },
-  { userIdx: 3, category: 'nature',  image: img('grad-hot4'),   caption: '🌡️ 65% — swipe Gas', gas: 12, pass:  7 },
-  { userIdx: 4, category: 'nature',  image: img('grad-hot5'),   caption: '🌡️ 55% — swipe Gas', gas: 10, pass:  9 },
-  { userIdx: 5, category: 'nature',  image: img('grad-hot6'),   caption: '🌡️ 45% — swipe Gas', gas:  8, pass: 11 },
-  { userIdx: 6, category: 'nature',  image: img('grad-hot7'),   caption: '🌡️ 35% — swipe Gas', gas:  6, pass: 13 },
-  { userIdx: 7, category: 'nature',  image: img('grad-hot8'),   caption: '🌡️ 20% — swipe Gas', gas:  3, pass: 16 },
+  { userIdx: 0, category: 'nature',  image: img('grad-hot1'),   caption: '🌡️ 95% — swipe Rad', rad: 18, bad:  1 },
+  { userIdx: 1, category: 'nature',  image: img('grad-hot2'),   caption: '🌡️ 85% — swipe Rad', rad: 16, bad:  3 },
+  { userIdx: 2, category: 'nature',  image: img('grad-hot3'),   caption: '🌡️ 75% — swipe Rad', rad: 14, bad:  5 },
+  { userIdx: 3, category: 'nature',  image: img('grad-hot4'),   caption: '🌡️ 65% — swipe Rad', rad: 12, bad:  7 },
+  { userIdx: 4, category: 'nature',  image: img('grad-hot5'),   caption: '🌡️ 55% — swipe Rad', rad: 10, bad:  9 },
+  { userIdx: 5, category: 'nature',  image: img('grad-hot6'),   caption: '🌡️ 45% — swipe Rad', rad:  8, bad: 11 },
+  { userIdx: 6, category: 'nature',  image: img('grad-hot7'),   caption: '🌡️ 35% — swipe Rad', rad:  6, bad: 13 },
+  { userIdx: 7, category: 'nature',  image: img('grad-hot8'),   caption: '🌡️ 20% — swipe Rad', rad:  3, bad: 16 },
 ];
 
 const POSTS = [
@@ -209,7 +209,7 @@ async function createVotes(users, uploads) {
   console.log('\n🗳️  Creating votes...');
   let count = 0;
 
-  for (const [postIdx, gasVoterIdxs, passVoterIdxs] of VOTE_PLANS) {
+  for (const [postIdx, radVoterIdxs, badVoterIdxs] of VOTE_PLANS) {
     const upload = uploads[postIdx];
     if (!upload) { fail(`No upload at index ${postIdx}`); continue; }
 
@@ -226,13 +226,13 @@ async function createVotes(users, uploads) {
       if (!error) count++;
     };
 
-    for (const vi of gasVoterIdxs)  await insertVote(vi, 'gas');
-    for (const vi of passVoterIdxs) await insertVote(vi, 'pass');
+    for (const vi of radVoterIdxs)  await insertVote(vi, 'rad');
+    for (const vi of badVoterIdxs) await insertVote(vi, 'bad');
 
-    const gas   = gasVoterIdxs.length;
-    const total = gasVoterIdxs.length + passVoterIdxs.length;
-    const pct   = total ? Math.round((gas / total) * 100) : 0;
-    log(`Post ${postIdx}: ${gas}/${total} gas = ${pct}%`);
+    const rad   = radVoterIdxs.length;
+    const total = radVoterIdxs.length + badVoterIdxs.length;
+    const pct   = total ? Math.round((rad / total) * 100) : 0;
+    log(`Post ${postIdx}: ${rad}/${total} rad = ${pct}%`);
   }
 
   log(`\nTotal votes inserted: ${count}`);
@@ -253,16 +253,16 @@ async function createGradientPosts(users) {
     if (error) { fail(`Gradient post "${p.caption}": ${error.message}`); continue; }
 
     // Set vote counts directly — triggers wilson_score recalc via DB trigger
-    const total = p.gas + p.pass;
+    const total = p.rad + p.bad;
     const { error: ve } = await supabase
       .from('uploads')
-      .update({ gas_votes: p.gas, pass_votes: p.pass, total_votes: total })
+      .update({ rad_votes: p.rad, bad_votes: p.bad, total_votes: total })
       .eq('id', data.id);
 
     if (ve) { fail(`Vote counts for "${p.caption}": ${ve.message}`); continue; }
 
-    const afterGas = Math.round(((p.gas + 1) / (total + 1)) * 100);
-    log(`✓ ${p.caption} → ${p.gas}/${total} pre-loaded → ${afterGas}% after your Gas`);
+    const afterRad = Math.round(((p.rad + 1) / (total + 1)) * 100);
+    log(`✓ ${p.caption} → ${p.rad}/${total} pre-loaded → ${afterRad}% after your Rad`);
   }
 }
 

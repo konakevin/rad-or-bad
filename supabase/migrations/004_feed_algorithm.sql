@@ -48,26 +48,26 @@ language sql immutable as $$
 $$;
 
 -- ── Trigger: keep wilson_score in sync ────────────────────────────────────────
--- Fires BEFORE UPDATE on uploads when gas_votes or total_votes change.
+-- Fires BEFORE UPDATE on uploads when rad_votes or total_votes change.
 -- Sets NEW.wilson_score directly — no second round-trip needed.
 create or replace function public.refresh_wilson_score()
 returns trigger
 language plpgsql as $$
 begin
-  new.wilson_score := public.wilson_lower_bound(new.gas_votes, new.total_votes);
+  new.wilson_score := public.wilson_lower_bound(new.rad_votes, new.total_votes);
   return new;
 end;
 $$;
 
 drop trigger if exists sync_wilson_score on public.uploads;
 create trigger sync_wilson_score
-  before update of gas_votes, total_votes on public.uploads
+  before update of rad_votes, total_votes on public.uploads
   for each row
   execute function public.refresh_wilson_score();
 
 -- Backfill existing rows
 update public.uploads
-set wilson_score = public.wilson_lower_bound(gas_votes, total_votes);
+set wilson_score = public.wilson_lower_bound(rad_votes, total_votes);
 
 -- ── get_feed RPC ──────────────────────────────────────────────────────────────
 -- LANGUAGE sql (not plpgsql) avoids PL/pgSQL variable scoping issues and
@@ -85,8 +85,8 @@ returns table (
   caption     text,
   created_at  timestamptz,
   total_votes integer,
-  gas_votes   integer,
-  pass_votes  integer,
+  rad_votes   integer,
+  bad_votes  integer,
   username    text,
   feed_score  double precision
 )
@@ -153,8 +153,8 @@ as $$
     up.caption,
     up.created_at,
     up.total_votes,
-    up.gas_votes,
-    up.pass_votes,
+    up.rad_votes,
+    up.bad_votes,
     usr.username,
     (
       (

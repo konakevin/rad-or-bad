@@ -4,7 +4,7 @@ import { useAuthStore } from '@/store/auth';
 
 interface VoteArgs {
   uploadId: string;
-  vote: 'gas' | 'pass';
+  vote: 'rad' | 'bad';
 }
 
 export function useVote() {
@@ -21,7 +21,6 @@ export function useVote() {
       if (error) throw error;
     },
     onSuccess: () => {
-      // Invalidate feed so re-fetch excludes the voted item
       queryClient.invalidateQueries({ queryKey: ['feed', user?.id] });
     },
   });

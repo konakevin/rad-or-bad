@@ -1,5 +1,5 @@
 export type Category = 'setups' | 'fits' | 'rides' | 'eats' | 'pets' | 'people';
-export type Vote = 'gas' | 'pass' | 'skip';
+export type Vote = 'rad' | 'bad' | 'skip';
 export type CriticLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
 export interface Database {
@@ -31,13 +31,13 @@ export interface Database {
           caption: string | null;
           created_at: string;
           total_votes: number;
-          gas_votes: number;
-          pass_votes: number;
+          rad_votes: number;
+          bad_votes: number;
           hotness_score: number | null;
           is_moderated: boolean;
           is_approved: boolean | null;
         };
-        Insert: Omit<Database['public']['Tables']['uploads']['Row'], 'created_at' | 'total_votes' | 'gas_votes' | 'pass_votes' | 'hotness_score' | 'is_moderated'>;
+        Insert: Omit<Database['public']['Tables']['uploads']['Row'], 'created_at' | 'total_votes' | 'rad_votes' | 'bad_votes' | 'hotness_score' | 'is_moderated'>;
         Update: Partial<Database['public']['Tables']['uploads']['Insert']>;
       };
       votes: {

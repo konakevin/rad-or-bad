@@ -32,7 +32,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 interface SwipeCardProps {
   item: FeedItem;
-  userVote: 'gas' | 'pass' | null;
+  userVote: 'rad' | 'bad' | null;
   isFavorited: boolean;
   isFollowing: boolean;
   isOwnPost: boolean;
@@ -48,9 +48,9 @@ interface SwipeCardProps {
 export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost, onDismiss, onFavorite, onFollow, onUserPress, isTop, index, containerHeight }: SwipeCardProps) {
   const cardHeight = containerHeight > 0 ? containerHeight : SCREEN_HEIGHT * 0.65;
   // Optimistically include the user's own vote in the score calculation
-  const gas   = item.gas_votes + (userVote === 'gas' ? 1 : 0);
+  const rad   = item.rad_votes + (userVote === 'rad' ? 1 : 0);
   const total = item.total_votes + (userVote !== null ? 1 : 0);
-  const rating = userVote !== null ? getRating(gas, total) : null;
+  const rating = userVote !== null ? getRating(rad, total) : null;
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
   const scoreOpacity = useSharedValue(0);

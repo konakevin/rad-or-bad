@@ -38,8 +38,8 @@ create table public.uploads (
   caption        text check (char_length(caption) <= 200),
   created_at     timestamptz default now() not null,
   total_votes    integer default 0 not null,
-  gas_votes      integer default 0 not null,
-  pass_votes     integer default 0 not null,
+  rad_votes      integer default 0 not null,
+  bad_votes     integer default 0 not null,
   is_moderated   boolean default false not null,
   is_approved    boolean,
   is_active      boolean default true not null
@@ -51,7 +51,7 @@ create view public.uploads_with_score as
     *,
     case
       when total_votes = 0 then null
-      else round((gas_votes::decimal / total_votes) * 100, 1)
+      else round((rad_votes::decimal / total_votes) * 100, 1)
     end as hotness_score
   from public.uploads
   where is_active = true and (is_approved = true or is_approved is null);
@@ -59,7 +59,7 @@ create view public.uploads_with_score as
 -- =============================================
 -- VOTES
 -- =============================================
-create type public.vote_type as enum ('gas', 'pass', 'skip');
+create type public.vote_type as enum ('rad', 'bad', 'skip');
 
 create table public.votes (
   id         uuid default uuid_generate_v4() primary key,
@@ -108,13 +108,13 @@ create index votes_upload_id_idx on public.votes(upload_id);
 create or replace function public.handle_new_vote()
 returns trigger as $$
 begin
-  if new.vote = 'gas' then
+  if new.vote = 'rad' then
     update public.uploads
-    set total_votes = total_votes + 1, gas_votes = gas_votes + 1
+    set total_votes = total_votes + 1, rad_votes = rad_votes + 1
     where id = new.upload_id;
-  elsif new.vote = 'pass' then
+  elsif new.vote = 'bad' then
     update public.uploads
-    set total_votes = total_votes + 1, pass_votes = pass_votes + 1
+    set total_votes = total_votes + 1, bad_votes = bad_votes + 1
     where id = new.upload_id;
   end if;
 

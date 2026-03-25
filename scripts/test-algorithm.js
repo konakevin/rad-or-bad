@@ -56,7 +56,7 @@ const hoursAgo = (h) => new Date(Date.now() - h * 3_600_000).toISOString();
 //  author-b      — fresh-high, fresh-mid             (2 posts, ranking)
 //  author-c      — old-high, old-mid                 (2 posts, ranking)
 //  author-d      — new-novote, already-voted         (new-novote shows; already-voted filtered by votes)
-//  author-e      — high-pass, clean-gas              (2 posts, pass penalty)
+//  author-e      — high-bad, clean-rad               (2 posts, bad penalty)
 //  author-f      — decay-5h,  decay-7h               (2 posts, smooth decay)
 //  author-g      — decay-23h, decay-25h              (2 posts, smooth decay)
 //  author-h      — diversity-1st…diversity-4th       (4 posts, diversity cap test)
@@ -78,7 +78,7 @@ const USER_KEYS = ['viewer','a','b','c','d','e','f','g','h','i','j'];
 //  new-novote     0 × decay + 0.3(discovery)                  ≈ 0.30  → rank 5
 //  old-mid        wilson(5/9)≈0.267 × ~1.26                  ≈ 0.29  → rank 6
 //
-//  Pass penalty:  clean-gas(4/4,no pass)>high-pass(7/12,5passes) after penalty
+//  Bad penalty:   clean-rad(4/4,no bad)>high-bad(7/12,5bads) after penalty
 //  Smooth decay:  5h>7h>23h>25h monotonically, no cliff at 6h or 24h
 //  Diversity cap: only diversity-1st and diversity-2nd survive (cap=2)
 //  Affinity:      food-mid(7/9, loved category) > meme-high(8/9, hated category)
@@ -86,39 +86,39 @@ const USER_KEYS = ['viewer','a','b','c','d','e','f','g','h','i','j'];
 
 const SCENARIOS = [
   // ── Ranking (expectedRank = relative order among these 6 only) ───────────
-  { label: 'fresh-high',   author: 'b', hoursAgo: 3,      gas: 9, total: 9,  cat: 'nature', expectedRank: 1 },
-  { label: 'followed-mid', author: 'a', hoursAgo: 3,      gas: 5, total: 9,  cat: 'nature', expectedRank: 2 },
-  { label: 'old-high',     author: 'c', hoursAgo: 24 * 8, gas: 9, total: 9,  cat: 'nature', expectedRank: 3 },
-  { label: 'fresh-mid',    author: 'b', hoursAgo: 3,      gas: 5, total: 9,  cat: 'nature', expectedRank: 4 },
-  { label: 'new-novote',   author: 'd', hoursAgo: 1,      gas: 0, total: 0,  cat: 'nature', expectedRank: 5 },
-  { label: 'old-mid',      author: 'c', hoursAgo: 24 * 8, gas: 5, total: 9,  cat: 'nature', expectedRank: 6 },
+  { label: 'fresh-high',   author: 'b', hoursAgo: 3,      rad:9, total: 9,  cat: 'nature', expectedRank: 1 },
+  { label: 'followed-mid', author: 'a', hoursAgo: 3,      rad:5, total: 9,  cat: 'nature', expectedRank: 2 },
+  { label: 'old-high',     author: 'c', hoursAgo: 24 * 8, rad:9, total: 9,  cat: 'nature', expectedRank: 3 },
+  { label: 'fresh-mid',    author: 'b', hoursAgo: 3,      rad:5, total: 9,  cat: 'nature', expectedRank: 4 },
+  { label: 'new-novote',   author: 'd', hoursAgo: 1,      rad:0, total: 0,  cat: 'nature', expectedRank: 5 },
+  { label: 'old-mid',      author: 'c', hoursAgo: 24 * 8, rad:5, total: 9,  cat: 'nature', expectedRank: 6 },
 
   // ── Pass penalty ──────────────────────────────────────────────────────────
   // high-pass has more votes overall but many passes → penalised
   // clean-gas has fewer votes but perfect rate → wins after penalty
-  { label: 'high-pass',    author: 'e', hoursAgo: 3, gas: 7, total: 12, cat: 'nature', expectedRank: null },
-  { label: 'clean-gas',    author: 'e', hoursAgo: 3, gas: 4, total: 4,  cat: 'nature', expectedRank: null },
+  { label: 'high-bad',     author: 'e', hoursAgo: 3, rad: 7, total: 12, cat: 'nature', expectedRank: null },
+  { label: 'clean-rad',    author: 'e', hoursAgo: 3, rad: 4, total: 4,  cat: 'nature', expectedRank: null },
 
   // ── Smooth decay (same quality, different ages — must be monotonically decreasing) ─
-  { label: 'decay-5h',     author: 'f', hoursAgo: 5,  gas: 6, total: 9, cat: 'nature', expectedRank: null },
-  { label: 'decay-7h',     author: 'f', hoursAgo: 7,  gas: 6, total: 9, cat: 'nature', expectedRank: null },
-  { label: 'decay-23h',    author: 'g', hoursAgo: 23, gas: 6, total: 9, cat: 'nature', expectedRank: null },
-  { label: 'decay-25h',    author: 'g', hoursAgo: 25, gas: 6, total: 9, cat: 'nature', expectedRank: null },
+  { label: 'decay-5h',     author: 'f', hoursAgo: 5,  rad:6, total: 9, cat: 'nature', expectedRank: null },
+  { label: 'decay-7h',     author: 'f', hoursAgo: 7,  rad:6, total: 9, cat: 'nature', expectedRank: null },
+  { label: 'decay-23h',    author: 'g', hoursAgo: 23, rad:6, total: 9, cat: 'nature', expectedRank: null },
+  { label: 'decay-25h',    author: 'g', hoursAgo: 25, rad:6, total: 9, cat: 'nature', expectedRank: null },
 
   // ── Author diversity cap (4 posts from same author; only top 2 survive) ──
-  { label: 'diversity-1st', author: 'h', hoursAgo: 3, gas: 9, total: 9, cat: 'nature', expectedRank: null },
-  { label: 'diversity-2nd', author: 'h', hoursAgo: 3, gas: 7, total: 9, cat: 'nature', expectedRank: null },
-  { label: 'diversity-3rd', author: 'h', hoursAgo: 3, gas: 5, total: 9, cat: 'nature', expectedRank: null },
-  { label: 'diversity-4th', author: 'h', hoursAgo: 3, gas: 3, total: 9, cat: 'nature', expectedRank: null },
+  { label: 'diversity-1st', author: 'h', hoursAgo: 3, rad:9, total: 9, cat: 'nature', expectedRank: null },
+  { label: 'diversity-2nd', author: 'h', hoursAgo: 3, rad:7, total: 9, cat: 'nature', expectedRank: null },
+  { label: 'diversity-3rd', author: 'h', hoursAgo: 3, rad:5, total: 9, cat: 'nature', expectedRank: null },
+  { label: 'diversity-4th', author: 'h', hoursAgo: 3, rad:3, total: 9, cat: 'nature', expectedRank: null },
 
   // ── Category affinity ─────────────────────────────────────────────────────
   // Without affinity: meme-high(8/9) wins. With affinity: food-mid(7/9, loved) wins.
-  { label: 'food-mid',      author: 'i', hoursAgo: 3, gas: 7, total: 9, cat: 'food',  expectedRank: null },
-  { label: 'meme-high',     author: 'j', hoursAgo: 3, gas: 8, total: 9, cat: 'memes', expectedRank: null },
+  { label: 'food-mid',      author: 'i', hoursAgo: 3, rad:7, total: 9, cat: 'food',  expectedRank: null },
+  { label: 'meme-high',     author: 'j', hoursAgo: 3, rad:8, total: 9, cat: 'memes', expectedRank: null },
 
   // ── Exclusion sanity ──────────────────────────────────────────────────────
-  { label: 'already-voted', author: 'd', hoursAgo: 3, gas: 9, total: 9,  cat: 'nature', expectedRank: null },
-  { label: 'own-post',      author: 'viewer', hoursAgo: 3, gas: 9, total: 9, cat: 'nature', expectedRank: null },
+  { label: 'already-voted', author: 'd', hoursAgo: 3, rad:9, total: 9,  cat: 'nature', expectedRank: null },
+  { label: 'own-post',      author: 'viewer', hoursAgo: 3, rad:9, total: 9, cat: 'nature', expectedRank: null },
 ];
 
 // ── Assertions ────────────────────────────────────────────────────────────────
@@ -196,7 +196,7 @@ async function main() {
 
     if (s.total > 0) {
       const { error: ve } = await supabase.from('uploads')
-        .update({ gas_votes: s.gas, pass_votes: s.total - s.gas, total_votes: s.total })
+        .update({ rad_votes: s.rad, bad_votes: s.total - s.rad, total_votes: s.total })
         .eq('id', data.id);
       if (ve) throw new Error(`votes ${s.label}: ${ve.message}`);
     }
@@ -205,15 +205,15 @@ async function main() {
 
   // Viewer votes on already-voted post
   console.log('\n🗳️  Recording viewer vote on already-voted post...');
-  const { error: voteErr } = await supabase.from('votes').insert({ voter_id: ids['viewer'], upload_id: uploadIds['already-voted'], vote: 'gas' });
+  const { error: voteErr } = await supabase.from('votes').insert({ voter_id: ids['viewer'], upload_id: uploadIds['already-voted'], vote: 'rad' });
   if (voteErr) throw new Error(`vote insert: ${voteErr.message}`);
 
   // Seed category affinity directly
   console.log('\n❤️  Seeding category affinity (food=loved, memes=disliked)...');
   await supabase.from('user_category_affinity')
-    .upsert({ user_id: ids['viewer'], category: 'food',  gas_count: 20, pass_count: 2 });
+    .upsert({ user_id: ids['viewer'], category: 'food',  rad_count: 20, bad_count: 2 });
   await supabase.from('user_category_affinity')
-    .upsert({ user_id: ids['viewer'], category: 'memes', gas_count: 2,  pass_count: 20 });
+    .upsert({ user_id: ids['viewer'], category: 'memes', rad_count: 2,  bad_count: 20 });
 
   // Run feed
   console.log('\n🔍 Running get_feed...');
@@ -259,11 +259,11 @@ async function main() {
   console.log('🧪 Pass vote penalty');
   console.log('──────────────────────────────────────────');
 
-  const hp = byLabel['high-pass'];
-  const cg = byLabel['clean-gas'];
-  assert(hp !== undefined && cg !== undefined, 'Both pass-penalty posts in feed');
+  const hp = byLabel['high-bad'];
+  const cg = byLabel['clean-rad'];
+  assert(hp !== undefined && cg !== undefined, 'Both bad-penalty posts in feed');
   assert(cg?.feed_score > hp?.feed_score,
-    `clean-gas (${cg?.feed_score?.toFixed(3)}) > high-pass (${hp?.feed_score?.toFixed(3)}) after penalty`);
+    `clean-rad (${cg?.feed_score?.toFixed(3)}) > high-bad (${hp?.feed_score?.toFixed(3)}) after penalty`);
 
   // ── Smooth decay ──────────────────────────────────────────────────────────
   console.log('\n──────────────────────────────────────────');
