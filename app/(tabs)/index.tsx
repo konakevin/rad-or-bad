@@ -40,7 +40,8 @@ export default function FeedScreen() {
     setSessionVotes(new Map());
   }, [resetToken]);
 
-  // Prepend the user's own new post to the top of the deck after upload
+  // Prepend the user's own new post to the top of the deck after upload,
+  // pre-marked as voted Rad so the 100% badge shows immediately
   useEffect(() => {
     if (!pendingPost) return;
     setDeck((prev) => {
@@ -48,6 +49,7 @@ export default function FeedScreen() {
       if (alreadyIn) return prev;
       return [pendingPost as FeedItem, ...prev];
     });
+    setSessionVotes((prev) => new Map(prev).set(pendingPost.id, 'gas'));
     setPendingPost(null);
   }, [pendingPost]);
 
