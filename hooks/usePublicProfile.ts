@@ -47,5 +47,6 @@ export function usePublicProfile(userId: string) {
       } as PublicProfile;
     },
     enabled: !!userId,
+    staleTime: 60_000,
   });
 }

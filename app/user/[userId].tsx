@@ -6,29 +6,47 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { useState, useMemo } from 'react';
 import { usePublicProfile } from '@/hooks/usePublicProfile';
+import { useFollowersList } from '@/hooks/useFollowersList';
+import { useFollowingList } from '@/hooks/useFollowingList';
 import { useFollowingIds } from '@/hooks/useFollowingIds';
 import { useToggleFollow } from '@/hooks/useToggleFollow';
 import { useAuthStore } from '@/store/auth';
 import { PostTile } from '@/components/PostTile';
+import { ProfileStatsRow } from '@/components/ProfileStatsRow';
+import { FollowUserRow } from '@/components/FollowUserRow';
+import type { FollowUser } from '@/hooks/useFollowersList';
 import type { PostItem } from '@/hooks/useUserPosts';
 
 const TILE_GAP = 2;
+type Tab = 'posts' | 'followers' | 'following';
 
 export default function PublicProfileScreen() {
   const { userId } = useLocalSearchParams<{ userId: string }>();
   const currentUser = useAuthStore((s) => s.user);
   const isOwnProfile = currentUser?.id === userId;
 
+  const [activeTab, setActiveTab] = useState<Tab>('posts');
+
   const { data: profile, isLoading } = usePublicProfile(userId);
+
+  const { data: followers = [], isLoading: loadingFollowers } = useFollowersList(userId);
+  const { data: following = [], isLoading: loadingFollowing } = useFollowingList(userId);
   const { data: followingIds = new Set<string>() } = useFollowingIds();
   const { mutate: toggleFollow } = useToggleFollow();
 
   const isFollowing = followingIds.has(userId);
+  const postAlbumIds = useMemo(() => profile?.posts.map((p) => p.id) ?? [], [profile?.posts]);
 
   function handleFollow() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     toggleFollow({ userId, currentlyFollowing: isFollowing });
+  }
+
+  function handleFollowUser(targetId: string) {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    toggleFollow({ userId: targetId, currentlyFollowing: followingIds.has(targetId) });
   }
 
   if (isLoading || !profile) {
@@ -46,68 +64,96 @@ export default function PublicProfileScreen() {
     );
   }
 
+  const header = (
+    <>
+      {/* Back button */}
+      <View style={styles.backRow}>
+        <TouchableOpacity onPress={() => router.back()} hitSlop={12}>
+          <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
+      </View>
+
+      {/* Profile header */}
+      <View style={styles.header}>
+        <View style={styles.headerTop}>
+          <Text style={styles.username}>@{profile.username}</Text>
+          {!isOwnProfile && (
+            <TouchableOpacity
+              style={[styles.followButton, isFollowing && styles.followingButton]}
+              onPress={handleFollow}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.followButtonText, isFollowing && styles.followingButtonText]}>
+                {isFollowing ? 'Following' : 'Follow'}
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* Stats */}
+        <ProfileStatsRow
+          postCount={profile.posts.length}
+          followerCount={profile.followerCount}
+          followingCount={profile.followingCount}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
+      </View>
+
+    </>
+  );
+
+  // Posts grid
+  if (activeTab === 'posts') {
+    return (
+      <SafeAreaView style={styles.root}>
+        <FlatList<PostItem>
+          key="posts"
+          data={profile.posts}
+          keyExtractor={(item) => item.id}
+          numColumns={2}
+          columnWrapperStyle={styles.row}
+          ListHeaderComponent={header}
+          ListEmptyComponent={
+            <View style={styles.center}>
+              <Text style={styles.emptyText}>No posts yet</Text>
+            </View>
+          }
+          renderItem={({ item }) => (
+            <PostTile item={item} albumIds={postAlbumIds} />
+          )}
+        />
+      </SafeAreaView>
+    );
+  }
+
+  // Followers / Following list
+  const listData = activeTab === 'followers' ? followers : following;
+  const isLoadingList = activeTab === 'followers' ? loadingFollowers : loadingFollowing;
+  const emptyLabel = activeTab === 'followers' ? 'No followers yet' : 'Not following anyone yet';
+
   return (
     <SafeAreaView style={styles.root}>
-      <FlatList
-        data={profile.posts}
+      <FlatList<FollowUser>
+        key="users"
+        data={listData}
         keyExtractor={(item) => item.id}
-        numColumns={2}
-        columnWrapperStyle={styles.row}
-        ListHeaderComponent={
-          <>
-            {/* Back button */}
-            <View style={styles.backRow}>
-              <TouchableOpacity onPress={() => router.back()} hitSlop={12}>
-                <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
-              </TouchableOpacity>
-            </View>
-
-            {/* Profile header */}
-            <View style={styles.header}>
-              <View style={styles.headerTop}>
-                <Text style={styles.username}>@{profile.username}</Text>
-                {!isOwnProfile && (
-                  <TouchableOpacity
-                    style={[styles.followButton, isFollowing && styles.followingButton]}
-                    onPress={handleFollow}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={[styles.followButtonText, isFollowing && styles.followingButtonText]}>
-                      {isFollowing ? 'Following' : 'Follow'}
-                    </Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-
-              {/* Counts */}
-              <View style={styles.statsRow}>
-                <View style={styles.stat}>
-                  <Text style={styles.statNumber}>{profile.posts.length}</Text>
-                  <Text style={styles.statLabel}>Posts</Text>
-                </View>
-                <View style={styles.statDivider} />
-                <View style={styles.stat}>
-                  <Text style={styles.statNumber}>{profile.followerCount}</Text>
-                  <Text style={styles.statLabel}>Followers</Text>
-                </View>
-                <View style={styles.statDivider} />
-                <View style={styles.stat}>
-                  <Text style={styles.statNumber}>{profile.followingCount}</Text>
-                  <Text style={styles.statLabel}>Following</Text>
-                </View>
-              </View>
-            </View>
-
-            {/* Posts label */}
-            <Text style={styles.sectionLabel}>POSTS</Text>
-          </>
-        }
+        ListHeaderComponent={header}
         ListEmptyComponent={
           <View style={styles.center}>
-            <Text style={styles.emptyText}>No posts yet</Text>
+            {isLoadingList
+              ? <ActivityIndicator color="#FF4500" />
+              : <Text style={styles.emptyText}>{emptyLabel}</Text>
+            }
           </View>
         }
-        renderItem={({ item }) => <PostTile item={item} />}
+        renderItem={({ item }) => (
+          <FollowUserRow
+            item={item}
+            isFollowing={followingIds.has(item.id)}
+            onFollow={handleFollowUser}
+          />
+        )}
       />
     </SafeAreaView>
   );
@@ -157,37 +203,6 @@ const styles = StyleSheet.create({
   },
   followingButtonText: {
     color: '#71767B',
-  },
-  statsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  stat: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  statNumber: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '800',
-  },
-  statLabel: {
-    color: '#71767B',
-    fontSize: 12,
-    marginTop: 2,
-  },
-  statDivider: {
-    width: 0.5,
-    height: 28,
-    backgroundColor: '#2F2F2F',
-  },
-  sectionLabel: {
-    color: '#71767B',
-    fontSize: 11,
-    fontWeight: '600',
-    letterSpacing: 0.8,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
   },
   row: { gap: TILE_GAP, marginBottom: TILE_GAP },
   emptyText: { color: '#71767B', fontSize: 15 },

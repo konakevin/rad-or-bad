@@ -20,8 +20,10 @@ export function useVote() {
       });
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_, { uploadId }) => {
       queryClient.invalidateQueries({ queryKey: ['feed', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['post', uploadId] });
+      queryClient.invalidateQueries({ queryKey: ['userVote', uploadId] });
     },
   });
 }

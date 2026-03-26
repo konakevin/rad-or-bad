@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -6,6 +6,7 @@ import MaskedView from '@react-native-masked-view/masked-view';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { useFeed, type FeedItem } from '@/hooks/useFeed';
+import type { Category } from '@/types/database';
 import { useVote } from '@/hooks/useVote';
 import { useFavoriteIds } from '@/hooks/useFavoriteIds';
 import { useToggleFavorite } from '@/hooks/useToggleFavorite';
@@ -18,6 +19,8 @@ import { RankCard } from '@/components/RankCard';
 import { router } from 'expo-router';
 import { useCategoryPosts } from '@/hooks/useCategoryPosts';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const PALETTE = ['#BB88EE', '#6699EE', '#44BBCC', '#77CC88', '#CCDD55', '#DDBB55', '#DDAA66', '#DD7766'];
 
 export default function FeedScreen() {
   const currentUser = useAuthStore((s) => s.user);
@@ -36,6 +39,9 @@ export default function FeedScreen() {
   const [cardAreaHeight, setCardAreaHeight] = useState(0);
   const [showSwipeHint, setShowSwipeHint] = useState(false);
   const loadedFeedKey = useRef('');
+  const sessionVotesRef = useRef(sessionVotes);
+  useEffect(() => { sessionVotesRef.current = sessionVotes; }, [sessionVotes]);
+  const spinnerColor = useMemo(() => PALETTE[Math.floor(Math.random() * PALETTE.length)], []);
 
   // Show swipe hint once ever
   useEffect(() => {
@@ -52,8 +58,10 @@ export default function FeedScreen() {
     setSessionVotes(new Map());
   }, [resetToken]);
 
-  // Prepend the user's own new post to the top of the deck after upload,
-  // pre-marked as voted Rad so the 100% badge shows immediately
+  // Prepend the user's own new post to the top of the deck after upload.
+  // Seeded into sessionVotes as 'rad' so the 100% score badge shows immediately
+  // (the DB also auto-votes rad at creation time). SwipeCard suppresses the
+  // auto-dismiss timer for own posts so it stays until manually swiped away.
   useEffect(() => {
     if (!pendingPost) return;
     setDeck((prev) => {
@@ -61,7 +69,6 @@ export default function FeedScreen() {
       if (alreadyIn) return prev;
       return [pendingPost as FeedItem, ...prev];
     });
-    setSessionVotes((prev) => new Map(prev).set(pendingPost.id, 'rad'));
     setPendingPost(null);
   }, [pendingPost]);
 
@@ -69,10 +76,19 @@ export default function FeedScreen() {
     const newKey = feed.map((f) => f.id).join(',');
     if (newKey && newKey !== loadedFeedKey.current) {
       loadedFeedKey.current = newKey;
+      const feedIds = new Set(feed.map((f) => f.id));
       setDeck((prev) => {
         const existingIds = new Set(prev.map((d) => d.id));
         const freshItems = feed.filter((f) => !existingIds.has(f.id));
-        return [...prev, ...freshItems];
+        // Remove items no longer in the feed that weren't voted this session —
+        // they were voted externally (e.g. detail screen). Keep own posts
+        // (feed RPC excludes them) and session-voted cards still animating out.
+        const retained = prev.filter((item) =>
+          feedIds.has(item.id) ||
+          sessionVotesRef.current.has(item.id) ||
+          item.user_id === currentUser?.id
+        );
+        return [...retained, ...freshItems];
       });
     }
   }, [feed]);
@@ -122,15 +138,10 @@ export default function FeedScreen() {
     refetch();
   }, [refreshToken]);
 
-  const handleRefresh = useCallback(() => {
-    loadedFeedKey.current = '';
-    refetch();
-  }, [refetch]);
-
   if (isLoading) {
     return (
       <SafeAreaView style={styles.center}>
-        <ActivityIndicator size="large" color="#FF4500" />
+        <ActivityIndicator size="large" color={spinnerColor} />
       </SafeAreaView>
     );
   }
@@ -147,7 +158,7 @@ export default function FeedScreen() {
           {/* RAD — warm amber → orange, not full red */}
           <MaskedView maskElement={<Text style={styles.headerTitle}>RAD</Text>}>
             <LinearGradient
-              colors={['#FFCC77', '#FFB300', '#FF5500']}
+              colors={['#CCDD55', '#DDAA66', '#DD7766']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
             >
@@ -157,10 +168,9 @@ export default function FeedScreen() {
 
           <Text style={styles.headerOr}>OR</Text>
 
-          {/* BAD — teal → blue → purple */}
           <MaskedView maskElement={<Text style={styles.headerTitle}>BAD</Text>}>
             <LinearGradient
-              colors={['#66DDCC', '#00CCAA', '#0077FF', '#6633CC']}
+              colors={['#BB88EE', '#6699EE', '#44BBCC']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
             >
@@ -214,15 +224,9 @@ export default function FeedScreen() {
               disabled={topItemVoted}
             >
               <LinearGradient
-                colors={['#66DDCC', '#0077FF', '#6633CC']}
+                colors={['#BB88EE', '#6699EE', '#44BBCC']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
-                style={StyleSheet.absoluteFill}
-              />
-              <LinearGradient
-                colors={['rgba(0,0,0,0.25)', 'rgba(0,0,0,0.1)', 'rgba(0,0,0,0.35)']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
                 style={StyleSheet.absoluteFill}
               />
               <Ionicons name="thumbs-down" size={26} color="#FFFFFF" />
@@ -238,15 +242,9 @@ export default function FeedScreen() {
               disabled={topItemVoted}
             >
               <LinearGradient
-                colors={['#FFCC77', '#FFB300', '#FF5500']}
+                colors={['#CCDD55', '#DDAA66', '#DD7766']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
-                style={StyleSheet.absoluteFill}
-              />
-              <LinearGradient
-                colors={['rgba(0,0,0,0.25)', 'rgba(0,0,0,0.1)', 'rgba(0,0,0,0.35)']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
                 style={StyleSheet.absoluteFill}
               />
               <Ionicons name="thumbs-up" size={26} color="#FFFFFF" />
@@ -260,12 +258,12 @@ export default function FeedScreen() {
   );
 }
 
-const CATEGORIES = [
-  { key: 'people',  label: 'People',  color: '#60A5FA' },
-  { key: 'animals', label: 'Animals', color: '#FB923C' },
-  { key: 'food',    label: 'Food',    color: '#F43F5E' },
-  { key: 'nature',  label: 'Nature',  color: '#4ADE80' },
-  { key: 'memes',   label: 'Memes',   color: '#A78BFA' },
+const CATEGORIES: { key: Category; label: string; color: string }[] = [
+  { key: 'people',  label: 'People',  color: '#6699EE' },
+  { key: 'animals', label: 'Animals', color: '#DDAA66' },
+  { key: 'food',    label: 'Food',    color: '#DD7766' },
+  { key: 'nature',  label: 'Nature',  color: '#77CC88' },
+  { key: 'memes',   label: 'Memes',   color: '#BB88EE' },
 ];
 
 function CaughtUpState() {
@@ -349,35 +347,35 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 40,
     paddingHorizontal: 40,
-    paddingBottom: 12,
-    paddingTop: 8,
+    paddingBottom: 4,
+    paddingTop: 12,
   },
   badGlow: {
-    borderRadius: 32,
-    shadowColor: '#0077FF',
+    borderRadius: 37,
+    shadowColor: '#6699EE',
     shadowOpacity: 0.5,
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 4 },
     elevation: 10,
   },
   radGlow: {
-    borderRadius: 32,
-    shadowColor: '#FFB300',
+    borderRadius: 37,
+    shadowColor: '#DDAA66',
     shadowOpacity: 0.5,
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 4 },
     elevation: 10,
   },
   voteButton: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 74,
+    height: 74,
+    borderRadius: 37,
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 2,
   },
-voteButtonText: {
+  voteButtonText: {
     color: '#FFFFFF',
     fontSize: 10,
     fontWeight: '800',

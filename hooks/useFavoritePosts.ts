@@ -19,5 +19,6 @@ export function useFavoritePosts() {
         .filter((u): u is PostItem => u !== null);
     },
     enabled: !!user,
+    staleTime: 60_000,
   });
 }

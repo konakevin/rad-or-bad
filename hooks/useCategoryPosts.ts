@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import type { Category } from '@/types/database';
 
 export interface ExplorePost {
   id: string;
@@ -24,7 +25,7 @@ const WINDOWS = [
   { label: 'All time',   hours: null },
 ] as const;
 
-export function useCategoryPosts(category: string, limit = 10) {
+export function useCategoryPosts(category: Category, limit = 10) {
   return useQuery({
     queryKey: ['top', category, limit],
     queryFn: async (): Promise<CategoryPostsResult> => {
@@ -56,5 +57,6 @@ export function useCategoryPosts(category: string, limit = 10) {
 
       return { posts: [], windowLabel: 'All time' };
     },
+    staleTime: 300_000, // leaderboards: 5 min
   });
 }

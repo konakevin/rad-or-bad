@@ -19,6 +19,7 @@ import MaskedView from '@react-native-masked-view/masked-view';
 import { LinearGradient } from 'expo-linear-gradient';
 import type { FeedItem } from '@/hooks/useFeed';
 import { getRating } from '@/lib/getRating';
+import { formatCount } from '@/lib/formatCount';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH - 16;
@@ -34,11 +35,11 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
-  people:  '#60A5FA',
-  animals: '#FB923C',
-  food:    '#F43F5E',
-  nature:  '#4ADE80',
-  memes:   '#A78BFA',
+  people:  '#6699EE',
+  animals: '#DDAA66',
+  food:    '#DD7766',
+  nature:  '#77CC88',
+  memes:   '#BB88EE',
 };
 
 interface SwipeCardProps {
@@ -237,25 +238,27 @@ export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost,
               <Text style={styles.caption} numberOfLines={2}>{item.caption}</Text>
             ) : null}
 
-            {/* Row 3: meta | save */}
+            {/* Row 3: category · star count · save */}
             <View style={styles.metaRow}>
               <View style={styles.metaLeft}>
+                <CategoryPill category={item.category} />
                 {total > 0 && (
                   <>
-                    <Ionicons name="star" size={12} color="rgba(255,255,255,0.65)" />
-                    <Text style={styles.metaText}>{total}</Text>
                     <Text style={styles.metaDot}>·</Text>
+                    <Ionicons name="star" size={12} color="rgba(255,255,255,0.65)" />
+                    <Text style={styles.metaText}>{formatCount(total)}</Text>
                   </>
                 )}
-                <CategoryPill category={item.category} />
               </View>
-              <TouchableOpacity onPress={onFavorite} hitSlop={12} style={styles.saveButton} activeOpacity={0.6}>
-                <Ionicons
-                  name={isFavorited ? 'bookmark' : 'bookmark-outline'}
-                  size={22}
-                  color={isFavorited ? '#FFFFFF' : 'rgba(255,255,255,0.55)'}
-                />
-              </TouchableOpacity>
+              {!isOwnPost && (
+                <TouchableOpacity onPress={onFavorite} hitSlop={12} style={styles.saveButton} activeOpacity={0.6}>
+                  <Ionicons
+                    name={isFavorited ? 'bookmark' : 'bookmark-outline'}
+                    size={22}
+                    color={isFavorited ? '#FFFFFF' : 'rgba(255,255,255,0.55)'}
+                  />
+                </TouchableOpacity>
+              )}
             </View>
           </View>
         </LinearGradient>
@@ -335,30 +338,30 @@ const styles = StyleSheet.create({
   },
   username: {
     color: '#FFFFFF',
-    fontSize: 17,
-    fontWeight: '700',
-    letterSpacing: -0.2,
+    fontSize: 18,
+    fontWeight: '800',
+    letterSpacing: -0.3,
     textShadowColor: 'rgba(0,0,0,0.6)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 6,
   },
   followPill: {
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.75)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.45)',
     borderRadius: 14,
     paddingHorizontal: 13,
     paddingVertical: 5,
   },
   followingPill: {
-    borderColor: 'rgba(255,255,255,0.2)',
+    borderColor: 'rgba(255,255,255,0.15)',
   },
   followPillText: {
-    color: '#FFFFFF',
-    fontSize: 13,
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: 12,
     fontWeight: '600',
   },
   followingPillText: {
-    color: 'rgba(255,255,255,0.35)',
+    color: 'rgba(255,255,255,0.3)',
   },
   caption: {
     color: 'rgba(255,255,255,0.9)',
@@ -387,6 +390,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 8,
     paddingVertical: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.5,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 4,
   },
   categoryPillText: {
     fontSize: 12,
@@ -395,6 +403,9 @@ const styles = StyleSheet.create({
   metaText: {
     color: 'rgba(255,255,255,0.65)',
     fontSize: 13,
+    textShadowColor: 'rgba(0,0,0,0.6)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
   },
   hintContainer: {
     position: 'absolute',

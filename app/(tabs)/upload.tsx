@@ -15,12 +15,12 @@ import type { Category } from '@/types/database';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CAPTION_LIMIT = 200;
 
-const CATEGORIES: { value: Category; emoji: string; label: string }[] = [
-  { value: 'people',  emoji: '👤',  label: 'People'  },
-  { value: 'animals', emoji: '🐾',  label: 'Animals' },
-  { value: 'food',    emoji: '🍔',  label: 'Food'    },
-  { value: 'nature',  emoji: '🌿',  label: 'Nature'  },
-  { value: 'memes',   emoji: '😂',  label: 'Memes'   },
+const CATEGORIES: { value: Category; label: string; color: string }[] = [
+  { value: 'people',  label: 'People',  color: '#6699EE' },
+  { value: 'animals', label: 'Animals', color: '#DDAA66' },
+  { value: 'food',    label: 'Food',    color: '#DD7766' },
+  { value: 'nature',  label: 'Nature',  color: '#77CC88' },
+  { value: 'memes',   label: 'Memes',   color: '#BB88EE' },
 ];
 
 export default function UploadScreen() {
@@ -34,20 +34,15 @@ export default function UploadScreen() {
   async function pickImage() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert(
-        'Permission needed',
-        'Allow access to your photo library in Settings to upload photos.',
-      );
+      Alert.alert('Permission needed', 'Allow access to your photo library in Settings to upload photos.');
       return;
     }
-
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [3, 4],
       quality: 0.85,
     });
-
     if (!result.canceled) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       setImageUri(result.assets[0].uri);
@@ -57,19 +52,14 @@ export default function UploadScreen() {
   async function takePhoto() {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert(
-        'Permission needed',
-        'Allow camera access in Settings to take photos.',
-      );
+      Alert.alert('Permission needed', 'Allow camera access in Settings to take photos.');
       return;
     }
-
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
       aspect: [3, 4],
       quality: 0.85,
     });
-
     if (!result.canceled) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       setImageUri(result.assets[0].uri);
@@ -98,10 +88,8 @@ export default function UploadScreen() {
 
   return (
     <SafeAreaView style={styles.root}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.flex}
-      >
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.flex}>
+
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.headerTitle}>New post</Text>
@@ -125,64 +113,41 @@ export default function UploadScreen() {
           {/* Photo picker */}
           {imageUri ? (
             <View style={styles.imagePreviewContainer}>
-              <Image
-                source={{ uri: imageUri }}
-                style={styles.imagePreview}
-                contentFit="cover"
-              />
-              <TouchableOpacity
-                style={styles.changePhotoButton}
-                onPress={pickImage}
-                activeOpacity={0.8}
-              >
+              <Image source={{ uri: imageUri }} style={styles.imagePreview} contentFit="cover" />
+              <TouchableOpacity style={styles.changePhotoButton} onPress={pickImage} activeOpacity={0.8}>
                 <Text style={styles.changePhotoText}>Change photo</Text>
               </TouchableOpacity>
             </View>
           ) : (
-            <View style={styles.pickerArea}>
-              <TouchableOpacity
-                style={styles.pickerButton}
-                onPress={pickImage}
-                activeOpacity={0.8}
-              >
-                <Ionicons name="images-outline" size={32} color="#71767B" />
-                <Text style={styles.pickerButtonText}>Choose from library</Text>
+            <View style={styles.pickerRow}>
+              <TouchableOpacity style={styles.pickerButton} onPress={pickImage} activeOpacity={0.8}>
+                <Ionicons name="images-outline" size={26} color="#71767B" />
+                <Text style={styles.pickerButtonText}>Library</Text>
               </TouchableOpacity>
-
-              <View style={styles.pickerDivider}>
-                <View style={styles.dividerLine} />
-                <Text style={styles.dividerText}>or</Text>
-                <View style={styles.dividerLine} />
-              </View>
-
-              <TouchableOpacity
-                style={styles.cameraButton}
-                onPress={takePhoto}
-                activeOpacity={0.8}
-              >
-                <Ionicons name="camera-outline" size={20} color="#FF4500" />
-                <Text style={styles.cameraButtonText}>Take a photo</Text>
+              <View style={styles.pickerDivider} />
+              <TouchableOpacity style={styles.pickerButton} onPress={takePhoto} activeOpacity={0.8}>
+                <Ionicons name="camera-outline" size={26} color="#71767B" />
+                <Text style={styles.pickerButtonText}>Camera</Text>
               </TouchableOpacity>
             </View>
           )}
 
           {/* Category */}
           <Text style={styles.sectionLabel}>CATEGORY</Text>
-          <View style={styles.categoryGrid}>
+          <View style={styles.categoryRow}>
             {CATEGORIES.map((cat) => {
               const selected = category === cat.value;
               return (
                 <TouchableOpacity
                   key={cat.value}
-                  style={[styles.categoryChip, selected && styles.categoryChipSelected]}
-                  onPress={() => {
-                    Haptics.selectionAsync();
-                    setCategory(cat.value);
-                  }}
+                  style={[
+                    styles.categoryChip,
+                    selected && { borderColor: cat.color, backgroundColor: `${cat.color}1A` },
+                  ]}
+                  onPress={() => { Haptics.selectionAsync(); setCategory(cat.value); }}
                   activeOpacity={0.8}
                 >
-                  <Text style={styles.categoryEmoji}>{cat.emoji}</Text>
-                  <Text style={[styles.categoryLabel, selected && styles.categoryLabelSelected]}>
+                  <Text style={[styles.categoryChipText, selected && { color: cat.color, fontWeight: '700' }]} numberOfLines={1}>
                     {cat.label}
                   </Text>
                 </TouchableOpacity>
@@ -211,6 +176,13 @@ export default function UploadScreen() {
               {CAPTION_LIMIT - caption.length}
             </Text>
           </View>
+
+          {/* Disabled hint */}
+          {!canPost && (
+            <Text style={styles.hint}>
+              {!imageUri ? 'Choose a photo to get started' : 'Pick a category to continue'}
+            </Text>
+          )}
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -231,11 +203,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.5,
     borderBottomColor: '#2F2F2F',
   },
-  headerTitle: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '700',
-  },
+  headerTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: '700' },
   postButton: {
     backgroundColor: '#FF4500',
     borderRadius: 20,
@@ -244,72 +212,33 @@ const styles = StyleSheet.create({
     minWidth: 64,
     alignItems: 'center',
   },
-  postButtonDisabled: {
-    backgroundColor: '#2F2F2F',
-  },
-  postButtonText: {
-    color: '#FFFFFF',
-    fontWeight: '700',
-    fontSize: 15,
-  },
-  scroll: {
-    padding: 16,
-    paddingBottom: 40,
-  },
-  pickerArea: {
-    borderWidth: 1.5,
+  postButtonDisabled: { backgroundColor: '#2F2F2F' },
+  postButtonText: { color: '#FFFFFF', fontWeight: '700', fontSize: 15 },
+  scroll: { padding: 16, paddingBottom: 40 },
+
+  // Picker
+  pickerRow: {
+    flexDirection: 'row',
+    borderWidth: 1,
     borderColor: '#2F2F2F',
-    borderStyle: 'dashed',
-    borderRadius: 16,
-    padding: 32,
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  pickerButton: {
-    alignItems: 'center',
-    gap: 10,
-  },
-  pickerButtonText: {
-    color: '#71767B',
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  pickerDivider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginVertical: 20,
-    width: '80%',
-  },
-  dividerLine: {
-    flex: 1,
-    height: 0.5,
-    backgroundColor: '#2F2F2F',
-  },
-  dividerText: {
-    color: '#3E4144',
-    fontSize: 13,
-  },
-  cameraButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  cameraButtonText: {
-    color: '#FF4500',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  imagePreviewContainer: {
-    marginBottom: 24,
     borderRadius: 16,
     overflow: 'hidden',
+    marginBottom: 28,
+    height: 100,
   },
-  imagePreview: {
-    width: '100%',
-    height: IMAGE_HEIGHT,
-    borderRadius: 16,
+  pickerButton: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#111111',
   },
+  pickerButtonText: { color: '#71767B', fontSize: 14, fontWeight: '500' },
+  pickerDivider: { width: 1, backgroundColor: '#2F2F2F' },
+
+  // Image preview
+  imagePreviewContainer: { marginBottom: 24, borderRadius: 16, overflow: 'hidden' },
+  imagePreview: { width: '100%', height: IMAGE_HEIGHT, borderRadius: 16 },
   changePhotoButton: {
     position: 'absolute',
     bottom: 12,
@@ -319,11 +248,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
   },
-  changePhotoText: {
-    color: '#FFFFFF',
-    fontSize: 13,
-    fontWeight: '600',
-  },
+  changePhotoText: { color: '#FFFFFF', fontSize: 13, fontWeight: '600' },
+
+  // Section label
   sectionLabel: {
     color: '#71767B',
     fontSize: 11,
@@ -332,50 +259,30 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     marginTop: 4,
   },
-  optional: {
-    color: '#3E4144',
-    fontWeight: '400',
-    letterSpacing: 0,
-  },
-  categoryGrid: {
+  optional: { color: '#3E4144', fontWeight: '400', letterSpacing: 0 },
+
+  // Categories
+  categoryRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    marginBottom: 24,
+    gap: 6,
+    marginBottom: 28,
   },
   categoryChip: {
-    flexDirection: 'row',
+    flex: 1,
     alignItems: 'center',
-    gap: 6,
-    borderWidth: 1.5,
-    borderColor: '#2F2F2F',
-    borderRadius: 24,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    backgroundColor: '#1A1A1A',
-  },
-  categoryChipSelected: {
-    borderColor: '#FF4500',
-    backgroundColor: 'rgba(255, 69, 0, 0.12)',
-  },
-  categoryEmoji: {
-    fontSize: 16,
-  },
-  categoryLabel: {
-    color: '#71767B',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  categoryLabelSelected: {
-    color: '#FF4500',
-    fontWeight: '600',
-  },
-  captionContainer: {
-    backgroundColor: '#1A1A1A',
+    justifyContent: 'center',
     borderWidth: 1,
     borderColor: '#2F2F2F',
     borderRadius: 16,
-    padding: 14,
+    paddingVertical: 7,
+  },
+  categoryChipText: { color: '#71767B', fontSize: 13, fontWeight: '600' },
+
+  // Caption
+  captionContainer: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#2F2F2F',
+    paddingBottom: 8,
   },
   captionInput: {
     color: '#FFFFFF',
@@ -388,14 +295,17 @@ const styles = StyleSheet.create({
     color: '#3E4144',
     fontSize: 12,
     textAlign: 'right',
-    marginTop: 8,
+    marginTop: 6,
     fontWeight: '500',
   },
-  charCountWarning: {
-    color: '#FFB800',
-  },
-  charCountError: {
-    color: '#F4212E',
-    fontWeight: '700',
+  charCountWarning: { color: '#FFB800' },
+  charCountError: { color: '#F4212E', fontWeight: '700' },
+
+  // Hint
+  hint: {
+    color: '#3E4144',
+    fontSize: 13,
+    textAlign: 'center',
+    marginTop: 20,
   },
 });

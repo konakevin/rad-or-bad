@@ -7,6 +7,7 @@ export function useUserVote(uploadId: string) {
   return useQuery({
     queryKey: ['userVote', uploadId],
     enabled: !!user && !!uploadId,
+    staleTime: 60_000,
     queryFn: async () => {
       const { data } = await supabase
         .from('votes')

@@ -6,11 +6,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { useCategoryPosts } from '@/hooks/useCategoryPosts';
+import type { Category } from '@/types/database';
 import { RankCard } from '@/components/RankCard';
 
 
 
-const CATEGORIES = [
+const CATEGORIES: { key: Category; label: string; color: string }[] = [
   { key: 'people',  label: 'People',  color: '#60A5FA' },
   { key: 'animals', label: 'Animals', color: '#FB923C' },
   { key: 'food',    label: 'Food',    color: '#F43F5E' },
@@ -20,10 +21,12 @@ const CATEGORIES = [
 
 export default function TopScreen() {
   const params = useLocalSearchParams<{ category?: string }>();
-  const [selected, setSelected] = useState<string>(params.category ?? CATEGORIES[0].key);
+  const [selected, setSelected] = useState<Category>(
+    (params.category as Category | undefined) ?? CATEGORIES[0].key
+  );
 
   useEffect(() => {
-    if (params.category) setSelected(params.category);
+    if (params.category) setSelected(params.category as Category);
   }, [params.category]);
 
   const { data, isLoading } = useCategoryPosts(selected, 10);

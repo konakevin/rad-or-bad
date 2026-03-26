@@ -43,8 +43,10 @@ export function useToggleFollow() {
       qc.setQueryData(key, ctx?.previous);
     },
     onSuccess: (_data, { userId }) => {
-      // Refresh the public profile so follower count updates
       qc.invalidateQueries({ queryKey: ['publicProfile', userId] });
+      // Refresh follower/following list tabs
+      qc.invalidateQueries({ queryKey: ['followersList', userId] });
+      qc.invalidateQueries({ queryKey: ['followingList', user?.id] });
     },
   });
 }

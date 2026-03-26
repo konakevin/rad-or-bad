@@ -5,6 +5,7 @@ import MaskedView from '@react-native-masked-view/masked-view';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { getRating } from '@/lib/getRating';
+import { formatCount } from '@/lib/formatCount';
 import type { ExplorePost } from '@/hooks/useCategoryPosts';
 
 interface RankCardProps {
@@ -45,7 +46,7 @@ export function RankCard({ post, rank, height = 150 }: RankCardProps) {
               {post.total_votes > 0 && (
                 <View style={styles.ratingsRow}>
                   <Ionicons name="star" size={11} color="#FFB300" />
-                  <Text style={styles.ratingsText}>{post.total_votes}</Text>
+                  <Text style={styles.ratingsText}>{formatCount(post.total_votes)}</Text>
                 </View>
               )}
             </View>

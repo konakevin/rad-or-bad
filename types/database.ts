@@ -1,6 +1,5 @@
-export type Category = 'setups' | 'fits' | 'rides' | 'eats' | 'pets' | 'people';
-export type Vote = 'rad' | 'bad' | 'skip';
-export type CriticLevel = 1 | 2 | 3 | 4 | 5 | 6;
+export type Category = 'people' | 'animals' | 'food' | 'nature' | 'memes';
+export type VoteType = 'rad' | 'bad' | 'skip';
 
 export interface Database {
   public: {
@@ -10,8 +9,9 @@ export interface Database {
           id: string;
           email: string;
           username: string;
+          avatar_url: string | null;
           created_at: string;
-          critic_level: CriticLevel;
+          critic_level: number;
           total_ratings_given: number;
           pro_subscription: boolean;
           subscription_expires: string | null;
@@ -19,8 +19,19 @@ export interface Database {
           upload_count_week: number;
           week_reset_date: string;
         };
-        Insert: Omit<Database['public']['Tables']['users']['Row'], 'created_at'>;
-        Update: Partial<Database['public']['Tables']['users']['Insert']>;
+        Insert: {
+          id: string;
+          email: string;
+          username: string;
+          avatar_url?: string | null;
+        };
+        Update: {
+          username?: string;
+          avatar_url?: string | null;
+          pro_subscription?: boolean;
+          subscription_expires?: string | null;
+        };
+        Relationships: [];
       };
       uploads: {
         Row: {
@@ -33,23 +44,83 @@ export interface Database {
           total_votes: number;
           rad_votes: number;
           bad_votes: number;
-          hotness_score: number | null;
+          wilson_score: number;
           is_moderated: boolean;
           is_approved: boolean | null;
+          is_active: boolean;
         };
-        Insert: Omit<Database['public']['Tables']['uploads']['Row'], 'created_at' | 'total_votes' | 'rad_votes' | 'bad_votes' | 'hotness_score' | 'is_moderated'>;
-        Update: Partial<Database['public']['Tables']['uploads']['Insert']>;
+        Insert: {
+          user_id: string;
+          category: Category;
+          image_url: string;
+          caption?: string | null;
+          is_approved?: boolean | null;
+        };
+        Update: {
+          rad_votes?: number;
+          bad_votes?: number;
+          total_votes?: number;
+          wilson_score?: number;
+          is_active?: boolean;
+          is_approved?: boolean | null;
+          caption?: string | null;
+        };
+        Relationships: [
+          { foreignKeyName: 'uploads_user_id_fkey'; columns: ['user_id']; referencedRelation: 'users'; referencedColumns: ['id'] },
+        ];
       };
       votes: {
         Row: {
           id: string;
           voter_id: string;
           upload_id: string;
-          vote: Vote;
+          vote: VoteType;
           created_at: string;
         };
-        Insert: Omit<Database['public']['Tables']['votes']['Row'], 'id' | 'created_at'>;
-        Update: never;
+        Insert: {
+          voter_id: string;
+          upload_id: string;
+          vote: VoteType;
+        };
+        Update: Record<string, never>;
+        Relationships: [
+          { foreignKeyName: 'votes_voter_id_fkey'; columns: ['voter_id']; referencedRelation: 'users'; referencedColumns: ['id'] },
+          { foreignKeyName: 'votes_upload_id_fkey'; columns: ['upload_id']; referencedRelation: 'uploads'; referencedColumns: ['id'] },
+        ];
+      };
+      favorites: {
+        Row: {
+          id: string;
+          user_id: string;
+          upload_id: string;
+          created_at: string;
+        };
+        Insert: {
+          user_id: string;
+          upload_id: string;
+        };
+        Update: Record<string, never>;
+        Relationships: [
+          { foreignKeyName: 'favorites_user_id_fkey'; columns: ['user_id']; referencedRelation: 'users'; referencedColumns: ['id'] },
+          { foreignKeyName: 'favorites_upload_id_fkey'; columns: ['upload_id']; referencedRelation: 'uploads'; referencedColumns: ['id'] },
+        ];
+      };
+      follows: {
+        Row: {
+          id: string;
+          follower_id: string;
+          following_id: string;
+          created_at: string;
+        };
+        Insert: {
+          follower_id: string;
+          following_id: string;
+        };
+        Update: Record<string, never>;
+        Relationships: [
+          { foreignKeyName: 'follows_follower_id_fkey'; columns: ['follower_id']; referencedRelation: 'users'; referencedColumns: ['id'] },
+          { foreignKeyName: 'follows_following_id_fkey'; columns: ['following_id']; referencedRelation: 'users'; referencedColumns: ['id'] },
+        ];
       };
       achievements: {
         Row: {
@@ -58,8 +129,54 @@ export interface Database {
           achievement_type: string;
           unlocked_at: string;
         };
-        Insert: Omit<Database['public']['Tables']['achievements']['Row'], 'id' | 'unlocked_at'>;
-        Update: never;
+        Insert: {
+          user_id: string;
+          achievement_type: string;
+        };
+        Update: Record<string, never>;
+        Relationships: [
+          { foreignKeyName: 'achievements_user_id_fkey'; columns: ['user_id']; referencedRelation: 'users'; referencedColumns: ['id'] },
+        ];
+      };
+      user_category_affinity: {
+        Row: {
+          user_id: string;
+          category: Category;
+          rad_count: number;
+          bad_count: number;
+        };
+        Insert: {
+          user_id: string;
+          category: Category;
+          rad_count?: number;
+          bad_count?: number;
+        };
+        Update: {
+          rad_count?: number;
+          bad_count?: number;
+        };
+        Relationships: [
+          { foreignKeyName: 'affinity_user_id_fkey'; columns: ['user_id']; referencedRelation: 'users'; referencedColumns: ['id'] },
+        ];
+      };
+    };
+    Views: Record<string, never>;
+    Functions: {
+      get_feed: {
+        Args: { p_user_id: string; p_limit?: number };
+        Returns: Array<{
+          id: string;
+          user_id: string;
+          category: Category;
+          image_url: string;
+          caption: string | null;
+          created_at: string;
+          total_votes: number;
+          rad_votes: number;
+          bad_votes: number;
+          username: string;
+          feed_score: number;
+        }>;
       };
     };
   };

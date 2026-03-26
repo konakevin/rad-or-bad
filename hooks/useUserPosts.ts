@@ -26,5 +26,6 @@ export function useUserPosts() {
       return (data ?? []) as PostItem[];
     },
     enabled: !!user,
+    staleTime: 60_000,
   });
 }
