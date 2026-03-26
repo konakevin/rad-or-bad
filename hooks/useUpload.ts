@@ -11,6 +11,8 @@ interface UploadArgs {
   category: Category;
   caption: string;
   mediaType: 'image' | 'video';
+  width: number | null;
+  height: number | null;
 }
 
 async function uploadFile(uri: string, userId: string, mediaType: 'image' | 'video'): Promise<string> {
@@ -48,7 +50,7 @@ export function useUpload() {
   const setPendingPost = useFeedStore((s) => s.setPendingPost);
 
   return useMutation({
-    mutationFn: async ({ uri, category, caption, mediaType }: UploadArgs): Promise<PendingPost> => {
+    mutationFn: async ({ uri, category, caption, mediaType, width, height }: UploadArgs): Promise<PendingPost> => {
       const uploadUri = mediaType === 'video'
         ? await CompressorVideo.compress(uri, { compressionMethod: 'auto', maxSize: 1280 })
         : uri;
@@ -67,6 +69,8 @@ export function useUpload() {
           image_url: mediaUrl,
           media_type: mediaType,
           thumbnail_url: thumbnailUrl,
+          width,
+          height,
           caption: caption.trim() || null,
           is_approved: true,
         })

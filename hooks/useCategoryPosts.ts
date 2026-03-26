@@ -8,6 +8,8 @@ export interface ExplorePost {
   image_url: string;
   media_type: 'image' | 'video';
   thumbnail_url: string | null;
+  width: number | null;
+  height: number | null;
   caption: string | null;
   total_votes: number;
   rad_votes: number;
@@ -37,7 +39,7 @@ export function useCategoryPosts(category: Category, limit = 10) {
 
         let query = supabase
           .from('uploads')
-          .select('id, category, image_url, media_type, thumbnail_url, caption, total_votes, rad_votes, wilson_score, users(username)')
+          .select('id, category, image_url, media_type, thumbnail_url, width, height, caption, total_votes, rad_votes, wilson_score, users(username)')
           .eq('is_active', true)
           .eq('category', category)
           .order('wilson_score', { ascending: false, nullsFirst: false })

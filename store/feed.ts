@@ -8,6 +8,8 @@ export interface PendingPost {
   image_url: string;
   media_type: 'image' | 'video';
   thumbnail_url: string | null;
+  width: number | null;
+  height: number | null;
   caption: string | null;
   created_at: string;
   total_votes: number;

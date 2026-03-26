@@ -24,6 +24,11 @@ import { formatCount } from '@/lib/formatCount';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH;
+
+function needsBlurBackground(mediaWidth: number | null, mediaHeight: number | null, cardHeight: number): boolean {
+  if (!mediaWidth || !mediaHeight) return false;
+  return (mediaWidth / mediaHeight) > (CARD_WIDTH / cardHeight);
+}
 const DISMISS_THRESHOLD = SCREEN_HEIGHT * 0.18;
 const SPRING_CONFIG = { damping: 20, stiffness: 200 };
 
@@ -211,21 +216,39 @@ export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost,
   return (
     <GestureDetector gesture={gesture}>
       <Animated.View style={[styles.card, { height: cardHeight }, cardStyle]}>
-        {isVideo ? (
-          <VideoView
-            player={videoPlayer}
-            style={styles.image}
-            contentFit="cover"
-            nativeControls={false}
-          />
-        ) : (
-          <Image
-            source={{ uri: item.image_url }}
-            style={styles.image}
-            contentFit="cover"
-            transition={200}
-          />
-        )}
+        {(() => {
+          const blurBg = needsBlurBackground(item.width, item.height, cardHeight);
+          return (
+            <>
+              {blurBg && (
+                <>
+                  <Image
+                    source={{ uri: item.thumbnail_url ?? item.image_url }}
+                    style={StyleSheet.absoluteFill}
+                    contentFit="cover"
+                    blurRadius={18}
+                  />
+                  <View style={[StyleSheet.absoluteFill, styles.blurOverlay]} />
+                </>
+              )}
+              {isVideo ? (
+                <VideoView
+                  player={videoPlayer}
+                  style={styles.image}
+                  contentFit={blurBg ? 'contain' : 'cover'}
+                  nativeControls={false}
+                />
+              ) : (
+                <Image
+                  source={{ uri: item.image_url }}
+                  style={styles.image}
+                  contentFit={blurBg ? 'contain' : 'cover'}
+                  transition={200}
+                />
+              )}
+            </>
+          );
+        })()}
 
         {/* Score badge — top right, fades in after voting */}
         {rating !== null && (
@@ -335,6 +358,9 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: '100%',
+  },
+  blurOverlay: {
+    backgroundColor: 'rgba(0,0,0,0.35)',
   },
   saveButton: {
     padding: 4,

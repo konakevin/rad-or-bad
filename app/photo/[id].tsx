@@ -19,7 +19,7 @@ import Animated, {
   runOnJS,
 } from 'react-native-reanimated';
 
-const SCREEN_HEIGHT = Dimensions.get('window').height;
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SWIPE_THRESHOLD = SCREEN_HEIGHT * 0.22;
 import * as Haptics from 'expo-haptics';
 import { usePost } from '@/hooks/usePost';
@@ -41,14 +41,14 @@ const CATEGORY_COLORS: Record<string, string> = {
   people: '#6699EE', animals: '#DDAA66', food: '#DD7766', nature: '#77CC88', memes: '#BB88EE',
 };
 
-function VideoPlayer({ uri, muted }: { uri: string; muted: boolean }) {
+function VideoPlayer({ uri, muted, contentFit = 'cover' }: { uri: string; muted: boolean; contentFit?: 'cover' | 'contain' }) {
   const player = useVideoPlayer(uri, (p) => {
     p.loop = true;
     p.muted = muted;
     p.play();
   });
   useEffect(() => { player.muted = muted; }, [muted]);
-  return <VideoView player={player} style={StyleSheet.absoluteFill} contentFit="cover" nativeControls={false} />;
+  return <VideoView player={player} style={StyleSheet.absoluteFill} contentFit={contentFit} nativeControls={false} />;
 }
 
 
@@ -100,7 +100,7 @@ export default function PhotoDetailScreen() {
     scoreScale.value = 0.4;
     // Jump to off-screen on the opposite side, then spring in
     slideY.value = enterFrom;
-    slideY.value = withSpring(0, { damping: 22, stiffness: 180 });
+    slideY.value = withTiming(0, { duration: 220 });
   }
 
   const albumGesture = Gesture.Pan()
@@ -131,7 +131,7 @@ export default function PhotoDetailScreen() {
           runOnJS(router.back)();
         });
       } else {
-        slideY.value = withSpring(0, { damping: 20, stiffness: 200 });
+        slideY.value = withTiming(0, { duration: 220 });
       }
     });
 
@@ -175,6 +175,7 @@ export default function PhotoDetailScreen() {
 
   const p = post;
   const isOwnPost = currentUser?.id === p.user_id;
+  const blurBg = p.width && p.height ? (p.width / p.height) > (SCREEN_WIDTH / SCREEN_HEIGHT) : false;
   const categoryColor = CATEGORY_COLORS[p.category] ?? '#FFFFFF';
   const categoryLabel = CATEGORY_LABELS[p.category] ?? p.category;
 
@@ -228,13 +229,24 @@ export default function PhotoDetailScreen() {
     <GestureDetector gesture={albumGesture}>
     <Animated.View style={[styles.root, slideStyle]}>
     <Pressable style={StyleSheet.absoluteFill} onLongPress={handleSaveImage} delayLongPress={600}>
+      {blurBg && (
+        <>
+          <Image
+            source={{ uri: p.thumbnail_url ?? p.image_url }}
+            style={StyleSheet.absoluteFill}
+            contentFit="cover"
+            blurRadius={18}
+          />
+          <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.35)' }]} />
+        </>
+      )}
       {isVideo ? (
-        <VideoPlayer uri={p.image_url} muted={muted} />
+        <VideoPlayer uri={p.image_url} muted={muted} contentFit={blurBg ? 'contain' : 'cover'} />
       ) : (
         <Image
           source={{ uri: p.image_url }}
           style={StyleSheet.absoluteFill}
-          contentFit="cover"
+          contentFit={blurBg ? 'contain' : 'cover'}
           transition={200}
         />
       )}

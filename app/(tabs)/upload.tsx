@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   View, Text, TouchableOpacity, TextInput, ScrollView,
   StyleSheet, Alert, ActivityIndicator, Dimensions, KeyboardAvoidingView, Platform,
@@ -16,6 +16,14 @@ import type { Category } from '@/types/database';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CAPTION_LIMIT = 200;
 const MAX_VIDEO_DURATION = 10; // seconds
+
+const COMPRESS_MESSAGES = [
+  'Squishing pixels...',
+  'Making it rad...',
+  'Shrinking the vibes...',
+  'Almost ready to be judged...',
+  'Bottling the energy...',
+];
 
 const CATEGORIES: { value: Category; label: string; color: string }[] = [
   { value: 'people',  label: 'People',  color: '#6699EE' },
@@ -44,9 +52,15 @@ function VideoPreview({ uri }: { uri: string }) {
 export default function UploadScreen() {
   const [mediaUri, setMediaUri] = useState<string | null>(null);
   const [mediaType, setMediaType] = useState<'image' | 'video'>('image');
+  const [mediaDimensions, setMediaDimensions] = useState<{ width: number; height: number } | null>(null);
   const [category, setCategory] = useState<Category | null>(null);
   const [caption, setCaption] = useState('');
   const { mutate: upload, isPending } = useUpload();
+  const compressMsg = useMemo(
+    () => COMPRESS_MESSAGES[Math.floor(Math.random() * COMPRESS_MESSAGES.length)],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isPending],
+  );
 
   const canPost = !!mediaUri && !!category;
 
@@ -72,6 +86,7 @@ export default function UploadScreen() {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       setMediaUri(asset.uri);
       setMediaType(asset.type === 'video' ? 'video' : 'image');
+      setMediaDimensions(asset.width && asset.height ? { width: asset.width, height: asset.height } : null);
     }
   }
 
@@ -93,6 +108,7 @@ export default function UploadScreen() {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       setMediaUri(asset.uri);
       setMediaType(asset.type === 'video' ? 'video' : 'image');
+      setMediaDimensions(asset.width && asset.height ? { width: asset.width, height: asset.height } : null);
     }
   }
 
@@ -100,12 +116,13 @@ export default function UploadScreen() {
     if (!canPost) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     upload(
-      { uri: mediaUri!, category: category!, caption, mediaType },
+      { uri: mediaUri!, category: category!, caption, mediaType, width: mediaDimensions?.width ?? null, height: mediaDimensions?.height ?? null },
       {
         onSuccess: () => {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           setMediaUri(null);
           setMediaType('image');
+          setMediaDimensions(null);
           setCategory(null);
           setCaption('');
           router.replace('/(tabs)');
@@ -136,7 +153,7 @@ export default function UploadScreen() {
           </TouchableOpacity>
         </View>
         {isPending && mediaType === 'video' && (
-          <Text style={styles.uploadStatus}>Compressing video…</Text>
+          <Text style={styles.uploadStatus}>{compressMsg}</Text>
         )}
 
         <ScrollView

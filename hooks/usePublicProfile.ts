@@ -23,7 +23,7 @@ export function usePublicProfile(userId: string) {
           .single(),
         supabase
           .from('uploads')
-          .select('id, category, image_url, media_type, thumbnail_url, caption, total_votes, rad_votes, created_at')
+          .select('id, category, image_url, media_type, thumbnail_url, width, height, caption, total_votes, rad_votes, created_at')
           .eq('user_id', userId)
           .eq('is_active', true)
           .order('created_at', { ascending: false }),
