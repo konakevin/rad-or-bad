@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet, ScrollView } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MaskedView from '@react-native-masked-view/masked-view';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -13,7 +14,9 @@ import { useToggleFollow } from '@/hooks/useToggleFollow';
 import { useFeedStore } from '@/store/feed';
 import { useAuthStore } from '@/store/auth';
 import { SwipeCard } from '@/components/SwipeCard';
+import { RankCard } from '@/components/RankCard';
 import { router } from 'expo-router';
+import { useCategoryPosts } from '@/hooks/useCategoryPosts';
 
 export default function FeedScreen() {
   const currentUser = useAuthStore((s) => s.user);
@@ -157,8 +160,8 @@ export default function FeedScreen() {
 
       {/* Card stack */}
       <View style={styles.cardArea} onLayout={(e) => setCardAreaHeight(e.nativeEvent.layout.height)}>
-        {deck.length === 0 ? (
-          <EmptyState onRefresh={handleRefresh} loading={isRefetching} />
+        {deck.length === 0 && !isLoading && !isRefetching && feed.length === 0 ? (
+          <CaughtUpState />
         ) : (
           topCards
             .slice()
@@ -189,66 +192,95 @@ export default function FeedScreen() {
       {/* Action buttons */}
       {topItem && (
         <View style={styles.actionRow}>
-          <TouchableOpacity
-            style={[styles.passButton, topItemVoted && styles.buttonVoted]}
-            activeOpacity={0.8}
-            onPress={() => handleVote(topItem, 'bad')}
-            disabled={topItemVoted}
-          >
-            <Text style={styles.passIcon}>👎</Text>
-            <Text style={[styles.passButtonText, topItemVoted && styles.buttonTextVoted]}>
-              BAD
-            </Text>
-          </TouchableOpacity>
+          <View style={styles.badGlow}>
+            <TouchableOpacity
+              style={[styles.voteButton, topItemVoted && styles.buttonVoted]}
+              activeOpacity={0.8}
+              onPress={() => handleVote(topItem, 'bad')}
+              disabled={topItemVoted}
+            >
+              <LinearGradient
+                colors={['#66DDCC', '#0077FF', '#6633CC']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={StyleSheet.absoluteFill}
+              />
+              <LinearGradient
+                colors={['rgba(0,0,0,0.25)', 'rgba(0,0,0,0.1)', 'rgba(0,0,0,0.35)']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={StyleSheet.absoluteFill}
+              />
+              <Ionicons name="thumbs-down" size={26} color="#FFFFFF" />
+              <Text style={styles.voteButtonText}>BAD</Text>
+            </TouchableOpacity>
+          </View>
 
-          <Text style={styles.remaining}>{deck.length} left</Text>
-
-          <TouchableOpacity
-            style={[styles.gasButton, topItemVoted && styles.buttonVoted]}
-            activeOpacity={0.8}
-            onPress={() => handleVote(topItem, 'rad')}
-            disabled={topItemVoted}
-          >
-            <Text style={styles.gasIcon}>🔥</Text>
-            <Text style={[styles.gasButtonText, topItemVoted && styles.buttonTextVoted]}>
-              RAD
-            </Text>
-          </TouchableOpacity>
+          <View style={styles.radGlow}>
+            <TouchableOpacity
+              style={[styles.voteButton, topItemVoted && styles.buttonVoted]}
+              activeOpacity={0.8}
+              onPress={() => handleVote(topItem, 'rad')}
+              disabled={topItemVoted}
+            >
+              <LinearGradient
+                colors={['#FFCC77', '#FFB300', '#FF5500']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={StyleSheet.absoluteFill}
+              />
+              <LinearGradient
+                colors={['rgba(0,0,0,0.25)', 'rgba(0,0,0,0.1)', 'rgba(0,0,0,0.35)']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={StyleSheet.absoluteFill}
+              />
+              <Ionicons name="thumbs-up" size={26} color="#FFFFFF" />
+              <Text style={styles.voteButtonText}>RAD</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       )}
 
-      {deck.length > 0 && (
-        <Text style={styles.hint}>
-          {topItemVoted ? 'swipe up to move on' : 'vote with the buttons · swipe up to skip'}
-        </Text>
-      )}
     </SafeAreaView>
   );
 }
 
-function EmptyState({ onRefresh, loading }: { onRefresh: () => void; loading: boolean }) {
+const CATEGORIES = [
+  { key: 'people',  label: 'People',  color: '#60A5FA' },
+  { key: 'animals', label: 'Animals', color: '#FB923C' },
+  { key: 'food',    label: 'Food',    color: '#F43F5E' },
+  { key: 'nature',  label: 'Nature',  color: '#4ADE80' },
+  { key: 'memes',   label: 'Memes',   color: '#A78BFA' },
+];
+
+function CaughtUpState() {
   return (
-    <View style={styles.emptyContainer}>
-      <Text style={styles.emptyEmoji}>🏜️</Text>
-      <Text style={styles.emptyTitle}>You've rated everything</Text>
-      <Text style={styles.emptySubtitle}>
-        Check back later for new posts, or upload something yourself.
-      </Text>
-      <TouchableOpacity
-        style={styles.refreshCta}
-        onPress={onRefresh}
-        activeOpacity={0.8}
-        disabled={loading}
-      >
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.refreshCtaText}>Refresh</Text>
-        )}
-      </TouchableOpacity>
+    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.caughtUpContent}>
+      <Text style={styles.caughtUpTitle}>You're all caught up!</Text>
+      <Text style={styles.caughtUpSubtitle}>Here's what's trending while you wait</Text>
+      {CATEGORIES.map((cat) => (
+        <CategorySection key={cat.key} category={cat} />
+      ))}
+    </ScrollView>
+  );
+}
+
+function CategorySection({ category }: { category: typeof CATEGORIES[0] }) {
+  const { data } = useCategoryPosts(category.key, 3);
+  const posts = data?.posts ?? [];
+  if (posts.length === 0) return null;
+
+  return (
+    <View style={styles.categorySection}>
+      <Text style={[styles.categoryLabel, { color: category.color }]}>{category.label}</Text>
+      {posts.map((post, i) => (
+        <RankCard key={post.id} post={post} rank={i + 1} height={120} />
+      ))}
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   root: {
@@ -302,95 +334,72 @@ const styles = StyleSheet.create({
   actionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    gap: 48,
     paddingHorizontal: 40,
-    paddingBottom: 8,
+    paddingBottom: 16,
     paddingTop: 12,
   },
-  passButton: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: '#1A1A1A',
-    borderWidth: 2,
-    borderColor: '#71767B',
-    alignItems: 'center',
-    justifyContent: 'center',
+  badGlow: {
+    borderRadius: 40,
+    shadowColor: '#0077FF',
+    shadowOpacity: 0.5,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 10,
   },
-  gasButton: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: '#1A1A1A',
-    borderWidth: 2,
-    borderColor: '#FF4500',
+  radGlow: {
+    borderRadius: 40,
+    shadowColor: '#FFB300',
+    shadowOpacity: 0.5,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 10,
+  },
+  voteButton: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 2,
   },
   buttonVoted: {
-    borderColor: '#2F2F2F',
-    opacity: 0.4,
+    opacity: 0.25,
   },
-  passIcon: { fontSize: 22 },
-  passButtonText: {
-    color: '#71767B',
+  voteButtonText: {
+    color: '#FFFFFF',
     fontSize: 10,
-    fontWeight: '700',
-    marginTop: 2,
+    fontWeight: '800',
+    letterSpacing: 1,
   },
-  gasIcon: { fontSize: 22 },
-  gasButtonText: {
-    color: '#FF4500',
-    fontSize: 10,
-    fontWeight: '700',
-    marginTop: 2,
+  caughtUpContent: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 32,
   },
-  buttonTextVoted: {
-    color: '#3E4144',
-  },
-  remaining: {
-    color: '#3E4144',
-    fontSize: 13,
-  },
-  hint: {
-    color: '#3E4144',
-    fontSize: 12,
-    textAlign: 'center',
-    paddingBottom: 8,
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    paddingHorizontal: 32,
-  },
-  emptyEmoji: {
-    fontSize: 64,
-    marginBottom: 16,
-  },
-  emptyTitle: {
+  caughtUpTitle: {
     color: '#FFFFFF',
     fontSize: 22,
-    fontWeight: '700',
-    marginBottom: 8,
+    fontWeight: '800',
     textAlign: 'center',
+    marginBottom: 6,
   },
-  emptySubtitle: {
+  caughtUpSubtitle: {
     color: '#71767B',
-    fontSize: 15,
-    lineHeight: 22,
+    fontSize: 14,
     textAlign: 'center',
     marginBottom: 24,
   },
-  refreshCta: {
-    backgroundColor: '#FF4500',
-    borderRadius: 24,
-    paddingHorizontal: 28,
-    paddingVertical: 12,
-    minWidth: 100,
-    alignItems: 'center',
+  categorySection: {
+    marginBottom: 28,
+    gap: 8,
   },
-  refreshCtaText: {
-    color: '#FFFFFF',
-    fontWeight: '700',
-    fontSize: 15,
+  categoryLabel: {
+    fontSize: 16,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+    marginBottom: 4,
   },
 });

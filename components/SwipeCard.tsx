@@ -1,5 +1,6 @@
 import { Dimensions, View, Text, StyleSheet, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import Animated, {
   useSharedValue,
@@ -23,11 +24,19 @@ const DISMISS_THRESHOLD = SCREEN_HEIGHT * 0.18;
 const SPRING_CONFIG = { damping: 20, stiffness: 200 };
 
 const CATEGORY_LABELS: Record<string, string> = {
-  people:  '👤 People',
-  animals: '🐾 Animals',
-  food:    '🍔 Food',
-  nature:  '🌿 Nature',
-  memes:   '😂 Memes',
+  people:  'People',
+  animals: 'Animals',
+  food:    'Food',
+  nature:  'Nature',
+  memes:   'Memes',
+};
+
+const CATEGORY_COLORS: Record<string, string> = {
+  people:  '#60A5FA',
+  animals: '#FB923C',
+  food:    '#F43F5E',
+  nature:  '#4ADE80',
+  memes:   '#A78BFA',
 };
 
 interface SwipeCardProps {
@@ -43,6 +52,20 @@ interface SwipeCardProps {
   isTop: boolean;
   index: number;
   containerHeight: number;
+}
+
+function CategoryPill({ category }: { category: string }) {
+  const label = CATEGORY_LABELS[category] ?? category;
+  const color = CATEGORY_COLORS[category] ?? '#FFFFFF';
+  return (
+    <Pressable
+      onPress={() => router.push(`/(tabs)/top?category=${category}`)}
+      hitSlop={8}
+      style={[styles.categoryPill, { backgroundColor: `${color}26`, borderColor: `${color}66` }]}
+    >
+      <Text style={[styles.categoryPillText, { color }]}>{label}</Text>
+    </Pressable>
+  );
 }
 
 export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost, onDismiss, onFavorite, onFollow, onUserPress, isTop, index, containerHeight }: SwipeCardProps) {
@@ -149,13 +172,11 @@ export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost,
           </Animated.View>
         )}
 
-        {/* Card info */}
-        <View style={styles.infoContainer}>
-          <View style={styles.categoryBadge}>
-            <Text style={styles.categoryText}>
-              {CATEGORY_LABELS[item.category] ?? item.category}
-            </Text>
-          </View>
+        {/* Card info — gradient overlay */}
+        <LinearGradient
+          colors={['transparent', 'rgba(0,0,0,0.55)', 'rgba(0,0,0,0.88)']}
+          style={styles.infoContainer}
+        >
           <View style={styles.userRow}>
             <Pressable onPress={onUserPress} hitSlop={8}>
               <Text style={styles.username}>@{item.username}</Text>
@@ -172,13 +193,20 @@ export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost,
               </Pressable>
             )}
           </View>
-          {total > 0 && (
-            <Text style={styles.voteCount}>{total} ratings</Text>
-          )}
           {item.caption ? (
             <Text style={styles.caption} numberOfLines={2}>{item.caption}</Text>
           ) : null}
-        </View>
+          <View style={styles.metaRow}>
+            {total > 0 && (
+              <>
+                <Ionicons name="star" size={12} color="rgba(255,255,255,0.65)" />
+                <Text style={styles.metaText}>{total}</Text>
+                <Text style={styles.metaDot}>·</Text>
+              </>
+            )}
+            <CategoryPill category={item.category} />
+          </View>
+        </LinearGradient>
       </Animated.View>
     </GestureDetector>
   );
@@ -240,66 +268,67 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    padding: 16,
+    paddingTop: 56,
+    paddingHorizontal: 16,
     paddingBottom: 20,
-    backgroundColor: 'rgba(0,0,0,0.55)',
-  },
-  categoryBadge: {
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    alignSelf: 'flex-start',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 20,
-    marginBottom: 8,
-  },
-  categoryText: {
-    color: '#FFFFFF',
-    fontSize: 13,
-    fontWeight: '600',
   },
   userRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 4,
+    marginBottom: 5,
   },
   username: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '700',
-    textShadowColor: 'rgba(0,0,0,0.8)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 4,
-  },
-  voteCount: {
-    color: 'rgba(255,255,255,0.5)',
-    fontSize: 12,
-    marginTop: 2,
+    letterSpacing: -0.2,
   },
   followPill: {
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.6)',
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 3,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.75)',
+    borderRadius: 14,
+    paddingHorizontal: 13,
+    paddingVertical: 5,
   },
   followingPill: {
     borderColor: 'rgba(255,255,255,0.2)',
   },
   followPillText: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
   },
   followingPillText: {
-    color: 'rgba(255,255,255,0.4)',
+    color: 'rgba(255,255,255,0.35)',
   },
   caption: {
-    color: 'rgba(255,255,255,0.85)',
+    color: 'rgba(255,255,255,0.9)',
     fontSize: 14,
     lineHeight: 20,
-    textShadowColor: 'rgba(0,0,0,0.8)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 4,
+    marginBottom: 8,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  categoryPill: {
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  categoryPillText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  metaText: {
+    color: 'rgba(255,255,255,0.65)',
+    fontSize: 13,
+  },
+  metaDot: {
+    color: 'rgba(255,255,255,0.35)',
+    fontSize: 13,
   },
 });

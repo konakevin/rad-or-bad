@@ -27,13 +27,22 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Feed',
+          title: 'Home',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="flame" size={size} color={color} />
+            <Ionicons name="home" size={size} color={color} />
           ),
         }}
         listeners={{
           tabPress: () => bumpRefresh(),
+        }}
+      />
+      <Tabs.Screen
+        name="top"
+        options={{
+          title: 'Top',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="flame" size={size} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
@@ -45,16 +54,7 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="leaderboard"
-        options={{
-          title: 'Ranks',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="trophy" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
+<Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',

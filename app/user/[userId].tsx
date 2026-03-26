@@ -1,22 +1,19 @@
 import {
   View, Text, TouchableOpacity, StyleSheet,
-  FlatList, Dimensions, ActivityIndicator,
+  FlatList, ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
-import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { usePublicProfile } from '@/hooks/usePublicProfile';
 import { useFollowingIds } from '@/hooks/useFollowingIds';
 import { useToggleFollow } from '@/hooks/useToggleFollow';
 import { useAuthStore } from '@/store/auth';
-import { getRating } from '@/lib/getRating';
+import { PostTile } from '@/components/PostTile';
 import type { PostItem } from '@/hooks/useUserPosts';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const TILE_GAP = 2;
-const TILE_SIZE = (SCREEN_WIDTH - TILE_GAP) / 2;
 
 export default function PublicProfileScreen() {
   const { userId } = useLocalSearchParams<{ userId: string }>();
@@ -116,19 +113,6 @@ export default function PublicProfileScreen() {
   );
 }
 
-function PostTile({ item }: { item: PostItem }) {
-  const rating = getRating(item.rad_votes, item.total_votes);
-  return (
-    <View style={styles.tile}>
-      <Image source={{ uri: item.image_url }} style={styles.tileImage} contentFit="cover" transition={150} />
-      {rating !== null && (
-        <View style={styles.tileScore}>
-          <Text style={styles.tileScoreText}>{rating.percent}%</Text>
-        </View>
-      )}
-    </View>
-  );
-}
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#000000' },
@@ -206,17 +190,5 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   row: { gap: TILE_GAP, marginBottom: TILE_GAP },
-  tile: { width: TILE_SIZE, height: TILE_SIZE, backgroundColor: '#1A1A1A' },
-  tileImage: { width: '100%', height: '100%' },
-  tileScore: {
-    position: 'absolute',
-    bottom: 6,
-    right: 6,
-    backgroundColor: 'rgba(0,0,0,0.65)',
-    borderRadius: 6,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-  },
-  tileScoreText: { color: '#FFFFFF', fontSize: 11, fontWeight: '700' },
   emptyText: { color: '#71767B', fontSize: 15 },
 });
