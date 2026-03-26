@@ -41,6 +41,16 @@ const CATEGORY_COLORS: Record<string, string> = {
   people: '#6699EE', animals: '#DDAA66', food: '#DD7766', nature: '#77CC88', memes: '#BB88EE',
 };
 
+function VideoPlayer({ uri, muted }: { uri: string; muted: boolean }) {
+  const player = useVideoPlayer(uri, (p) => {
+    p.loop = true;
+    p.muted = muted;
+    p.play();
+  });
+  useEffect(() => { player.muted = muted; }, [muted]);
+  return <VideoView player={player} style={StyleSheet.absoluteFill} contentFit="cover" nativeControls={false} />;
+}
+
 
 export default function PhotoDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -147,6 +157,8 @@ export default function PhotoDetailScreen() {
     transform: [{ translateY: slideY.value }],
   }));
 
+  const isVideo = post?.media_type === 'video';
+
   if (isLoading || !post) {
     return (
       <>
@@ -161,17 +173,8 @@ export default function PhotoDetailScreen() {
     );
   }
 
-  // Alias to a non-nullable type — safe because we returned early above if !post
   const p = post;
-  const isVideo = p.media_type === 'video';
   const isOwnPost = currentUser?.id === p.user_id;
-
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const videoPlayer = useVideoPlayer(isVideo ? p.image_url : null, (player) => {
-    player.loop = true;
-    player.muted = true;
-    player.play();
-  });
   const categoryColor = CATEGORY_COLORS[p.category] ?? '#FFFFFF';
   const categoryLabel = CATEGORY_LABELS[p.category] ?? p.category;
 
@@ -226,12 +229,7 @@ export default function PhotoDetailScreen() {
     <Animated.View style={[styles.root, slideStyle]}>
     <Pressable style={StyleSheet.absoluteFill} onLongPress={handleSaveImage} delayLongPress={600}>
       {isVideo ? (
-        <VideoView
-          player={videoPlayer}
-          style={StyleSheet.absoluteFill}
-          contentFit="cover"
-          nativeControls={false}
-        />
+        <VideoPlayer uri={p.image_url} muted={muted} />
       ) : (
         <Image
           source={{ uri: p.image_url }}
@@ -344,11 +342,7 @@ export default function PhotoDetailScreen() {
             {isVideo && (
               <TouchableOpacity
                 style={styles.topButton}
-                onPress={() => {
-                  const next = !muted;
-                  setMuted(next);
-                  videoPlayer.muted = next;
-                }}
+                onPress={() => setMuted((m) => !m)}
                 hitSlop={12}
               >
                 <Ionicons name={muted ? 'volume-mute' : 'volume-high'} size={20} color="#FFFFFF" />
