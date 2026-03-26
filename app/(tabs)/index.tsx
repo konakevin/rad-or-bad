@@ -6,6 +6,7 @@ import MaskedView from '@react-native-masked-view/masked-view';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { useFeed, type FeedItem } from '@/hooks/useFeed';
+import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 import type { Category } from '@/types/database';
 import { useVote } from '@/hooks/useVote';
 import { useFavoriteIds } from '@/hooks/useFavoriteIds';
@@ -24,6 +25,7 @@ const PALETTE = ['#BB88EE', '#6699EE', '#44BBCC', '#77CC88', '#CCDD55', '#DDBB55
 
 export default function FeedScreen() {
   const currentUser = useAuthStore((s) => s.user);
+  const { data: flags } = useFeatureFlags();
   const { data: feed = [], isLoading, refetch, isRefetching } = useFeed();
   const { mutate: castVote } = useVote();
   const { data: favoriteIds = new Set<string>() } = useFavoriteIds();
@@ -207,6 +209,7 @@ export default function FeedScreen() {
                   index={index}
                   containerHeight={cardAreaHeight}
                   showSwipeHint={index === 0 && showSwipeHint}
+                  swipeEnabled={flags?.homeSwipeToSkipEnabled ?? false}
                 />
               );
             })

@@ -229,17 +229,6 @@ export default function PhotoDetailScreen() {
     <GestureDetector gesture={albumGesture}>
     <Animated.View style={[styles.root, slideStyle]}>
     <Pressable style={StyleSheet.absoluteFill} onLongPress={handleSaveImage} delayLongPress={600}>
-      {blurBg && (
-        <>
-          <Image
-            source={{ uri: p.thumbnail_url ?? p.image_url }}
-            style={StyleSheet.absoluteFill}
-            contentFit="cover"
-            blurRadius={18}
-          />
-          <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.35)' }]} />
-        </>
-      )}
       {isVideo ? (
         <VideoPlayer uri={p.image_url} muted={muted} contentFit={blurBg ? 'contain' : 'cover'} />
       ) : (

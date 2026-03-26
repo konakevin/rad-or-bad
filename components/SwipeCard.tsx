@@ -62,6 +62,7 @@ interface SwipeCardProps {
   index: number;
   containerHeight: number;
   showSwipeHint: boolean;
+  swipeEnabled?: boolean;
 }
 
 function CategoryPill({ category }: { category: string }) {
@@ -78,7 +79,7 @@ function CategoryPill({ category }: { category: string }) {
   );
 }
 
-export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost, onDismiss, onFavorite, onFollow, onUserPress, isTop, index, containerHeight, showSwipeHint }: SwipeCardProps) {
+export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost, onDismiss, onFavorite, onFollow, onUserPress, isTop, index, containerHeight, showSwipeHint, swipeEnabled = true }: SwipeCardProps) {
   const cardHeight = containerHeight > 0 ? containerHeight : SCREEN_HEIGHT * 0.65;
   const isVideo = item.media_type === 'video';
   const [muted, setMuted] = useState(true);
@@ -158,7 +159,7 @@ export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost,
   }
 
   const gesture = Gesture.Pan()
-    .enabled(isTop)
+    .enabled(isTop && swipeEnabled)
     .onBegin(() => {
       runOnJS(cancelDismissTimer)();
     })
@@ -220,17 +221,6 @@ export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost,
           const blurBg = needsBlurBackground(item.width, item.height, cardHeight);
           return (
             <>
-              {blurBg && (
-                <>
-                  <Image
-                    source={{ uri: item.thumbnail_url ?? item.image_url }}
-                    style={StyleSheet.absoluteFill}
-                    contentFit="cover"
-                    blurRadius={18}
-                  />
-                  <View style={[StyleSheet.absoluteFill, styles.blurOverlay]} />
-                </>
-              )}
               {isVideo ? (
                 <VideoView
                   player={videoPlayer}
@@ -353,14 +343,11 @@ const styles = StyleSheet.create({
     width: CARD_WIDTH,
     borderRadius: 0,
     overflow: 'hidden',
-    backgroundColor: '#1A1A1A',
+    backgroundColor: '#000000',
   },
   image: {
     width: '100%',
     height: '100%',
-  },
-  blurOverlay: {
-    backgroundColor: 'rgba(0,0,0,0.35)',
   },
   saveButton: {
     padding: 4,
