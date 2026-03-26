@@ -281,13 +281,14 @@ function CaughtUpState() {
 function CategorySection({ category }: { category: typeof CATEGORIES[0] }) {
   const { data } = useCategoryPosts(category.key, 3);
   const posts = data?.posts ?? [];
+  const albumIds = useMemo(() => posts.map((p) => p.id), [posts]);
   if (posts.length === 0) return null;
 
   return (
     <View style={styles.categorySection}>
       <Text style={[styles.categoryLabel, { color: category.color }]}>{category.label}</Text>
       {posts.map((post, i) => (
-        <RankCard key={post.id} post={post} rank={i + 1} height={135} />
+        <RankCard key={post.id} post={post} rank={i + 1} height={135} albumIds={albumIds} />
       ))}
     </View>
   );

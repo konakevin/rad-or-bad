@@ -91,12 +91,11 @@ export default function PhotoDetailScreen() {
   }
 
   const albumGesture = Gesture.Pan()
-    .enabled(isInAlbum)
     .activeOffsetY([-15, 15])
     .onUpdate((e) => {
       const canGoUp = nextId !== null;
       const canGoDown = prevId !== null;
-      if ((e.translationY < 0 && canGoUp) || (e.translationY > 0 && canGoDown)) {
+      if ((e.translationY < 0 && canGoUp) || (e.translationY > 0 && canGoDown) || (e.translationY > 0 && !isInAlbum)) {
         slideY.value = e.translationY;
       } else {
         slideY.value = e.translationY * 0.1;
@@ -104,14 +103,19 @@ export default function PhotoDetailScreen() {
     })
     .onEnd((e) => {
       if (e.translationY < -SWIPE_THRESHOLD && nextId) {
-        // Swipe up → next photo enters from below
+        // Swipe up → next photo
         slideY.value = withTiming(-SCREEN_HEIGHT, { duration: 220 }, () => {
           runOnJS(swapToId)(nextId, SCREEN_HEIGHT);
         });
       } else if (e.translationY > SWIPE_THRESHOLD && prevId) {
-        // Swipe down → prev photo enters from above
+        // Swipe down → prev photo
         slideY.value = withTiming(SCREEN_HEIGHT, { duration: 220 }, () => {
           runOnJS(swapToId)(prevId, -SCREEN_HEIGHT);
+        });
+      } else if (e.translationY > SWIPE_THRESHOLD && !prevId) {
+        // Swipe down with no prev → dismiss modal
+        slideY.value = withTiming(SCREEN_HEIGHT, { duration: 220 }, () => {
+          runOnJS(router.back)();
         });
       } else {
         slideY.value = withSpring(0, { damping: 20, stiffness: 200 });

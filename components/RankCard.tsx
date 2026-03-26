@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import MaskedView from '@react-native-masked-view/masked-view';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
+import { useAlbumStore } from '@/store/album';
 import { getRating } from '@/lib/getRating';
 import { formatCount } from '@/lib/formatCount';
 import type { ExplorePost } from '@/hooks/useCategoryPosts';
@@ -12,15 +13,25 @@ interface RankCardProps {
   post: ExplorePost;
   rank: number;
   height?: number;
+  albumIds?: string[];
 }
 
-export function RankCard({ post, rank, height = 150 }: RankCardProps) {
+export function RankCard({ post, rank, height = 150, albumIds }: RankCardProps) {
   const rating = getRating(post.rad_votes, post.total_votes);
+
+  function handlePress() {
+    if (albumIds?.length) {
+      useAlbumStore.getState().setAlbum(albumIds);
+    } else {
+      useAlbumStore.getState().clearAlbum();
+    }
+    router.push(`/photo/${post.id}`);
+  }
 
   return (
     <TouchableOpacity
       style={styles.shadow}
-      onPress={() => router.push(`/photo/${post.id}`)}
+      onPress={handlePress}
       activeOpacity={0.92}
     >
       <View style={[styles.card, { height }]}>

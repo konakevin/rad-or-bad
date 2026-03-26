@@ -4,7 +4,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useCategoryPosts } from '@/hooks/useCategoryPosts';
 import type { Category } from '@/types/database';
 import { RankCard } from '@/components/RankCard';
@@ -31,6 +31,7 @@ export default function TopScreen() {
 
   const { data, isLoading } = useCategoryPosts(selected, 10);
   const posts = data?.posts ?? [];
+  const albumIds = useMemo(() => posts.map((p) => p.id), [posts]);
   const activeCategory = CATEGORIES.find((c) => c.key === selected);
 
   return (
@@ -84,7 +85,7 @@ export default function TopScreen() {
           contentContainerStyle={styles.scrollContent}
         >
           {posts.map((post, i) => (
-            <RankCard key={post.id} post={post} rank={i + 1} />
+            <RankCard key={post.id} post={post} rank={i + 1} albumIds={albumIds} />
           ))}
         </ScrollView>
       )}
