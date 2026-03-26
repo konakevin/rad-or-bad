@@ -22,7 +22,7 @@ import { getRating } from '@/lib/getRating';
 import { formatCount } from '@/lib/formatCount';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-const CARD_WIDTH = SCREEN_WIDTH - 16;
+const CARD_WIDTH = SCREEN_WIDTH;
 const DISMISS_THRESHOLD = SCREEN_HEIGHT * 0.18;
 const SPRING_CONFIG = { damping: 20, stiffness: 200 };
 
@@ -277,14 +277,9 @@ const styles = StyleSheet.create({
   card: {
     position: 'absolute',
     width: CARD_WIDTH,
-    borderRadius: 20,
+    borderRadius: 0,
     overflow: 'hidden',
     backgroundColor: '#1A1A1A',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.4,
-    shadowRadius: 16,
-    elevation: 8,
   },
   image: {
     width: '100%',
