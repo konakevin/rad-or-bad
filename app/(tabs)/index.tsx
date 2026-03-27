@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import Animated, { useSharedValue, useAnimatedStyle, withTiming, withRepeat, withSequence, Easing } from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming, withRepeat, withSequence, withSpring, Easing } from 'react-native-reanimated';
 
 const TREADMILL_COLORS = [
   '#BB88EE', '#6699EE', '#44BBCC', '#77CC88',
@@ -10,6 +10,11 @@ const TREADMILL_COLORS = [
 ] as const;
 const TREADMILL_WIDTH = 1280;
 const TREADMILL_SCROLL = 640;
+
+const BURST_COUNT = 12;
+const BURST_ANGLES = Array.from({ length: BURST_COUNT }, (_, i) => (i * Math.PI * 2) / BURST_COUNT);
+const RAD_PARTICLE_COLORS  = ['#FFEE88', '#DDAA66', '#FFFFFF', '#FFCC44', '#DDBB55', '#FFF0AA', '#DD7766', '#FFCC44', '#FFFFFF', '#DDAA66', '#FFEE88', '#CCDD55'];
+const BAD_PARTICLE_COLORS  = ['#AABBFF', '#6699EE', '#FFFFFF', '#BB88EE', '#44BBCC', '#DDAAFF', '#9966FF', '#AABBFF', '#FFFFFF', '#6699EE', '#BB88EE', '#44BBCC'];
 import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -53,8 +58,17 @@ export default function FeedScreen() {
   const [sessionVotes, setSessionVotes] = useState<Map<string, 'rad' | 'bad'>>(new Map());
   const [cardAreaHeight, setCardAreaHeight] = useState(0);
   const [showSwipeHint, setShowSwipeHint] = useState(false);
+  const [headerRowSize, setHeaderRowSize] = useState({ width: 0, height: 0 });
   const loadedFeedKey = useRef('');
   const sessionVotesRef = useRef(sessionVotes);
+  const headerTreadmillX = useSharedValue(-(Math.random() * TREADMILL_SCROLL));
+  const headerTreadmillStyle = useAnimatedStyle(() => ({ transform: [{ translateX: headerTreadmillX.value }] }));
+  useEffect(() => {
+    headerTreadmillX.value = withRepeat(
+      withTiming(0, { duration: 16000, easing: Easing.linear }),
+      -1, true,
+    );
+  }, []);
   useEffect(() => { sessionVotesRef.current = sessionVotes; }, [sessionVotes]);
   const spinnerColor = colors.textSecondary;
 
@@ -177,30 +191,40 @@ export default function FeedScreen() {
     <SafeAreaView style={styles.root}>
       {/* Header */}
       <View style={styles.header}>
-        <View style={styles.headerWordRow}>
-          {/* RAD — warm amber → orange, not full red */}
-          <MaskedView maskElement={<Text style={styles.headerTitle}>RAD</Text>}>
-            <LinearGradient
-              colors={gradients.rad}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
-              <Text style={[styles.headerTitle, styles.invisible]}>RAD</Text>
-            </LinearGradient>
-          </MaskedView>
-
-          <Text style={styles.headerOr}>OR</Text>
-
-          <MaskedView maskElement={<Text style={styles.headerTitle}>BAD</Text>}>
-            <LinearGradient
-              colors={gradients.bad}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
-              <Text style={[styles.headerTitle, styles.invisible]}>BAD</Text>
-            </LinearGradient>
-          </MaskedView>
+        {/* Hidden sizer — measures the row before the masked version renders */}
+        <View
+          pointerEvents="none"
+          style={{ position: 'absolute', opacity: 0 }}
+          onLayout={(e) => setHeaderRowSize({ width: e.nativeEvent.layout.width, height: e.nativeEvent.layout.height })}
+        >
+          <View style={styles.headerWordRow}>
+            <Text style={styles.headerTitle}>RAD</Text>
+            <Text style={styles.headerOr}>OR</Text>
+            <Text style={styles.headerTitle}>BAD</Text>
+          </View>
         </View>
+
+        {headerRowSize.width > 0 && (
+          <MaskedView
+            style={{ width: headerRowSize.width, height: headerRowSize.height }}
+            maskElement={
+              <View style={styles.headerWordRow}>
+                <Text style={styles.headerTitle}>RAD</Text>
+                <Text style={styles.headerOr}>OR</Text>
+                <Text style={styles.headerTitle}>BAD</Text>
+              </View>
+            }
+          >
+            <Animated.View style={headerTreadmillStyle}>
+              <LinearGradient
+                colors={TREADMILL_COLORS}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={{ width: TREADMILL_WIDTH, height: headerRowSize.height }}
+              />
+            </Animated.View>
+          </MaskedView>
+        )}
         {isRefetching && <ActivityIndicator size="small" color={colors.textSecondary} style={styles.headerSpinner} />}
       </View>
 
@@ -244,41 +268,8 @@ export default function FeedScreen() {
           <AlreadyVotedRow />
         ) : (
           <View style={styles.actionRow}>
-            <View style={styles.badGlow}>
-              <TouchableOpacity
-                style={styles.voteButton}
-                activeOpacity={0.8}
-                onPress={() => handleVote(topItem, 'bad')}
-                disabled={topItemVoted}
-              >
-                <LinearGradient
-                  colors={gradients.bad}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={StyleSheet.absoluteFill}
-                />
-                <Ionicons name="thumbs-down" size={26} color="#FFFFFF" />
-                <Text style={styles.voteButtonText}>BAD</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.radGlow}>
-              <TouchableOpacity
-                style={styles.voteButton}
-                activeOpacity={0.8}
-                onPress={() => handleVote(topItem, 'rad')}
-                disabled={topItemVoted}
-              >
-                <LinearGradient
-                  colors={gradients.rad}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={StyleSheet.absoluteFill}
-                />
-                <Ionicons name="thumbs-up" size={26} color="#FFFFFF" />
-                <Text style={styles.voteButtonText}>RAD</Text>
-              </TouchableOpacity>
-            </View>
+            <VoteButtonWithBurst vote="bad" onPress={() => handleVote(topItem, 'bad')} disabled={topItemVoted} />
+            <VoteButtonWithBurst vote="rad" onPress={() => handleVote(topItem, 'rad')} disabled={topItemVoted} />
           </View>
         )
       )}
@@ -287,9 +278,81 @@ export default function FeedScreen() {
   );
 }
 
+function Particle({ angle, distance, color, progress }: { angle: number; distance: number; color: string; progress: Animated.SharedValue<number> }) {
+  const style = useAnimatedStyle(() => {
+    const p = progress.value;
+    const dist = distance * p;
+    const opacity = 1 - p;
+    return {
+      opacity,
+      transform: [
+        { translateX: Math.cos(angle) * dist },
+        { translateY: Math.sin(angle) * dist },
+        { scale: 0.4 + p * 0.6 },
+      ],
+    };
+  });
+  return <Animated.View style={[styles.burstParticle, { backgroundColor: color }, style]} />;
+}
+
+function BurstEffect({ progresses, vote }: { progresses: Animated.SharedValue<number>[]; vote: 'rad' | 'bad' }) {
+  const colors = vote === 'rad' ? RAD_PARTICLE_COLORS : BAD_PARTICLE_COLORS;
+  const distances = useMemo(() => BURST_ANGLES.map((_, i) => 70 + (i % 4) * 18), []);
+  return (
+    <View style={styles.burstContainer} pointerEvents="none">
+      {BURST_ANGLES.map((angle, i) => (
+        <Particle key={i} angle={angle} distance={distances[i]} color={colors[i]} progress={progresses[i]} />
+      ))}
+    </View>
+  );
+}
+
+function VoteButtonWithBurst({ vote, onPress, disabled }: { vote: 'rad' | 'bad'; onPress: () => void; disabled: boolean }) {
+  // Pre-create one shared value per particle so animation fires on the UI thread immediately
+  const p0 = useSharedValue(0); const p1 = useSharedValue(0); const p2 = useSharedValue(0);
+  const p3 = useSharedValue(0); const p4 = useSharedValue(0); const p5 = useSharedValue(0);
+  const p6 = useSharedValue(0); const p7 = useSharedValue(0); const p8 = useSharedValue(0);
+  const p9 = useSharedValue(0); const p10 = useSharedValue(0); const p11 = useSharedValue(0);
+  const progresses = [p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11];
+
+  const buttonScale = useSharedValue(1);
+  const buttonStyle = useAnimatedStyle(() => ({ transform: [{ scale: buttonScale.value }] }));
+  const isRad = vote === 'rad';
+
+  function handlePress() {
+    progresses.forEach((p) => {
+      p.value = 0;
+      p.value = withTiming(1, { duration: 700, easing: Easing.out(Easing.quad) });
+    });
+    buttonScale.value = withSequence(
+      withTiming(0.84, { duration: 5 }),
+      withTiming(1, { duration: 180, easing: Easing.out(Easing.quad) }),
+    );
+    onPress();
+  }
+
+  return (
+    <View style={styles.burstWrapper}>
+      <BurstEffect progresses={progresses} vote={vote} />
+      <Animated.View style={[isRad ? styles.radGlow : styles.badGlow, buttonStyle]}>
+        <TouchableOpacity style={styles.voteButton} activeOpacity={0.8} onPress={handlePress} disabled={disabled}>
+          <LinearGradient
+            colors={isRad ? gradients.rad : gradients.bad}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={StyleSheet.absoluteFill}
+          />
+          <Ionicons name={isRad ? 'thumbs-up' : 'thumbs-down'} size={26} color="#FFFFFF" />
+          <Text style={styles.voteButtonText}>{isRad ? 'RAD' : 'BAD'}</Text>
+        </TouchableOpacity>
+      </Animated.View>
+    </View>
+  );
+}
+
 function AlreadyVotedRow() {
   const chevronY = useSharedValue(0);
-  const treadmillX = useSharedValue(-TREADMILL_SCROLL);
+  const treadmillX = useSharedValue(-(Math.random() * TREADMILL_SCROLL));
   const [labelWidth, setLabelWidth] = useState(0);
 
   useEffect(() => {
@@ -301,7 +364,7 @@ function AlreadyVotedRow() {
       -1, false,
     );
     treadmillX.value = withRepeat(
-      withTiming(0, { duration: 12000, easing: Easing.linear }),
+      withTiming(0, { duration: 16000, easing: Easing.linear }),
       -1, true,
     );
   }, []);
@@ -510,5 +573,22 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     letterSpacing: 0.3,
     marginBottom: 4,
+  },
+  burstWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  burstContainer: {
+    position: 'absolute',
+    width: 220,
+    height: 220,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  burstParticle: {
+    position: 'absolute',
+    width: 11,
+    height: 11,
+    borderRadius: 6,
   },
 });

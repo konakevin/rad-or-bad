@@ -98,6 +98,10 @@ export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost,
   const [catsExpanded, setCatsExpanded] = useState(false);
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
+  const canSwipeUp = useSharedValue(userVote !== null || isOwnPost || isAlreadyVoted);
+  useEffect(() => {
+    canSwipeUp.value = userVote !== null || isOwnPost || isAlreadyVoted;
+  }, [userVote, isOwnPost, isAlreadyVoted]);
   const scoreOpacity = useSharedValue(0);
   const scoreScale = useSharedValue(0.4);
   const dismissTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -156,6 +160,7 @@ export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost,
       runOnJS(cancelDismissTimer)();
     })
     .onUpdate((e) => {
+      if (!canSwipeUp.value) return;
       if (e.translationY < 0) {
         // Upward — left lean is free, rightward drift is heavily resisted
         translateX.value = e.translationX < 0 ? e.translationX : e.translationX * 0.08;
@@ -167,7 +172,7 @@ export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost,
       }
     })
     .onEnd((e) => {
-      const swipedUp = e.translationY < -DISMISS_THRESHOLD;
+      const swipedUp = e.translationY < -DISMISS_THRESHOLD && canSwipeUp.value;
       if (swipedUp) {
         // Only carry leftward lean on exit, never rightward
         const exitX = Math.min(e.translationX, 0) * 3;

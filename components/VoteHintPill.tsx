@@ -46,7 +46,7 @@ interface VoteHintPillProps {
 
 export function VoteHintPill({ hasVoted }: VoteHintPillProps) {
   const [hintWidth, setHintWidth] = useState(0);
-  const treadmillX = useSharedValue(-TREADMILL_SCROLL);
+  const treadmillX = useSharedValue(-(Math.random() * TREADMILL_SCROLL));
 
   useEffect(() => {
     if (hasVoted) {
@@ -54,7 +54,7 @@ export function VoteHintPill({ hasVoted }: VoteHintPillProps) {
       return;
     }
     treadmillX.value = withRepeat(
-      withTiming(0, { duration: 12000, easing: Easing.linear }),
+      withTiming(0, { duration: 16000, easing: Easing.linear }),
       -1,
       true
     );
