@@ -50,7 +50,8 @@
       "expo-secure-store",
       "expo-web-browser",
       "expo-video",
-      "react-native-compressor"
+      "react-native-compressor",
+      "@react-native-google-signin/google-signin"
     ],
     "experiments": {
       "typedRoutes": true,

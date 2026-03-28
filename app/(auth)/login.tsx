@@ -8,6 +8,7 @@ import { Link, router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '@/lib/supabase';
+import { signInWithGoogle } from '@/lib/googleAuth';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -90,6 +91,38 @@ export default function LoginScreen() {
               {loading
                 ? <ActivityIndicator color="#fff" />
                 : <Text className="text-white font-bold text-base">Sign in</Text>}
+            </TouchableOpacity>
+
+            {/* Divider */}
+            <View className="flex-row items-center my-6">
+              <View className="flex-1 h-px bg-border" />
+              <Text className="text-text-secondary text-xs mx-4">OR</Text>
+              <View className="flex-1 h-px bg-border" />
+            </View>
+
+            {/* Google Sign-In */}
+            <TouchableOpacity
+              className="bg-card border border-border rounded-full py-4 flex-row items-center justify-center gap-3"
+              onPress={async () => {
+                try {
+                  setLoading(true);
+                  await signInWithGoogle();
+                  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                  router.replace('/(tabs)');
+                } catch (err: unknown) {
+                  const msg = (err as Error).message;
+                  if (!msg.includes('canceled') && !msg.includes('cancelled')) {
+                    Alert.alert('Google Sign-In failed', msg);
+                  }
+                } finally {
+                  setLoading(false);
+                }
+              }}
+              disabled={loading}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="logo-google" size={20} color="#FFFFFF" />
+              <Text className="text-white font-semibold text-base">Continue with Google</Text>
             </TouchableOpacity>
 
             <View className="flex-row justify-center mt-6">
