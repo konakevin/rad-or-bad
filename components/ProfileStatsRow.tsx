@@ -1,17 +1,19 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { colors } from '@/constants/theme';
 
-type Tab = 'posts' | 'followers' | 'following';
+export type StatsTab = 'posts' | 'followers' | 'following' | 'streaks';
 
 interface Props {
   postCount: number;
   followerCount: number;
   followingCount: number;
-  activeTab: Tab;
-  onTabChange: (tab: Tab) => void;
+  streakCount?: number;
+  activeTab: StatsTab;
+  onTabChange: (tab: StatsTab) => void;
 }
 
-export function ProfileStatsRow({ postCount, followerCount, followingCount, activeTab, onTabChange }: Props) {
+export function ProfileStatsRow({ postCount, followerCount, followingCount, streakCount, activeTab, onTabChange }: Props) {
   return (
     <View style={styles.statsRow}>
       <TouchableOpacity style={styles.stat} onPress={() => onTabChange('posts')} activeOpacity={0.7}>
@@ -27,6 +29,11 @@ export function ProfileStatsRow({ postCount, followerCount, followingCount, acti
       <TouchableOpacity style={styles.stat} onPress={() => onTabChange('following')} activeOpacity={0.7}>
         <Text style={styles.statNumber}>{followingCount}</Text>
         <Text style={[styles.statLabel, activeTab === 'following' && styles.statLabelActive]}>Following</Text>
+      </TouchableOpacity>
+      <View style={styles.statDivider} />
+      <TouchableOpacity style={styles.stat} onPress={() => onTabChange('streaks')} activeOpacity={0.7}>
+        <Ionicons name="flash" size={18} color={activeTab === 'streaks' ? colors.textPrimary : colors.textSecondary} />
+        <Text style={[styles.statLabel, activeTab === 'streaks' && styles.statLabelActive]}>Streaks</Text>
       </TouchableOpacity>
     </View>
   );

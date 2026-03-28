@@ -17,7 +17,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import MaskedView from '@react-native-masked-view/masked-view';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
-import { useFeed, type FeedItem } from '@/hooks/useFeed';
+import { useLocalSearchParams } from 'expo-router';
+import { useFeed, useFriendsFeed, type FeedItem } from '@/hooks/useFeed';
 import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 import { useVote } from '@/hooks/useVote';
 import { useUserVote } from '@/hooks/useUserVote';
@@ -41,8 +42,19 @@ import { CATEGORIES } from '@/constants/categories';
 
 export default function FeedScreen() {
   const currentUser = useAuthStore((s) => s.user);
+  const { mode } = useLocalSearchParams<{ mode?: string }>();
+  const [feedMode, setFeedMode] = useState<'default' | 'friends'>(mode === 'friends' ? 'friends' : 'default');
+
+  // Reset mode when route param changes
+  useEffect(() => {
+    if (mode === 'friends') setFeedMode('friends');
+  }, [mode]);
+
   const { data: flags } = useFeatureFlags();
-  const { data: feed = [], isLoading, refetch, isRefetching } = useFeed();
+  const defaultFeed = useFeed();
+  const friendsFeed = useFriendsFeed();
+  const activeFeed = feedMode === 'friends' ? friendsFeed : defaultFeed;
+  const { data: feed = [], isLoading, refetch, isRefetching } = activeFeed;
   const { mutate: castVote } = useVote();
   const { data: favoriteIds = new Set<string>() } = useFavoriteIds();
   const { mutate: toggleFavorite } = useToggleFavorite();
@@ -80,6 +92,14 @@ export default function FeedScreen() {
       if (!val) setShowSwipeHint(true);
     });
   }, []);
+
+  // When feed mode changes, wipe the deck and refetch
+  useEffect(() => {
+    loadedFeedKey.current = '';
+    setDeck([]);
+    setSessionVotes(new Map());
+    setMilestoneHit(null);
+  }, [feedMode]);
 
   // When a new upload happens, wipe the deck so the feed refetches from scratch
   useEffect(() => {
@@ -240,6 +260,19 @@ export default function FeedScreen() {
         )}
         {isRefetching && <ActivityIndicator size="small" color={colors.textSecondary} style={styles.headerSpinner} />}
       </View>
+
+      {/* Friends feed mode pill */}
+      {feedMode === 'friends' && (
+        <View style={styles.friendsPillRow}>
+          <View style={styles.friendsPill}>
+            <Ionicons name="flash" size={14} color="#FFD700" />
+            <Text style={styles.friendsPillText}>Friends' picks</Text>
+            <TouchableOpacity onPress={() => setFeedMode('default')} hitSlop={8}>
+              <Ionicons name="close-circle" size={18} color={colors.textSecondary} />
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
 
       {/* Card stack */}
       <View style={styles.cardArea} onLayout={(e) => setCardAreaHeight(e.nativeEvent.layout.height)}>
@@ -461,6 +494,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     backgroundColor: colors.background,
+  },
+  friendsPillRow: {
+    alignItems: 'center',
+    paddingBottom: 6,
+  },
+  friendsPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  friendsPillText: {
+    color: colors.textPrimary,
+    fontSize: 13,
+    fontWeight: '600',
   },
   headerWordRow: {
     flexDirection: 'row',

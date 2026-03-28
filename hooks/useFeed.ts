@@ -32,11 +32,32 @@ async function fetchFeed(userId: string): Promise<FeedItem[]> {
   return (data ?? []) as FeedItem[];
 }
 
+async function fetchFriendsFeed(userId: string): Promise<FeedItem[]> {
+  const { data, error } = await supabase.rpc('get_friends_feed', {
+    p_user_id: userId,
+    p_limit: 50,
+  });
+
+  if (error) throw error;
+
+  return (data ?? []) as FeedItem[];
+}
+
 export function useFeed() {
   const user = useAuthStore((s) => s.user);
   return useQuery({
     queryKey: ['feed', user?.id],
     queryFn: () => fetchFeed(user!.id),
+    enabled: !!user,
+    staleTime: 120_000,
+  });
+}
+
+export function useFriendsFeed() {
+  const user = useAuthStore((s) => s.user);
+  return useQuery({
+    queryKey: ['friendsFeed', user?.id],
+    queryFn: () => fetchFriendsFeed(user!.id),
     enabled: !!user,
     staleTime: 120_000,
   });

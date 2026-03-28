@@ -13,12 +13,15 @@ import { useToggleFollow } from '@/hooks/useToggleFollow';
 import { PostGrid } from '@/components/PostGrid';
 import { GradientUsername } from '@/components/GradientUsername';
 import { colors } from '@/constants/theme';
-import { ProfileStatsRow } from '@/components/ProfileStatsRow';
+import { ProfileStatsRow, type StatsTab } from '@/components/ProfileStatsRow';
 import { FollowUserRow } from '@/components/FollowUserRow';
+import { StreakRow, StreakEmptyState, VoteWithFriendsButton } from '@/components/StreakRow';
+import { useTopStreaks } from '@/hooks/useTopStreaks';
 import { FlatList } from 'react-native';
 import type { FollowUser } from '@/hooks/useFollowersList';
+import type { VibeSyncStreak } from '@/hooks/useTopStreaks';
 
-type Tab = 'posts' | 'saved' | 'followers' | 'following';
+type Tab = 'posts' | 'saved' | 'followers' | 'following' | 'streaks';
 
 export default function ProfileScreen() {
   const user = useAuthStore((s) => s.user);
@@ -29,17 +32,18 @@ export default function ProfileScreen() {
   const { data: following = [], isLoading: loadingFollowing } = useFollowingList(user?.id ?? '');
   const { data: followingIds = new Set<string>() } = useFollowingIds();
   const { mutate: toggleFollow } = useToggleFollow();
+  const { data: streaks = [], isLoading: loadingStreaks } = useTopStreaks(user?.id ?? '');
 
   function handleFollowUser(targetId: string) {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     toggleFollow({ userId: targetId, currentlyFollowing: followingIds.has(targetId) });
   }
 
-  function handleStatsTabChange(tab: 'posts' | 'followers' | 'following') {
+  function handleStatsTabChange(tab: StatsTab) {
     setActiveTab(tab);
   }
 
-  const statsActiveTab: 'posts' | 'followers' | 'following' =
+  const statsActiveTab: StatsTab =
     activeTab === 'saved' ? 'posts' : activeTab;
 
   const header = (
@@ -106,6 +110,28 @@ export default function ProfileScreen() {
           isOwn={activeTab === 'posts'}
           emptyText={activeTab === 'posts' ? 'No posts yet' : 'Nothing saved yet'}
           ListHeaderComponent={header}
+        />
+      </SafeAreaView>
+    );
+  }
+
+  if (activeTab === 'streaks') {
+    return (
+      <SafeAreaView style={styles.root}>
+        <FlatList<VibeSyncStreak>
+          key="streaks"
+          data={streaks}
+          keyExtractor={(item) => item.friendId}
+          ListHeaderComponent={<>{header}<VoteWithFriendsButton /></>}
+          ListEmptyComponent={
+            <View style={styles.center}>
+              {loadingStreaks
+                ? <ActivityIndicator color={colors.textSecondary} />
+                : <StreakEmptyState />
+              }
+            </View>
+          }
+          renderItem={({ item }) => <StreakRow streak={item} />}
         />
       </SafeAreaView>
     );

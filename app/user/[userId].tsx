@@ -13,11 +13,14 @@ import { useAuthStore } from '@/store/auth';
 import { PostGrid } from '@/components/PostGrid';
 import { GradientUsername } from '@/components/GradientUsername';
 import { colors } from '@/constants/theme';
-import { ProfileStatsRow } from '@/components/ProfileStatsRow';
+import { ProfileStatsRow, type StatsTab } from '@/components/ProfileStatsRow';
 import { FollowUserRow } from '@/components/FollowUserRow';
+import { StreakRow, StreakEmptyState, VoteWithFriendsButton } from '@/components/StreakRow';
+import { useTopStreaks } from '@/hooks/useTopStreaks';
 import type { FollowUser } from '@/hooks/useFollowersList';
+import type { VibeSyncStreak } from '@/hooks/useTopStreaks';
 
-type Tab = 'posts' | 'followers' | 'following';
+type Tab = 'posts' | 'followers' | 'following' | 'streaks';
 
 export default function PublicProfileScreen() {
   const { userId, viewedPost } = useLocalSearchParams<{ userId: string; viewedPost?: string }>();
@@ -31,6 +34,7 @@ export default function PublicProfileScreen() {
   const { data: following = [], isLoading: loadingFollowing } = useFollowingList(userId);
   const { data: followingIds = new Set<string>() } = useFollowingIds();
   const { mutate: toggleFollow } = useToggleFollow();
+  const { data: streaks = [], isLoading: loadingStreaks } = useTopStreaks(userId);
 
   const isFollowing = followingIds.has(userId);
 
@@ -103,6 +107,29 @@ export default function PublicProfileScreen() {
           emptyText="No posts yet"
           ListHeaderComponent={header}
           highlightPostId={viewedPost}
+        />
+      </SafeAreaView>
+    );
+  }
+
+  if (activeTab === 'streaks') {
+    return (
+      <SafeAreaView style={styles.root}>
+        {backButton}
+        <FlatList<VibeSyncStreak>
+          key="streaks"
+          data={streaks}
+          keyExtractor={(item) => item.friendId}
+          ListHeaderComponent={<>{header}<VoteWithFriendsButton /></>}
+          ListEmptyComponent={
+            <View style={styles.center}>
+              {loadingStreaks
+                ? <ActivityIndicator color={colors.textSecondary} />
+                : <StreakEmptyState />
+              }
+            </View>
+          }
+          renderItem={({ item }) => <StreakRow streak={item} />}
         />
       </SafeAreaView>
     );
