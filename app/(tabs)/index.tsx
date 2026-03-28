@@ -254,7 +254,11 @@ export default function FeedScreen() {
     refetch();
   }, [refreshToken]);
 
-  const topCards = deck.filter((item) => !sessionVotes.has(item.id)).slice(0, 3);
+  // Show top 3 from deck. The top card stays even after voting (for animations).
+  // Behind it, skip any voted cards so the next card is always fresh.
+  const topCard = deck[0];
+  const behindCards = deck.slice(1).filter((item) => !sessionVotes.has(item.id)).slice(0, 2);
+  const topCards = topCard ? [topCard, ...behindCards] : [];
   const topItem = topCards[0];
   const topItemVoted = topItem ? sessionVotes.has(topItem.id) : false;
   // Reset dismissing flag when top item changes
