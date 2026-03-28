@@ -127,7 +127,7 @@ export default function FeedScreen() {
     setDeck([]);
     setMilestoneHit(null);
     setFriendRevealPostId(null);
-    clearLocalStreaks();
+    // Don't clear localStreaks — they should persist for the profile streaks tab
     // Force refetch to ensure fresh data
     refetch();
   }, [feedMode]);
