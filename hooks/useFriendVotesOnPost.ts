@@ -24,6 +24,7 @@ export function useFriendVotesOnPost(uploadId: string | null) {
         avatar_url: (row.friend_avatar as string | null) ?? null,
         user_rank: (row.friend_rank as string | null) ?? null,
         vote: row.vote as 'rad' | 'bad',
+        streak: (row.streak as number) ?? 0,
       }));
     },
     enabled: !!user && !!uploadId,

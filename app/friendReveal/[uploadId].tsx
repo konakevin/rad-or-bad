@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
@@ -10,41 +10,36 @@ import Animated, {
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { usePost } from '@/hooks/usePost';
-import { useVote } from '@/hooks/useVote';
 import { useFriendVotesOnPost } from '@/hooks/useFriendVotesOnPost';
 import { GradientUsername } from '@/components/GradientUsername';
-import { VoteButton } from '@/components/VoteButton';
 import { colors } from '@/constants/theme';
 import type { FriendVote } from '@/hooks/useFeed';
 
-// ── Friend row with blurred/revealed vote ────────────────────────────────────
+// ── Friend row with animated reveal ─────────────────────────────────────────
 
-function FriendRevealRow({ friend, userVote, index, revealed }: {
+function FriendRevealRow({ friend, userVote, index }: {
   friend: FriendVote;
-  userVote: 'rad' | 'bad' | null;
+  userVote: 'rad' | 'bad';
   index: number;
-  revealed: boolean;
 }) {
   const opacity = useSharedValue(0);
   const scale = useSharedValue(0.8);
   const bgOpacity = useSharedValue(0);
 
-  const isMatch = userVote !== null && friend.vote === userVote;
+  const isMatch = friend.vote === userVote;
 
   useEffect(() => {
-    if (!revealed) return;
-    const delay = index * 80;
+    const delay = 150 + index * 80;
     opacity.value = withDelay(delay, withTiming(1, { duration: 200 }));
     scale.value = withDelay(delay, withSequence(
       withTiming(1.08, { duration: 150, easing: Easing.out(Easing.quad) }),
       withTiming(1, { duration: 100 }),
     ));
-    // Flash the row background
     bgOpacity.value = withDelay(delay, withSequence(
       withTiming(0.3, { duration: 100 }),
       withTiming(0.08, { duration: 400 }),
     ));
-  }, [revealed]);
+  }, []);
 
   const revealStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,
@@ -62,12 +57,7 @@ function FriendRevealRow({ friend, userVote, index, revealed }: {
   return (
     <Animated.View style={[styles.friendRow, rowBgStyle]}>
       {/* Avatar + username */}
-      <TouchableOpacity
-        style={styles.friendInfo}
-        onPress={() => router.push(`/user/${friend.username}`)}
-        activeOpacity={0.7}
-        disabled
-      >
+      <View style={styles.friendInfo}>
         {friend.avatar_url ? (
           <Image source={{ uri: friend.avatar_url }} style={styles.friendAvatar} />
         ) : (
@@ -80,35 +70,31 @@ function FriendRevealRow({ friend, userVote, index, revealed }: {
           rank={friend.user_rank}
           style={styles.friendUsername}
         />
-      </TouchableOpacity>
+      </View>
 
-      {/* Vote badge — blurred or revealed */}
-      {!revealed ? (
-        <View style={styles.blurredBadge}>
-          <Text style={styles.blurredText}>?</Text>
-        </View>
-      ) : (
-        <Animated.View style={[
-          styles.revealedBadge,
-          isMatch ? styles.matchBadge : styles.mismatchBadge,
-          revealStyle,
+      {/* Vote badge — staggered reveal */}
+      <Animated.View style={[
+        styles.revealedBadge,
+        isMatch ? styles.matchBadge : styles.mismatchBadge,
+        revealStyle,
+      ]}>
+        <Ionicons
+          name={friend.vote === 'rad' ? 'thumbs-up' : 'thumbs-down'}
+          size={14}
+          color={friend.vote === 'rad' ? '#FFD700' : '#6699EE'}
+        />
+        <Text style={[
+          styles.revealedText,
+          { color: friend.vote === 'rad' ? '#FFD700' : '#6699EE' },
         ]}>
-          <Ionicons
-            name={friend.vote === 'rad' ? 'thumbs-up' : 'thumbs-down'}
-            size={14}
-            color={friend.vote === 'rad' ? '#FFD700' : '#6699EE'}
-          />
-          <Text style={[
-            styles.revealedText,
-            { color: friend.vote === 'rad' ? '#FFD700' : '#6699EE' },
-          ]}>
-            {friend.vote === 'rad' ? 'RAD' : 'BAD'}
-          </Text>
-          {isMatch && (
-            <Ionicons name="checkmark-circle" size={14} color="#4CAF50" style={{ marginLeft: 2 }} />
-          )}
-        </Animated.View>
-      )}
+          {friend.vote === 'rad' ? 'RAD' : 'BAD'}
+        </Text>
+        {isMatch ? (
+          <Ionicons name="checkmark-circle" size={14} color="#4CAF50" style={{ marginLeft: 2 }} />
+        ) : (
+          <Ionicons name="close-circle" size={14} color="#F4212E" style={{ marginLeft: 2 }} />
+        )}
+      </Animated.View>
     </Animated.View>
   );
 }
@@ -116,37 +102,23 @@ function FriendRevealRow({ friend, userVote, index, revealed }: {
 // ── Main screen ──────────────────────────────────────────────────────────────
 
 export default function FriendRevealScreen() {
-  const { uploadId } = useLocalSearchParams<{ uploadId: string }>();
+  const { uploadId, vote } = useLocalSearchParams<{ uploadId: string; vote: string }>();
+  const userVote = (vote === 'rad' || vote === 'bad') ? vote : 'rad';
   const { data: post } = usePost(uploadId);
   const { data: friendVotes = [] } = useFriendVotesOnPost(uploadId);
-  const { mutate: castVote } = useVote();
 
-  const [userVote, setUserVote] = useState<'rad' | 'bad' | null>(null);
-  const [revealed, setRevealed] = useState(false);
-
-  function handleVote(vote: 'rad' | 'bad') {
-    if (userVote) return;
-    setUserVote(vote);
-
-    Haptics.impactAsync(
-      vote === 'rad' ? Haptics.ImpactFeedbackStyle.Medium : Haptics.ImpactFeedbackStyle.Light
-    );
-    castVote({ uploadId, vote });
-
-    // Reveal after a brief dramatic pause
-    setTimeout(() => {
-      setRevealed(true);
-      const hasMatches = friendVotes.some((f) => f.vote === vote);
-      if (hasMatches) {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      } else {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      }
-    }, 300);
-  }
-
-  const matchCount = userVote ? friendVotes.filter((f) => f.vote === userVote).length : 0;
+  const matchCount = friendVotes.filter((f) => f.vote === userVote).length;
   const thumbnailUrl = post?.thumbnail_url ?? post?.image_url;
+
+  // Haptic on mount based on match results
+  useEffect(() => {
+    if (!friendVotes.length) return;
+    if (matchCount > 0) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } else {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    }
+  }, [friendVotes.length]);
 
   return (
     <SafeAreaView style={styles.root}>
@@ -159,17 +131,37 @@ export default function FriendRevealScreen() {
         <View style={{ width: 28 }} />
       </View>
 
-      {/* Post thumbnail */}
-      {thumbnailUrl && (
-        <View style={styles.thumbnailContainer}>
+      {/* Post thumbnail + your vote */}
+      <View style={styles.thumbnailContainer}>
+        {thumbnailUrl && (
           <Image source={{ uri: thumbnailUrl }} style={styles.thumbnail} contentFit="cover" />
-          {post?.caption && (
-            <Text style={styles.thumbnailCaption} numberOfLines={1}>{post.caption}</Text>
-          )}
+        )}
+        <View style={styles.yourVotePill}>
+          <Ionicons
+            name={userVote === 'rad' ? 'thumbs-up' : 'thumbs-down'}
+            size={12}
+            color={userVote === 'rad' ? '#FFD700' : '#6699EE'}
+          />
+          <Text style={[styles.yourVoteText, { color: userVote === 'rad' ? '#FFD700' : '#6699EE' }]}>
+            You voted {userVote.toUpperCase()}
+          </Text>
         </View>
-      )}
+        {post?.caption && (
+          <Text style={styles.thumbnailCaption} numberOfLines={1}>{post.caption}</Text>
+        )}
+      </View>
 
-      {/* Friend list */}
+      {/* Summary */}
+      <View style={styles.resultSummary}>
+        <Text style={styles.resultText}>
+          {matchCount > 0
+            ? `${matchCount} ${matchCount === 1 ? 'match' : 'matches'} out of ${friendVotes.length}`
+            : 'No matches this time!'
+          }
+        </Text>
+      </View>
+
+      {/* Friend list — votes reveal with staggered animation */}
       <FlatList
         data={friendVotes}
         keyExtractor={(item) => item.username}
@@ -179,7 +171,6 @@ export default function FriendRevealScreen() {
             friend={item}
             userVote={userVote}
             index={index}
-            revealed={revealed}
           />
         )}
         ListEmptyComponent={
@@ -188,29 +179,6 @@ export default function FriendRevealScreen() {
           </View>
         }
       />
-
-      {/* Result summary (after reveal) */}
-      {revealed && (
-        <View style={styles.resultSummary}>
-          <Text style={styles.resultText}>
-            {matchCount > 0
-              ? `You matched with ${matchCount} ${matchCount === 1 ? 'friend' : 'friends'}!`
-              : 'No matches this time!'
-            }
-          </Text>
-        </View>
-      )}
-
-      {/* Vote buttons (before voting) */}
-      {!userVote && (
-        <View style={styles.voteRow}>
-          <Text style={styles.votePrompt}>Cast your vote to reveal</Text>
-          <View style={styles.voteButtons}>
-            <VoteButton vote="bad" onPress={() => handleVote('bad')} disabled={false} size={60} />
-            <VoteButton vote="rad" onPress={() => handleVote('rad')} disabled={false} size={60} />
-          </View>
-        </View>
-      )}
     </SafeAreaView>
   );
 }
@@ -245,12 +213,38 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: colors.surface,
   },
+  yourVotePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  yourVoteText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
   thumbnailCaption: {
     color: colors.textSecondary,
     fontSize: 13,
     fontWeight: '500',
     paddingHorizontal: 40,
     textAlign: 'center',
+  },
+  resultSummary: {
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: 0.5,
+    borderBottomColor: colors.border,
+  },
+  resultText: {
+    color: colors.textPrimary,
+    fontSize: 16,
+    fontWeight: '700',
   },
   listContent: {
     paddingBottom: 20,
@@ -294,19 +288,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
   },
-  blurredBadge: {
-    backgroundColor: colors.surface,
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  blurredText: {
-    color: colors.textSecondary,
-    fontSize: 16,
-    fontWeight: '700',
-  },
   revealedBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -336,34 +317,5 @@ const styles = StyleSheet.create({
   emptyText: {
     color: colors.textSecondary,
     fontSize: 15,
-  },
-  resultSummary: {
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderTopWidth: 0.5,
-    borderTopColor: colors.border,
-  },
-  resultText: {
-    color: colors.textPrimary,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  voteRow: {
-    alignItems: 'center',
-    paddingVertical: 16,
-    paddingBottom: 24,
-    borderTopWidth: 0.5,
-    borderTopColor: colors.border,
-    gap: 12,
-  },
-  votePrompt: {
-    color: colors.textSecondary,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  voteButtons: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 32,
   },
 });

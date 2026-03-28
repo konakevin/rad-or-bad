@@ -29,6 +29,10 @@ interface FeedStore {
   // Votes cast outside the feed screen (e.g. photo detail view)
   externalVotes: Map<string, 'rad' | 'bad'>;
   addExternalVote: (uploadId: string, vote: 'rad' | 'bad') => void;
+  // Optimistic streak counts — overrides server values during active session
+  localStreaks: Map<string, number>;
+  updateStreak: (friendUsername: string, matched: boolean, serverStreak: number) => void;
+  clearLocalStreaks: () => void;
 }
 
 // resetToken — wipes deck + refetches (used after a new upload)
@@ -43,4 +47,12 @@ export const useFeedStore = create<FeedStore>((set) => ({
   externalVotes: new Map(),
   addExternalVote: (uploadId, vote) =>
     set((s) => ({ externalVotes: new Map(s.externalVotes).set(uploadId, vote) })),
+  localStreaks: new Map(),
+  updateStreak: (friendUsername, matched, serverStreak) =>
+    set((s) => {
+      const current = s.localStreaks.get(friendUsername) ?? serverStreak;
+      const next = matched ? current + 1 : 0;
+      return { localStreaks: new Map(s.localStreaks).set(friendUsername, next) };
+    }),
+  clearLocalStreaks: () => set({ localStreaks: new Map() }),
 }));

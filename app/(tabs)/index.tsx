@@ -18,7 +18,7 @@ import MaskedView from '@react-native-masked-view/masked-view';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { useLocalSearchParams } from 'expo-router';
-import { useFeed, useFriendsFeed, useFollowingFeed, type FeedItem, type FriendVote } from '@/hooks/useFeed';
+import { useFeed, useFriendsFeed, useFollowingFeed, type FeedItem } from '@/hooks/useFeed';
 import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 import { useVote } from '@/hooks/useVote';
 import { useUserVote } from '@/hooks/useUserVote';
@@ -36,7 +36,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors } from '@/constants/theme';
 import { VoteButton } from '@/components/VoteButton';
 import { MilestoneBurst } from '@/components/MilestoneBurst';
-import { StreakMatchBurst } from '@/components/StreakMatchBurst';
 import { checkMilestone, type MilestoneHit } from '@/lib/milestones';
 import { useFriendVotesOnPost } from '@/hooks/useFriendVotesOnPost';
 import { CATEGORIES } from '@/constants/categories';
@@ -69,6 +68,9 @@ export default function FeedScreen() {
   const { mutate: toggleFollow } = useToggleFollow();
   const resetToken = useFeedStore((s) => s.resetToken);
   const refreshToken = useFeedStore((s) => s.refreshToken);
+  const localStreaks = useFeedStore((s) => s.localStreaks);
+  const updateStreak = useFeedStore((s) => s.updateStreak);
+  const clearLocalStreaks = useFeedStore((s) => s.clearLocalStreaks);
   const pendingPost = useFeedStore((s) => s.pendingPost);
   const setPendingPost = useFeedStore((s) => s.setPendingPost);
   const externalVotes = useFeedStore((s) => s.externalVotes);
@@ -79,9 +81,7 @@ export default function FeedScreen() {
   const [jiggleTick, setJiggleTick] = useState(0);
   const [dismissing, setDismissing] = useState(false);
   const [milestoneHit, setMilestoneHit] = useState<(MilestoneHit & { postId: string }) | null>(null);
-  const [streakMatch, setStreakMatch] = useState<{ matched: FriendVote[]; mismatched: FriendVote[]; vote: 'rad' | 'bad'; postId: string } | null>(null);
   const [friendRevealPostId, setFriendRevealPostId] = useState<string | null>(null);
-  const [friendRevealVote, setFriendRevealVote] = useState<'rad' | 'bad' | null>(null);
   const [headerRowSize, setHeaderRowSize] = useState({ width: 0, height: 0 });
   const loadedFeedKey = useRef('');
   const sessionVotesRef = useRef(sessionVotes);
@@ -109,6 +109,10 @@ export default function FeedScreen() {
     setDeck([]);
     setSessionVotes(new Map());
     setMilestoneHit(null);
+    setFriendRevealPostId(null);
+    clearLocalStreaks();
+    // Force refetch to ensure fresh data
+    refetch();
   }, [feedMode]);
 
   // When a new upload happens, wipe the deck so the feed refetches from scratch
@@ -134,6 +138,7 @@ export default function FeedScreen() {
   }, [pendingPost]);
 
   useEffect(() => {
+    console.log(`[FEED] mode=${feedMode} feed.length=${feed.length} isLoading=${isLoading} deck.length=${deck.length}`);
     const newKey = feed.map((f) => f.id).join(',');
     if (newKey && newKey !== loadedFeedKey.current) {
       loadedFeedKey.current = newKey;
@@ -170,17 +175,17 @@ export default function FeedScreen() {
       const hit = vote === 'rad' ? checkMilestone(item.rad_votes) : null;
       if (hit) setMilestoneHit({ ...hit, postId: item.id });
 
-      // Streak feed: compare vote with friends' votes
+      // Streak feed: compare vote with friends' votes + update local streaks
+      // Streak feed: optimistically update local streak counts
       if (feedMode === 'friends' && item.friend_votes?.length) {
-        const matched = item.friend_votes.filter((f) => f.vote === vote);
-        const mismatched = item.friend_votes.filter((f) => f.vote !== vote);
-        setStreakMatch({ matched, mismatched, vote, postId: item.id });
+        for (const f of item.friend_votes) {
+          updateStreak(f.username, f.vote === vote, f.streak ?? 0);
+        }
       }
 
-      // Everyone/Following feed: trigger friend votes check for reveal pill
+      // Everyone/Following feed: trigger friend votes check
       if (feedMode !== 'friends') {
         setFriendRevealPostId(item.id);
-        setFriendRevealVote(vote);
       }
     },
     [castVote, sessionVotes, feedMode]
@@ -200,11 +205,6 @@ export default function FeedScreen() {
     router.push(`/user/${item.user_id}?viewedPost=${item.id}`);
   }, []);
 
-  const handleFriendReveal = useCallback(() => {
-    if (!friendRevealPostId) return;
-    router.push(`/friendReveal/${friendRevealPostId}`);
-  }, [friendRevealPostId]);
-
   const handleSwipeUpBlocked = useCallback(() => {
     setJiggleTick((t) => t + 1);
   }, []);
@@ -213,9 +213,7 @@ export default function FeedScreen() {
   const handleDismiss = useCallback((item: FeedItem) => {
     setDeck((prev) => prev.filter((c) => c.id !== item.id));
     setMilestoneHit(null);
-    setStreakMatch(null);
     setFriendRevealPostId(null);
-    setFriendRevealVote(null);
     if (showSwipeHint) {
       setShowSwipeHint(false);
       AsyncStorage.setItem('swipe_hint_seen', '1');
@@ -340,7 +338,7 @@ export default function FeedScreen() {
                   isOwnPost={currentUser?.id === item.user_id}
                   isAlreadyVoted={index === 0 && topItemExternallyVoted}
                   onDismiss={() => handleDismiss(item)}
-                  onDismissStart={index === 0 ? () => { setDismissing(true); setMilestoneHit(null); setStreakMatch(null); } : undefined}
+                  onDismissStart={index === 0 ? () => { setDismissing(true); setMilestoneHit(null); } : undefined}
                   onFavorite={() => handleFavorite(item)}
                   onFollow={() => handleFollow(item)}
                   onUserPress={() => handleUserPress(item)}
@@ -351,32 +349,21 @@ export default function FeedScreen() {
                   containerHeight={cardAreaHeight}
                   showSwipeHint={index === 0 && showSwipeHint}
                   swipeEnabled={true}
-                  hasMilestone={index === 0 && (milestoneHit?.postId === item.id || streakMatch?.postId === item.id)}
-                  friendVoteCount={index === 0 && friendRevealPostId === item.id ? friendVotesOnPost.length : 0}
-                  onFriendReveal={index === 0 && friendRevealPostId === item.id && friendVotesOnPost.length > 0 ? handleFriendReveal : undefined}
+                  hasMilestone={index === 0 && milestoneHit?.postId === item.id}
+                  friendVotes={index === 0 ? (feedMode === 'friends' ? item.friend_votes?.map((f) => ({ ...f, streak: localStreaks.get(f.username) ?? f.streak })) : friendRevealPostId === item.id ? friendVotesOnPost : undefined) : undefined}
+                  autoDismissDelay={index === 0 && feedMode === 'friends' ? 1200 + (item.friend_votes?.length ?? 0) * 250 : undefined}
                 />
               );
             })
           }
           <MilestoneBurst hit={milestoneHit?.postId === topItem?.id ? milestoneHit : null} />
-          <StreakMatchBurst match={streakMatch?.postId === topItem?.id ? streakMatch : null} />
         </>)}
       </View>
 
-      {/* Action buttons / already-voted / milestone / streak match state */}
+      {/* Action buttons / already-voted / milestone state */}
       {topItem && (
         milestoneHit?.postId === topItem.id && !dismissing ? (
           <GradientMessageRow message={milestoneHit.message} />
-        ) : streakMatch?.postId === topItem.id && !dismissing ? (
-          <GradientMessageRow message={
-            streakMatch.matched.length > 0
-              ? streakMatch.matched.length === 1
-                ? `You and @${streakMatch.matched[0].username} both voted ${streakMatch.vote}!`
-                : `You matched with ${streakMatch.matched.map(f => `@${f.username}`).join(' & ')}!`
-              : streakMatch.mismatched.length === 1
-                ? `You and @${streakMatch.mismatched[0].username} voted differently`
-                : 'No matches this time'
-          } />
         ) : topItemExternallyVoted && !dismissing ? (
           <GradientMessageRow message="You already rated this one" />
         ) : (

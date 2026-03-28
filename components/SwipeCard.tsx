@@ -9,14 +9,16 @@ import Animated, {
   withTiming,
   withSequence,
   withRepeat,
+  withDelay,
   runOnJS,
+  Easing,
 } from 'react-native-reanimated';
 import { useEffect, useRef, useState } from 'react';
 import { Image } from 'expo-image';
 import { VideoView, useVideoPlayer } from 'expo-video';
 import MaskedView from '@react-native-masked-view/masked-view';
 import { LinearGradient } from 'expo-linear-gradient';
-import type { FeedItem } from '@/hooks/useFeed';
+import type { FeedItem, FriendVote } from '@/hooks/useFeed';
 import { GradientUsername } from '@/components/GradientUsername';
 import { getRating } from '@/lib/getRating';
 import { formatCount } from '@/lib/formatCount';
@@ -53,8 +55,8 @@ interface SwipeCardProps {
   showSwipeHint: boolean;
   swipeEnabled?: boolean;
   hasMilestone?: boolean;
-  friendVoteCount?: number;
-  onFriendReveal?: () => void;
+  friendVotes?: FriendVote[];
+  autoDismissDelay?: number | null;
 }
 
 function CategoryPill({ category }: { category: string }) {
@@ -71,7 +73,75 @@ function CategoryPill({ category }: { category: string }) {
   );
 }
 
-export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost, isAlreadyVoted = false, onDismiss, onDismissStart, onFavorite, onFollow, onUserPress, onSwipeUpBlocked, hideRank = false, isTop, index, containerHeight, showSwipeHint, swipeEnabled = true, hasMilestone = false, friendVoteCount = 0, onFriendReveal }: SwipeCardProps) {
+function FriendAvatarBubble({ friend, userVote, index }: {
+  friend: FriendVote;
+  userVote: 'rad' | 'bad' | null;
+  index: number;
+}) {
+  const hasVoted = userVote !== null;
+  const isMatch = hasVoted && friend.vote === userVote;
+  const streak = friend.streak ?? 0;
+
+  // Entrance animation
+  const enterScale = useSharedValue(0);
+  const enterOpacity = useSharedValue(0);
+
+  // Border color animation on vote
+  const borderProgress = useSharedValue(0);
+
+  useEffect(() => {
+    const delay = index * 60;
+    enterOpacity.value = withDelay(delay, withTiming(1, { duration: 200 }));
+    enterScale.value = withDelay(delay, withSequence(
+      withTiming(1.15, { duration: 150, easing: Easing.out(Easing.back(2)) }),
+      withTiming(1, { duration: 100 }),
+    ));
+  }, []);
+
+  useEffect(() => {
+    if (!hasVoted) return;
+    const delay = 300 + index * 200;
+    borderProgress.value = withDelay(delay, withTiming(1, { duration: 300, easing: Easing.out(Easing.quad) }));
+  }, [hasVoted]);
+
+  const containerStyle = useAnimatedStyle(() => ({
+    opacity: enterOpacity.value,
+    transform: [{ scale: enterScale.value }],
+  }));
+
+  const borderStyle = useAnimatedStyle(() => {
+    const p = borderProgress.value;
+    if (p === 0) return { borderColor: 'rgba(255,255,255,0.4)' };
+    return {
+      borderColor: isMatch ? `rgba(76, 175, 80, ${p})` : `rgba(244, 33, 46, ${p})`,
+    };
+  });
+
+  const initial = friend.username[0]?.toUpperCase() ?? '?';
+
+  return (
+    <View style={styles.friendBubbleWrap}>
+      <Animated.View style={[styles.friendBubble, containerStyle, borderStyle]}>
+        {friend.avatar_url ? (
+          <Image source={{ uri: friend.avatar_url }} style={styles.friendBubbleImage} />
+        ) : (
+          <View style={styles.friendBubbleInner}>
+            <Text style={styles.friendBubbleInitial}>{initial}</Text>
+          </View>
+        )}
+      </Animated.View>
+
+      {/* Streak count badge — only on matched avatars after voting */}
+      {hasVoted && isMatch && streak > 0 && (
+        <View style={styles.streakBadge}>
+          <Text style={styles.streakBadgeText}>{streak}</Text>
+        </View>
+      )}
+    </View>
+  );
+}
+
+export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost, isAlreadyVoted = false, onDismiss, onDismissStart, onFavorite, onFollow, onUserPress, onSwipeUpBlocked, hideRank = false, isTop, index, containerHeight, showSwipeHint, swipeEnabled = true, hasMilestone = false, friendVotes, autoDismissDelay }: SwipeCardProps) {
   const cardHeight = containerHeight > 0 ? containerHeight : SCREEN_HEIGHT * 0.65;
   const isVideo = item.media_type === 'video';
   const [muted, setMuted] = useState(true);
@@ -125,12 +195,14 @@ export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost,
         scoreScale.value = 1;
       } else {
         animateScoreIn(scoreOpacity, scoreScale);
-        if (!hasMilestone) {
+        // autoDismissDelay: number = custom delay, null = no auto-dismiss, undefined = default (430ms)
+        const delay = autoDismissDelay !== undefined ? autoDismissDelay : (hasMilestone ? null : 430);
+        if (delay !== null) {
           dismissTimer.current = setTimeout(() => {
             translateY.value = withTiming(-SCREEN_HEIGHT * 1.3, { duration: 260 }, () => {
               runOnJS(onDismiss)();
             });
-          }, 430);
+          }, delay);
         }
       }
     }
@@ -260,14 +332,13 @@ export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost,
           </Animated.View>
         )}
 
-        {/* Friend reveal pill — shows after voting if friends also voted */}
-        {friendVoteCount > 0 && userVote !== null && onFriendReveal && (
-          <TouchableOpacity style={styles.friendRevealPill} onPress={onFriendReveal} activeOpacity={0.7}>
-            <Ionicons name="people" size={14} color="#FFFFFF" />
-            <Text style={styles.friendRevealText}>
-              {friendVoteCount} {friendVoteCount === 1 ? 'friend' : 'friends'} voted
-            </Text>
-          </TouchableOpacity>
+        {/* Friend avatar bubbles — show before vote (faces), flip to check/X after */}
+        {friendVotes && friendVotes.length > 0 && (
+          <View style={styles.friendAvatarRow}>
+            {friendVotes.slice(0, 5).map((friend, i) => (
+              <FriendAvatarBubble key={friend.username} friend={friend} userVote={userVote} index={i} />
+            ))}
+          </View>
         )}
 
         {/* Mute toggle for videos */}
@@ -429,22 +500,57 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 8,
   },
-  friendRevealPill: {
+  friendAvatarRow: {
     position: 'absolute',
-    top: 62,
-    right: 14,
+    top: 56,
+    left: 14,
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    borderRadius: 14,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    gap: 6,
   },
-  friendRevealText: {
+  friendBubbleWrap: {
+    position: 'relative',
+  },
+  friendBubble: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    borderWidth: 2.5,
+    borderColor: 'rgba(255,255,255,0.4)',
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    overflow: 'hidden',
+  },
+  friendBubbleInner: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  friendBubbleImage: {
+    width: '100%',
+    height: '100%',
+  },
+  friendBubbleInitial: {
     color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  streakBadge: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    backgroundColor: '#FFD700',
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+    borderWidth: 2,
+    borderColor: '#000000',
+  },
+  streakBadgeText: {
+    color: '#000000',
+    fontSize: 11,
+    fontWeight: '900',
   },
   ratingBadge: {
     position: 'absolute',
