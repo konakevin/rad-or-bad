@@ -120,11 +120,10 @@ export default function FeedScreen() {
     });
   }, []);
 
-  // When feed mode changes, wipe the deck and refetch
+  // When feed mode changes, wipe the deck and refetch (keep sessionVotes to filter voted posts)
   useEffect(() => {
     loadedFeedKey.current = '';
     setDeck([]);
-    setSessionVotes(new Map());
     setMilestoneHit(null);
     setFriendRevealPostId(null);
     clearLocalStreaks();
@@ -162,13 +161,15 @@ export default function FeedScreen() {
       const feedIds = new Set(feed.map((f) => f.id));
       setDeck((prev) => {
         const existingIds = new Set(prev.map((d) => d.id));
-        const freshItems = feed.filter((f) => !existingIds.has(f.id));
+        const voted = sessionVotesRef.current;
+        // Only add items we haven't voted on this session
+        const freshItems = feed.filter((f) => !existingIds.has(f.id) && !voted.has(f.id));
         // Remove items no longer in the feed that weren't voted this session —
         // they were voted externally (e.g. detail screen). Keep own posts
         // (feed RPC excludes them) and session-voted cards still animating out.
         const retained = prev.filter((item) =>
           feedIds.has(item.id) ||
-          sessionVotesRef.current.has(item.id) ||
+          voted.has(item.id) ||
           item.user_id === currentUser?.id ||
           useFeedStore.getState().externalVotes.has(item.id)
         );
