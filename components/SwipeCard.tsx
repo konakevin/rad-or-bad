@@ -73,10 +73,14 @@ function CategoryPill({ category }: { category: string }) {
   );
 }
 
-function FriendAvatarBubble({ friend, userVote, index }: {
+function FriendAvatarBubble({ friend, userVote, index, matchIndex, totalMatches, cardWidth, cardHeight }: {
   friend: FriendVote;
   userVote: 'rad' | 'bad' | null;
   index: number;
+  matchIndex: number;    // position among matched friends (-1 if not matched)
+  totalMatches: number;  // total matched friends
+  cardWidth: number;
+  cardHeight: number;
 }) {
   const hasVoted = userVote !== null;
   const isMatch = hasVoted && friend.vote === userVote;
@@ -86,9 +90,13 @@ function FriendAvatarBubble({ friend, userVote, index }: {
   const enterScale = useSharedValue(0);
   const enterOpacity = useSharedValue(0);
 
-  // Reveal animation (border flip + badge)
-  const revealProgress = useSharedValue(0);
+  // Post-vote animation
+  const moveX = useSharedValue(0);
+  const moveY = useSharedValue(0);
+  const fadeOut = useSharedValue(1);
+  const borderGreen = useSharedValue(0);
   const badgeScale = useSharedValue(0);
+  const scaleUp = useSharedValue(1);
 
   useEffect(() => {
     const delay = index * 60;
@@ -101,27 +109,50 @@ function FriendAvatarBubble({ friend, userVote, index }: {
 
   useEffect(() => {
     if (!hasVoted) return;
-    const delay = 200 + index * 150;
-    revealProgress.value = withDelay(delay, withTiming(1, { duration: 250, easing: Easing.out(Easing.quad) }));
-    if (isMatch && streak > 0) {
-      badgeScale.value = withDelay(delay, withSequence(
-        withTiming(1.2, { duration: 150, easing: Easing.out(Easing.back(2)) }),
-        withTiming(1, { duration: 100 }),
-      ));
+    const revealDelay = 200 + index * 100;
+
+    if (isMatch) {
+      // Calculate target: center of card, spread matched avatars horizontally
+      const bubbleSize = 38;
+      const gap = 12;
+      const totalWidth = totalMatches * bubbleSize + (totalMatches - 1) * gap;
+      const startX = (cardWidth / 2) - (totalWidth / 2) + matchIndex * (bubbleSize + gap) + bubbleSize / 2;
+      const currentX = 14 + index * (bubbleSize + 6) + bubbleSize / 2; // row position
+      const targetX = startX - currentX;
+      const targetY = (cardHeight / 2) - 56 - 19; // center vertically, offset for row top position
+
+      // Animate to center
+      moveX.value = withDelay(revealDelay, withTiming(targetX, { duration: 400, easing: Easing.inOut(Easing.quad) }));
+      moveY.value = withDelay(revealDelay, withTiming(targetY, { duration: 400, easing: Easing.inOut(Easing.quad) }));
+      scaleUp.value = withDelay(revealDelay, withTiming(1.2, { duration: 400, easing: Easing.out(Easing.quad) }));
+      borderGreen.value = withDelay(revealDelay, withTiming(1, { duration: 250 }));
+
+      // Badge pops in after arrival
+      if (streak > 0) {
+        badgeScale.value = withDelay(revealDelay + 350, withSequence(
+          withTiming(1.3, { duration: 150, easing: Easing.out(Easing.back(2)) }),
+          withTiming(1, { duration: 100 }),
+        ));
+      }
+    } else {
+      // Fade out mismatched
+      fadeOut.value = withDelay(revealDelay, withTiming(0, { duration: 250 }));
     }
   }, [hasVoted]);
 
   const containerStyle = useAnimatedStyle(() => ({
-    opacity: enterOpacity.value,
-    transform: [{ scale: enterScale.value }],
+    opacity: enterOpacity.value * fadeOut.value,
+    transform: [
+      { scale: enterScale.value * scaleUp.value },
+      { translateX: moveX.value },
+      { translateY: moveY.value },
+    ],
   }));
 
   const borderStyle = useAnimatedStyle(() => {
-    const p = revealProgress.value;
-    if (p === 0) return { borderColor: 'rgba(255,255,255,0.4)' };
-    return {
-      borderColor: isMatch ? `rgba(76, 175, 80, ${p})` : `rgba(244, 33, 46, ${p})`,
-    };
+    const g = borderGreen.value;
+    if (g === 0) return { borderColor: 'rgba(255,255,255,0.4)' };
+    return { borderColor: `rgba(76, 175, 80, ${g})` };
   });
 
   const badgeStyle = useAnimatedStyle(() => ({
@@ -132,8 +163,8 @@ function FriendAvatarBubble({ friend, userVote, index }: {
   const initial = friend.username[0]?.toUpperCase() ?? '?';
 
   return (
-    <View style={styles.friendBubbleWrap}>
-      <Animated.View style={[styles.friendBubble, containerStyle, borderStyle]}>
+    <Animated.View style={[styles.friendBubbleWrap, containerStyle]}>
+      <Animated.View style={[styles.friendBubble, borderStyle]}>
         {friend.avatar_url ? (
           <Image source={{ uri: friend.avatar_url }} style={styles.friendBubbleImage} />
         ) : (
@@ -143,13 +174,13 @@ function FriendAvatarBubble({ friend, userVote, index }: {
         )}
       </Animated.View>
 
-      {/* Streak count badge — pops in after border reveal */}
+      {/* Streak count badge — pops in after avatar arrives at center */}
       {isMatch && streak > 0 && (
         <Animated.View style={[styles.streakBadge, badgeStyle]}>
           <Text style={styles.streakBadgeText}>{streak}</Text>
         </Animated.View>
       )}
-    </View>
+    </Animated.View>
   );
 }
 
@@ -344,14 +375,33 @@ export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost,
           </Animated.View>
         )}
 
-        {/* Friend avatar bubbles — show before vote (faces), flip to check/X after */}
-        {friendVotes && friendVotes.length > 0 && (
-          <View style={styles.friendAvatarRow}>
-            {friendVotes.slice(0, 5).map((friend, i) => (
-              <FriendAvatarBubble key={friend.username} friend={friend} userVote={userVote} index={i} />
-            ))}
-          </View>
-        )}
+        {/* Friend avatar bubbles — show before vote (faces), animate to center on match after */}
+        {friendVotes && friendVotes.length > 0 && (() => {
+          const matchedUsernames = new Set(
+            userVote ? friendVotes.filter((f) => f.vote === userVote).map((f) => f.username) : []
+          );
+          let matchIdx = 0;
+          return (
+            <View style={styles.friendAvatarRow}>
+              {friendVotes.slice(0, 5).map((friend, i) => {
+                const isMatch = matchedUsernames.has(friend.username);
+                const mi = isMatch ? matchIdx++ : -1;
+                return (
+                  <FriendAvatarBubble
+                    key={friend.username}
+                    friend={friend}
+                    userVote={userVote}
+                    index={i}
+                    matchIndex={mi}
+                    totalMatches={matchedUsernames.size}
+                    cardWidth={CARD_WIDTH}
+                    cardHeight={cardHeight}
+                  />
+                );
+              })}
+            </View>
+          );
+        })()}
 
         {/* Mute toggle for videos */}
         {isVideo && (
@@ -518,6 +568,8 @@ const styles = StyleSheet.create({
     left: 14,
     flexDirection: 'row',
     gap: 6,
+    overflow: 'visible',
+    zIndex: 50,
   },
   friendBubbleWrap: {
     position: 'relative',
