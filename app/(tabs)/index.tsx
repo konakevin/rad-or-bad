@@ -85,7 +85,7 @@ export default function FeedScreen() {
   const [headerRowSize, setHeaderRowSize] = useState({ width: 0, height: 0 });
   const loadedFeedKey = useRef('');
   const sessionVotesRef = useRef(sessionVotes);
-  const headerTreadmillX = useSharedValue(-560);
+  const headerTreadmillX = useSharedValue(-(Math.random() * TREADMILL_SCROLL));
   const headerTreadmillStyle = useAnimatedStyle(() => ({ transform: [{ translateX: headerTreadmillX.value }] }));
   useEffect(() => {
     headerTreadmillX.value = withRepeat(
@@ -251,6 +251,7 @@ export default function FeedScreen() {
                 style={{ width: TREADMILL_WIDTH, height: headerRowSize.height }}
               />
             </Animated.View>
+
           </MaskedView>
         )}
         {isRefetching && <ActivityIndicator size="small" color={colors.textSecondary} style={styles.headerSpinner} />}
