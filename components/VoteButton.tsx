@@ -86,9 +86,11 @@ interface VoteButtonProps {
   size?: number;
   /** Increment to trigger the swipe-up hint pulse. Defaults to 0 (never). */
   jiggleTick?: number;
+  /** When true, button shrinks to 0 and fades after press instead of bouncing back. */
+  shrinkOnPress?: boolean;
 }
 
-export function VoteButton({ vote, onPress, disabled, size = 74, jiggleTick = 0 }: VoteButtonProps) {
+export function VoteButton({ vote, onPress, disabled, size = 74, jiggleTick = 0, shrinkOnPress = false }: VoteButtonProps) {
   const p0  = useSharedValue(0); const p1  = useSharedValue(0); const p2  = useSharedValue(0);
   const p3  = useSharedValue(0); const p4  = useSharedValue(0); const p5  = useSharedValue(0);
   const p6  = useSharedValue(0); const p7  = useSharedValue(0); const p8  = useSharedValue(0);
@@ -98,13 +100,14 @@ export function VoteButton({ vote, onPress, disabled, size = 74, jiggleTick = 0 
   const progresses = [p0,p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13,p14,p15,p16,p17];
 
   const buttonScale = useSharedValue(1);
+  const buttonOpacity = useSharedValue(1);
   const pulseProgress = useSharedValue(0);
   const isRad = vote === 'rad';
   const radius = size / 2;
   const iconSize = Math.round(size * 0.35);
   const pulseColor = isRad ? '#FFCC44' : '#6699EE';
 
-  const buttonStyle = useAnimatedStyle(() => ({ transform: [{ scale: buttonScale.value }] }));
+  const buttonStyle = useAnimatedStyle(() => ({ transform: [{ scale: buttonScale.value }], opacity: buttonOpacity.value }));
   const pulseStyle = useAnimatedStyle(() => {
     const p = pulseProgress.value;
     return {
@@ -123,7 +126,20 @@ export function VoteButton({ vote, onPress, disabled, size = 74, jiggleTick = 0 
     );
   }, [jiggleTick]);
 
+  // When shrinkOnPress + disabled: both buttons shrink and fade out
+  // When shrinkOnPress turns off or disabled turns off: reset to visible
+  useEffect(() => {
+    if (shrinkOnPress && disabled) {
+      buttonScale.value = withTiming(0, { duration: 400, easing: Easing.in(Easing.cubic) });
+      buttonOpacity.value = withDelay(100, withTiming(0, { duration: 300 }));
+    } else {
+      buttonScale.value = 1;
+      buttonOpacity.value = 1;
+    }
+  }, [shrinkOnPress, disabled]);
+
   function handlePressIn() {
+    // Fire burst particles (same on all views)
     progresses.forEach((p, i) => {
       p.value = 0;
       p.value = withDelay(
@@ -131,15 +147,22 @@ export function VoteButton({ vote, onPress, disabled, size = 74, jiggleTick = 0 
         withTiming(1, { duration: 650, easing: Easing.out(Easing.quad) }),
       );
     });
+
+    // Normal: quick press then bounce back
     buttonScale.value = withSequence(
       withTiming(0.84, { duration: 60 }),
       withTiming(1, { duration: 180, easing: Easing.out(Easing.quad) }),
     );
   }
 
+  const wrapperStyle = useAnimatedStyle(() => ({
+    opacity: buttonOpacity.value,
+  }));
+
   return (
     <View style={styles.burstWrapper}>
       <BurstEffect progresses={progresses} vote={vote} />
+      <Animated.View style={wrapperStyle}>
       <Animated.View
         pointerEvents="none"
         style={[
@@ -171,6 +194,7 @@ export function VoteButton({ vote, onPress, disabled, size = 74, jiggleTick = 0 
             {isRad ? 'RAD' : 'BAD'}
           </Text>
         </TouchableOpacity>
+      </Animated.View>
       </Animated.View>
     </View>
   );

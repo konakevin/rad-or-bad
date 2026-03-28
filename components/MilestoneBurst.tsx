@@ -218,6 +218,7 @@ export function MilestoneBurst({ hit }: MilestoneBurstProps) {
   const pulseScale = useSharedValue(0);
   const pulseOpacity = useSharedValue(0);
   const chevronY = useSharedValue(0);
+  const chevronOpacity = useSharedValue(0);
 
   // Detect new milestone hit
   if (hit && hit !== prevHit.current) {
@@ -250,18 +251,19 @@ export function MilestoneBurst({ hit }: MilestoneBurstProps) {
 
 
 
-    // RADS label slides up and fades in after number settles
-    labelOpacity.value = withDelay(350, withTiming(1, { duration: 200 }));
-    labelTranslateY.value = withDelay(350, withTiming(0, { duration: 250, easing: Easing.out(Easing.quad) }));
+    // Label + chevron appear together after number settles (460ms)
+    const settleDelay = 460;
+    labelOpacity.value = withDelay(settleDelay, withTiming(1, { duration: 200 }));
+    labelTranslateY.value = withDelay(settleDelay, withTiming(0, { duration: 250, easing: Easing.out(Easing.quad) }));
 
-    // Chevron bob
-    chevronY.value = withRepeat(
+    chevronOpacity.value = withDelay(settleDelay, withTiming(1, { duration: 200 }));
+    chevronY.value = withDelay(settleDelay, withRepeat(
       withSequence(
         withTiming(-8, { duration: 500, easing: Easing.inOut(Easing.sin) }),
         withTiming(0,  { duration: 500, easing: Easing.inOut(Easing.sin) }),
       ),
       -1, false,
-    );
+    ));
 
   }, [hit]);
 
@@ -281,6 +283,7 @@ export function MilestoneBurst({ hit }: MilestoneBurstProps) {
   }));
 
   const chevronStyle = useAnimatedStyle(() => ({
+    opacity: chevronOpacity.value,
     transform: [{ translateY: chevronY.value }],
   }));
 
@@ -315,7 +318,7 @@ export function MilestoneBurst({ hit }: MilestoneBurstProps) {
       {/* Energy pulse ring */}
       <Animated.View style={[styles.pulseRing, pulseStyle]} />
 
-      {/* Milestone number — gold gradient */}
+      {/* Milestone number + RADS + message — all centered together */}
       <Animated.View style={[styles.textContainer, numberStyle]}>
         <View>
           <Text style={[styles.milestoneNumber, styles.milestoneNumberShadow]}>{hit.milestone}</Text>
@@ -332,17 +335,11 @@ export function MilestoneBurst({ hit }: MilestoneBurstProps) {
             </LinearGradient>
           </MaskedView>
         </View>
+        <Animated.View style={[labelStyle, { alignItems: 'center' }]}>
+          <Text style={styles.milestoneLabel}>{hit.message}</Text>
+          <Text style={styles.milestoneSubtext}>Swipe up to continue</Text>
+        </Animated.View>
       </Animated.View>
-
-      {/* RADS label — slides in after number settles */}
-      <Animated.View style={[styles.labelContainer, labelStyle]}>
-        <Text style={styles.milestoneLabel}>RADS</Text>
-      </Animated.View>
-
-      {/* Twinkle stars scattered across card */}
-      {Array.from({ length: TWINKLE_COUNT }, (_, i) => (
-        <TwinkleStar key={i} index={i} trigger={currentTrigger} />
-      ))}
 
       {/* Swipe-up chevron hint */}
       <Animated.View style={[styles.chevronContainer, chevronStyle]}>
@@ -350,6 +347,12 @@ export function MilestoneBurst({ hit }: MilestoneBurstProps) {
           <Ionicons name="chevron-up" size={32} color="#FFFFFF" />
         </View>
       </Animated.View>
+
+      {/* Twinkle stars scattered across card */}
+      {Array.from({ length: TWINKLE_COUNT }, (_, i) => (
+        <TwinkleStar key={i} index={i} trigger={currentTrigger} />
+      ))}
+
     </View>
   );
 }
@@ -387,9 +390,6 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: 'rgba(255, 215, 0, 0.8)',
   },
-  labelContainer: {
-    marginTop: -8,
-  },
   milestoneNumber: {
     fontSize: 96,
     fontWeight: '900',
@@ -411,17 +411,28 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.45)',
     borderRadius: 24,
     paddingHorizontal: 14,
-    paddingTop: 6,
-    paddingBottom: 2,
+    paddingVertical: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   milestoneLabel: {
-    fontSize: 28,
-    fontWeight: '900',
+    fontSize: 18,
+    fontWeight: '800',
     color: '#FFD700',
-    letterSpacing: 8,
-    marginTop: -4,
-    textShadowColor: '#000000',
-    textShadowOffset: { width: 2, height: 2 },
-    textShadowRadius: 1,
+    letterSpacing: 1,
+    marginTop: 4,
+    textAlign: 'center',
+    textShadowColor: 'rgba(0,0,0,0.9)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 6,
+  },
+  milestoneSubtext: {
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: 8,
+    textShadowColor: 'rgba(0,0,0,0.9)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
   },
 });

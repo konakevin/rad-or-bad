@@ -74,7 +74,7 @@ export function useUpload() {
           caption: caption.trim() || null,
           is_approved: true,
         })
-        .select('id, user_id, categories, image_url, media_type, thumbnail_url, caption, created_at, total_votes, rad_votes, bad_votes')
+        .select('id, user_id, categories, image_url, media_type, thumbnail_url, width, height, caption, created_at, total_votes, rad_votes, bad_votes')
         .single();
 
       if (error) throw error;

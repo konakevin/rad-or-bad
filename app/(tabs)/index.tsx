@@ -85,9 +85,11 @@ export default function FeedScreen() {
   const [jiggleTick, setJiggleTick] = useState(0);
   const [dismissing, setDismissing] = useState(false);
   const [milestoneHit, setMilestoneHit] = useState<(MilestoneHit & { postId: string }) | null>(null);
+  const [milestonePending, setMilestonePending] = useState<string | null>(null); // postId of pending milestone
   const [friendRevealPostId, setFriendRevealPostId] = useState<string | null>(null);
   const [headerRowSize, setHeaderRowSize] = useState({ width: 0, height: 0 });
   const loadedFeedKey = useRef('');
+  const milestoneTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sessionVotesRef = useRef(sessionVotes);
   const headerTreadmillX = useSharedValue(-(Math.random() * TREADMILL_SCROLL));
   const headerTreadmillStyle = useAnimatedStyle(() => ({ transform: [{ translateX: headerTreadmillX.value }] }));
@@ -126,6 +128,7 @@ export default function FeedScreen() {
     loadedFeedKey.current = '';
     setDeck([]);
     setMilestoneHit(null);
+    setMilestonePending(null);
     setFriendRevealPostId(null);
     // Don't clear localStreaks — they should persist for the profile streaks tab
     // Force refetch to ensure fresh data
@@ -201,7 +204,14 @@ export default function FeedScreen() {
       }
 
       const hit = vote === 'rad' ? checkMilestone(item.rad_votes) : null;
-      if (hit) setMilestoneHit({ ...hit, postId: item.id });
+      if (hit) {
+        const postId = item.id;
+        setMilestonePending(postId);
+        milestoneTimerRef.current = setTimeout(() => {
+          setMilestoneHit({ ...hit, postId });
+          milestoneTimerRef.current = null;
+        }, 650);
+      }
 
       // Streak feed: compare vote with friends' votes + update local streaks
       // Streak feed: optimistically update local streak counts
@@ -240,7 +250,12 @@ export default function FeedScreen() {
   // Swipe up to dismiss (skip or after voting)
   const handleDismiss = useCallback((item: FeedItem) => {
     setDeck((prev) => prev.filter((c) => c.id !== item.id));
+    if (milestoneTimerRef.current) {
+      clearTimeout(milestoneTimerRef.current);
+      milestoneTimerRef.current = null;
+    }
     setMilestoneHit(null);
+    setMilestonePending(null);
     setFriendRevealPostId(null);
     if (showSwipeHint) {
       setShowSwipeHint(false);
@@ -389,7 +404,7 @@ export default function FeedScreen() {
                   containerHeight={cardAreaHeight}
                   showSwipeHint={index === 0 && showSwipeHint}
                   swipeEnabled={true}
-                  hasMilestone={index === 0 && milestoneHit?.postId === item.id}
+                  hasMilestone={index === 0 && (milestoneHit?.postId === item.id || milestonePending === item.id)}
                   friendVotes={index === 0 && feedMode === 'friends' ? item.friend_votes?.map((f) => {
                     const local = localStreaks.get(f.username);
                     return {
@@ -398,25 +413,25 @@ export default function FeedScreen() {
                       bad_streak: local?.badStreak ?? f.bad_streak,
                     };
                   }) : undefined}
-                  autoDismissDelay={index === 0 && milestoneHit?.postId === item.id ? null : undefined}
+                  autoDismissDelay={index === 0 && (milestoneHit?.postId === item.id || milestonePending === item.id) ? null : undefined}
+                  milestoneHit={index === 0 && milestoneHit?.postId === item.id ? milestoneHit : null}
                 />
               );
             })
           }
-          <MilestoneBurst hit={milestoneHit?.postId === topItem?.id ? milestoneHit : null} />
         </>)}
       </View>
 
       {/* Action buttons / already-voted / milestone state */}
       {topItem && (
-        milestoneHit?.postId === topItem.id && !dismissing ? (
-          <GradientMessageRow message={milestoneHit.message} />
+        topItem.user_id === currentUser?.id && !dismissing ? (
+          <GradientMessageRow message="Upload complete!" />
         ) : topItemExternallyVoted && !dismissing ? (
           <GradientMessageRow message="You already rated this one" />
         ) : (
-          <View style={styles.actionRow}>
-            <VoteButton vote="bad" onPress={() => handleVote(topItem, 'bad')} disabled={topItemVoted} jiggleTick={jiggleTick} />
-            <VoteButton vote="rad" onPress={() => handleVote(topItem, 'rad')} disabled={topItemVoted} jiggleTick={jiggleTick} />
+          <View key={topItem.id} style={styles.actionRow}>
+            <VoteButton vote="bad" onPress={() => handleVote(topItem, 'bad')} disabled={topItemVoted} jiggleTick={jiggleTick} shrinkOnPress={!!milestonePending} />
+            <VoteButton vote="rad" onPress={() => handleVote(topItem, 'rad')} disabled={topItemVoted} jiggleTick={jiggleTick} shrinkOnPress={!!milestonePending} />
           </View>
         )
       )}

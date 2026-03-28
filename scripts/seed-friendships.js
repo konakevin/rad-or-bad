@@ -55,9 +55,12 @@ const POSTER_USERS = [
   { email: 'poster1@radorbad.dev', username: 'dj_wave',  avatar: 'https://i.pravatar.cc/150?u=djwave' },
   { email: 'poster2@radorbad.dev', username: 'neoncat',  avatar: 'https://i.pravatar.cc/150?u=neoncat' },
   { email: 'poster3@radorbad.dev', username: 'pixel99',  avatar: 'https://i.pravatar.cc/150?u=pixel99' },
+  { email: 'poster4@radorbad.dev', username: 'vibes88',  avatar: 'https://i.pravatar.cc/150?u=vibes88' },
+  { email: 'poster5@radorbad.dev', username: 'glowup',   avatar: 'https://i.pravatar.cc/150?u=glowup' },
+  { email: 'poster6@radorbad.dev', username: 'starboy',  avatar: 'https://i.pravatar.cc/150?u=starboy' },
 ];
 
-const PLACEHOLDER_IMAGES = Array.from({ length: 50 }, (_, i) =>
+const PLACEHOLDER_IMAGES = Array.from({ length: 100 }, (_, i) =>
   `https://picsum.photos/seed/fp${i + 1}/600/800`
 );
 
@@ -112,6 +115,20 @@ async function main() {
   const { data: kevin } = await supabase.from('users').select('id').eq('email', KEVIN_EMAIL).single();
   if (!kevin) { console.error('Kevin not found!'); process.exit(1); }
   console.log(`\nKevin ID: ${kevin.id}`);
+
+  // Reset Kevin's data (votes, uploads, stats, streaks) without deleting account
+  console.log('\nResetting Kevin\'s data...');
+  await supabase.from('votes').delete().eq('voter_id', kevin.id);
+  await supabase.from('uploads').delete().eq('user_id', kevin.id);
+  await supabase.from('vote_streaks').delete().or(`user_a.eq.${kevin.id},user_b.eq.${kevin.id}`);
+  await supabase.from('users').update({
+    total_ratings_given: 0,
+    critic_level: 1,
+    rad_score: null,
+    user_rank: null,
+    needs_rank_recalc: false,
+  }).eq('id', kevin.id);
+  log('Kevin reset to clean state');
 
   // Create friend users with avatars
   console.log('\nCreating friend users...');
@@ -176,7 +193,7 @@ async function main() {
   // Create posts
   console.log('\nCreating stranger posts...');
   const strangerPosts = [];
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < 40; i++) {
     const poster = posters[i % posters.length];
     const { data, error } = await supabase.from('uploads').insert({
       user_id: poster.id,
@@ -191,54 +208,46 @@ async function main() {
   }
   log(`${strangerPosts.length} stranger posts`);
 
-  console.log('\nCreating friend posts...');
+  console.log('\nCreating friend posts (8 per friend)...');
   const friendPosts = [];
-  for (let i = 0; i < 20; i++) {
-    const friend = friends[i % friends.length];
-    const { data, error } = await supabase.from('uploads').insert({
-      user_id: friend.id,
-      categories: ['animals', 'nature'],
-      image_url: PLACEHOLDER_IMAGES[20 + i],
-      media_type: 'image',
-      width: 600, height: 800,
-      caption: `${friend.username}'s post`,
-      is_approved: true,
-    }).select('id, user_id').single();
-    if (!error) friendPosts.push(data);
+  const categories = ['animals', 'nature', 'funny', 'people', 'food', 'art', 'sports', 'music'];
+  for (const friend of friends) {
+    for (let j = 0; j < 8; j++) {
+      const imgIdx = friends.indexOf(friend) * 8 + j;
+      const { data, error } = await supabase.from('uploads').insert({
+        user_id: friend.id,
+        categories: [categories[j % categories.length]],
+        image_url: `https://picsum.photos/seed/fp${100 + imgIdx}/600/800`,
+        media_type: 'image',
+        width: 600, height: 800,
+        caption: `${friend.username}'s ${categories[j % categories.length]} post`,
+        is_approved: true,
+      }).select('id, user_id').single();
+      if (!error) friendPosts.push(data);
+    }
+    process.stdout.write('.');
   }
-  log(`${friendPosts.length} friend posts`);
+  console.log(`\n  ${friendPosts.length} friend posts (${friends.length} friends x 8 each)`);
 
   // Voting pattern:
   //   sarah, bill, maya → vote RAD (you'll match these when voting RAD)
   //   jake, luna → vote BAD (you'll mismatch these when voting RAD)
-  // Each friend has a voting personality — some lean rad, some lean bad, some flip.
-  // This creates a natural mix of rad and bad streaks with Kevin.
-  //   sarah: mostly rad    bill: mostly rad     maya: flips every few posts
-  //   jake: mostly bad     luna: mostly bad     alex: flips
-  //   nova: mostly rad     finn: mostly bad     zoe: flips
-  //   omar: mostly rad     iris: mostly bad     kai: flips
-  //   ruby: mostly rad     cole: mostly bad     jada: flips
-  //   milo: mostly bad     eden: flips          theo: mostly bad
-  const votePatterns = {
-    sarah: (p) => p % 5 !== 0 ? 'rad' : 'bad',       // mostly rad, occasional bad
-    bill:  (p) => p % 4 !== 0 ? 'rad' : 'bad',       // mostly rad
-    maya:  (p) => p % 2 === 0 ? 'rad' : 'bad',        // flips every post
-    jake:  (p) => p % 5 !== 0 ? 'bad' : 'rad',       // mostly bad, occasional rad
-    luna:  (p) => p % 4 !== 0 ? 'bad' : 'rad',       // mostly bad
-    alex:  (p) => p % 3 === 0 ? 'rad' : 'bad',        // flips
-    nova:  (p) => p % 6 !== 0 ? 'rad' : 'bad',       // mostly rad
-    finn:  (p) => p % 3 !== 0 ? 'bad' : 'rad',       // mostly bad
-    zoe:   (p) => p % 2 === 0 ? 'bad' : 'rad',        // flips (opposite of maya)
-    omar:  (p) => p % 5 !== 1 ? 'rad' : 'bad',       // mostly rad
-    iris:  (p) => p % 4 !== 1 ? 'bad' : 'rad',       // mostly bad
-    kai:   (p) => p % 3 === 1 ? 'rad' : 'bad',        // flips
-    ruby:  (p) => p % 7 !== 0 ? 'rad' : 'bad',       // mostly rad
-    cole:  (p) => p % 3 !== 1 ? 'bad' : 'rad',       // mostly bad
-    jada:  (p) => [0,1,4,5,8,9].includes(p % 10) ? 'rad' : 'bad', // chunks
-    milo:  (p) => p % 5 !== 2 ? 'bad' : 'rad',       // mostly bad
-    eden:  (p) => p % 4 < 2 ? 'rad' : 'bad',          // half and half
-    theo:  (p) => p % 6 !== 0 ? 'bad' : 'rad',       // mostly bad
+  // Each friend votes independently per post using a simple hash.
+  // This creates a natural mix — the same friend votes rad on some
+  // posts and bad on others, giving Kevin both types of streaks.
+  // radBias: 0.0 = always bad, 1.0 = always rad, 0.5 = coin flip
+  const friendBias = {
+    sarah: 0.65, bill: 0.55, maya: 0.50, jake: 0.35, luna: 0.40,
+    alex: 0.50,  nova: 0.60, finn: 0.35, zoe: 0.45,  omar: 0.55,
+    iris: 0.40,  kai: 0.50,  ruby: 0.60, cole: 0.30,  jada: 0.50,
+    milo: 0.35,  eden: 0.50, theo: 0.40,
   };
+
+  // Simple deterministic hash for reproducibility
+  function hash(a, b) {
+    const x = Math.sin(a * 127 + b * 311) * 43758.5453;
+    return x - Math.floor(x);
+  }
 
   const allPosts = [...strangerPosts, ...friendPosts];
 
@@ -248,8 +257,8 @@ async function main() {
     const post = allPosts[p];
     for (let i = 0; i < friends.length; i++) {
       if (friends[i].id === post.user_id) continue;
-      const pattern = votePatterns[friends[i].username];
-      const vote = pattern ? pattern(p) : (i < 9 ? 'rad' : 'bad');
+      const bias = friendBias[friends[i].username] ?? 0.5;
+      const vote = hash(p, i) < bias ? 'rad' : 'bad';
       const { error } = await supabase.from('votes').upsert({
         voter_id: friends[i].id, upload_id: post.id, vote,
       }, { onConflict: 'voter_id,upload_id' });
@@ -288,9 +297,9 @@ async function main() {
   log(`Pending: ${((await supabase.rpc('get_pending_requests', { p_user_id: kevin.id })).data ?? []).length}`);
 
   console.log('\n=== Done! ===');
-  console.log('\nFirst 10 friends vote RAD | Last 8 vote BAD');
-  console.log('Vote RAD → first 10 get green check, last 8 get red X');
-  console.log('18 friends total — should show 15 max (3 rows of 5)');
+  console.log('\n18 friends with varied voting patterns (hash-based)');
+  console.log('80 posts total — milestones will be rare');
+  console.log('Each friend votes independently per post');
   console.log('Pending request from @riley');
 }
 

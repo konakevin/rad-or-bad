@@ -56,9 +56,11 @@ export default function PhotoDetailScreen() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [saving, setSaving] = useState(false);
   const [localVote, setLocalVote] = useState<'rad' | 'bad' | null>(null);
+  const [justVoted, setJustVoted] = useState(false); // true only when voted THIS view
   const [currentId, setCurrentId] = useState(id);
   const [captionExpanded, setCaptionExpanded] = useState(false);
   const [muted, setMuted] = useState(true);
+  const [votePending, setVotePending] = useState<'rad' | 'bad' | null>(null);
 
   const queryClient = useQueryClient();
   const currentUser = useAuthStore((s) => s.user);
@@ -70,7 +72,7 @@ export default function PhotoDetailScreen() {
   const { mutate: toggleFavorite } = useToggleFavorite();
   const isFavorited = favoriteIds.has(currentId);
 
-  // Combine server vote + local optimistic vote
+  // Simple rule: voted = either from DB or just now
   const userVote = localVote ?? existingVote ?? null;
   const hasVoted = userVote !== null;
 
@@ -89,17 +91,13 @@ export default function PhotoDetailScreen() {
 
   const slideY = useSharedValue(0);
 
-  // Score reveal animation — declared here so swapToId can reset them
-  const scoreOpacity = useSharedValue(0);
-  const scoreScale = useSharedValue(0.4);
-
   // Called on JS thread after the slide-out animation completes
   function swapToId(targetId: string, enterFrom: number) {
     setCurrentId(targetId);
     setLocalVote(null);
+    setJustVoted(false);
+    setVotePending(null);
     setCaptionExpanded(false);
-    scoreOpacity.value = 0;
-    scoreScale.value = 0.4;
     // Jump to off-screen on the opposite side, then spring in
     slideY.value = enterFrom;
     slideY.value = withTiming(0, { duration: 220 });
@@ -137,22 +135,25 @@ export default function PhotoDetailScreen() {
       }
     });
 
-  useEffect(() => {
-    if (!hasVoted || voteLoading) return;
-    if (localVote !== null) {
-      // Just voted this session — same punch animation as SwipeCard
-      animateScoreIn(scoreOpacity, scoreScale, { fadeDuration: 80, punchDuration: 160, settleDuration: 130 });
-    } else {
-      // Already voted previously — show instantly, no animation
-      scoreOpacity.value = 1;
-      scoreScale.value = 1;
-    }
-  }, [hasVoted, voteLoading]);
+  // Score animation only used for the "just voted" punch effect
+  const scoreOpacity = useSharedValue(0);
+  const scoreScale = useSharedValue(0.4);
 
-  const scoreStyle = useAnimatedStyle(() => ({
+  useEffect(() => {
+    if (justVoted) {
+      animateScoreIn(scoreOpacity, scoreScale, { fadeDuration: 80, punchDuration: 160, settleDuration: 130 });
+    }
+  }, [justVoted]);
+
+  const scoreAnimStyle = useAnimatedStyle(() => ({
     opacity: scoreOpacity.value,
     transform: [{ scale: scoreScale.value }],
   }));
+
+  // Determine if score should show: voted (from DB or local) and not loading
+  const showScore = hasVoted && !voteLoading && rating !== null;
+  // Previously voted = show instantly (no animation). Just voted = use animated style.
+  const showScoreInstant = showScore && !justVoted;
 
   const slideStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: slideY.value }],
@@ -178,21 +179,28 @@ export default function PhotoDetailScreen() {
   const isOwnPost = currentUser?.id === p.user_id;
   const blurBg = p.width && p.height ? (p.width / p.height) > (SCREEN_WIDTH / SCREEN_HEIGHT) : false;
 
-  // Optimistic score calculation
-  const rad = p.rad_votes + (localVote === 'rad' ? 1 : 0);
-  const total = p.total_votes + (localVote !== null ? 1 : 0);
-  const rating = hasVoted ? getRating(rad, total) : null;
+  // Optimistic score calculation — include pending vote
+  const activeVote = localVote ?? votePending;
+  const rad = p.rad_votes + (activeVote === 'rad' ? 1 : 0);
+  const total = p.total_votes + (activeVote !== null ? 1 : 0);
+  const rating = (hasVoted || votePending) ? getRating(rad, total) : null;
 
   function handleVote(vote: 'rad' | 'bad') {
-    if (hasVoted) return;
+    if (hasVoted || votePending) return;
     Haptics.impactAsync(vote === 'rad' ? Haptics.ImpactFeedbackStyle.Medium : Haptics.ImpactFeedbackStyle.Light);
-    setLocalVote(vote);
+    setVotePending(vote);
     castVote({ uploadId: p.id, vote }, {
       onError: (err) => {
-        setLocalVote(null);
+        setVotePending(null);
         Alert.alert('Vote failed', err.message);
       },
     });
+    // Let button shrink + burst play, then reveal score
+    setTimeout(() => {
+      setLocalVote(vote);
+      setJustVoted(true);
+      setVotePending(null);
+    }, 400);
   }
 
   function handleDelete() {
@@ -271,17 +279,26 @@ export default function PhotoDetailScreen() {
         onShare={handleShare}
       />
 
-      {/* Vote buttons — absolute so gradient height never clips them */}
-      {!isOwnPost && !voteLoading && !hasVoted && (
+      {/* Vote buttons — absolute, shrink + fade after voting */}
+      {!isOwnPost && !voteLoading && (!hasVoted || votePending) && (
         <View style={styles.voteButtonsCompact}>
-          <VoteButton vote="rad" onPress={() => handleVote('rad')} disabled={false} size={68} />
-          <VoteButton vote="bad" onPress={() => handleVote('bad')} disabled={false} size={68} />
+          <VoteButton vote="rad" onPress={() => handleVote('rad')} disabled={!!votePending} size={68} shrinkOnPress />
+          <VoteButton vote="bad" onPress={() => handleVote('bad')} disabled={!!votePending} size={68} shrinkOnPress />
         </View>
       )}
 
-      {/* Score badge — absolute top-right, animates in after voting */}
-      {!isOwnPost && hasVoted && rating !== null && (
-        <Animated.View style={[styles.scoreBadge, scoreStyle]} pointerEvents="none">
+      {/* Score badge — instant for previously voted, animated for just voted */}
+      {!isOwnPost && showScoreInstant && rating !== null && (
+        <View style={styles.scoreBadge} pointerEvents="none">
+          <MaskedView maskElement={<Text style={styles.scoreBadgeText}>{rating.percent}%</Text>}>
+            <LinearGradient colors={rating.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+              <Text style={[styles.scoreBadgeText, styles.invisible]}>{rating.percent}%</Text>
+            </LinearGradient>
+          </MaskedView>
+        </View>
+      )}
+      {!isOwnPost && justVoted && rating !== null && (
+        <Animated.View style={[styles.scoreBadge, scoreAnimStyle]} pointerEvents="none">
           <MaskedView maskElement={<Text style={styles.scoreBadgeText}>{rating.percent}%</Text>}>
             <LinearGradient colors={rating.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
               <Text style={[styles.scoreBadgeText, styles.invisible]}>{rating.percent}%</Text>

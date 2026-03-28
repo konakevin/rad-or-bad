@@ -25,6 +25,8 @@ import { formatCount } from '@/lib/formatCount';
 import { CATEGORY_LABELS, CATEGORY_COLORS } from '@/constants/categories';
 import { animateScoreIn } from '@/lib/scoreAnimation';
 import { DISMISS_DELAY } from '@/constants/theme';
+import { MilestoneBurst } from '@/components/MilestoneBurst';
+import type { MilestoneHit } from '@/lib/milestones';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH;
@@ -58,6 +60,7 @@ interface SwipeCardProps {
   hasMilestone?: boolean;
   friendVotes?: FriendVote[];
   autoDismissDelay?: number | null;
+  milestoneHit?: MilestoneHit | null;
 }
 
 function CategoryPill({ category }: { category: string }) {
@@ -124,7 +127,7 @@ function FriendAvatarBubble({ friend, userVote, index }: {
   );
 }
 
-export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost, isAlreadyVoted = false, onDismiss, onDismissStart, onFavorite, onFollow, onUserPress, onSwipeUpBlocked, hideRank = false, isTop, index, containerHeight, showSwipeHint, swipeEnabled = true, hasMilestone = false, friendVotes, autoDismissDelay }: SwipeCardProps) {
+export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost, isAlreadyVoted = false, onDismiss, onDismissStart, onFavorite, onFollow, onUserPress, onSwipeUpBlocked, hideRank = false, isTop, index, containerHeight, showSwipeHint, swipeEnabled = true, hasMilestone = false, friendVotes, autoDismissDelay, milestoneHit }: SwipeCardProps) {
   const cardHeight = containerHeight > 0 ? containerHeight : SCREEN_HEIGHT * 0.65;
   const isVideo = item.media_type === 'video';
   const [muted, setMuted] = useState(true);
@@ -298,8 +301,8 @@ export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost,
           );
         })()}
 
-        {/* Score badge — top right, fades in after voting */}
-        {rating !== null && (
+        {/* Score badge — top right, fades in after voting (hidden on own posts) */}
+        {rating !== null && !isOwnPost && (
           <Animated.View style={[styles.ratingBadge, scoreStyle]}>
             <MaskedView maskElement={
               <Text style={styles.ratingPercent}>{rating.percent}%</Text>
@@ -314,6 +317,9 @@ export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost,
             </MaskedView>
           </Animated.View>
         )}
+
+        {/* Milestone celebration overlay */}
+        <MilestoneBurst hit={milestoneHit ?? null} />
 
         {/* Friend avatar bubbles — show before vote (faces), animate to center on match after */}
         {friendVotes && friendVotes.length > 0 && (
