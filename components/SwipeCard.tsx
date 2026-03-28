@@ -82,63 +82,13 @@ function FriendAvatarBubble({ friend, userVote, index }: {
   const isMatch = hasVoted && friend.vote === userVote;
   const streak = friend.streak ?? 0;
 
-  // Entrance animation
-  const enterScale = useSharedValue(0);
-  const enterOpacity = useSharedValue(0);
-
-  // Post-vote reveal
-  const revealProgress = useSharedValue(0);
-  const badgeScale = useSharedValue(0);
-
-  useEffect(() => {
-    const delay = index * 60;
-    enterOpacity.value = withDelay(delay, withTiming(1, { duration: 200 }));
-    enterScale.value = withDelay(delay, withSequence(
-      withTiming(1.15, { duration: 150, easing: Easing.out(Easing.back(2)) }),
-      withTiming(1, { duration: 100 }),
-    ));
-  }, []);
-
-  useEffect(() => {
-    if (!hasVoted) return;
-    const delay = 200 + index * 150;
-    revealProgress.value = withDelay(delay, withTiming(1, { duration: 250, easing: Easing.out(Easing.quad) }));
-    if (isMatch && streak > 0) {
-      badgeScale.value = withDelay(delay + 100, withSequence(
-        withTiming(1.2, { duration: 150, easing: Easing.out(Easing.back(2)) }),
-        withTiming(1, { duration: 100 }),
-      ));
-    }
-  }, [hasVoted]);
-
-  const containerStyle = useAnimatedStyle(() => ({
-    opacity: enterOpacity.value,
-    transform: [{ scale: enterScale.value }],
-  }));
-
-  const borderStyle = useAnimatedStyle(() => {
-    const p = revealProgress.value;
-    if (p === 0) return { borderColor: 'rgba(255,255,255,0.4)' };
-    return {
-      borderColor: isMatch ? `rgba(76, 175, 80, ${p})` : `rgba(221, 119, 102, ${p})`,
-    };
-  });
-
-  const iconStyle = useAnimatedStyle(() => ({
-    opacity: revealProgress.value,
-    transform: [{ scale: 0.5 + revealProgress.value * 0.5 }],
-  }));
-
-  const badgeStyle = useAnimatedStyle(() => ({
-    opacity: badgeScale.value > 0 ? 1 : 0,
-    transform: [{ scale: badgeScale.value }],
-  }));
+  const borderColor = !hasVoted ? 'rgba(255,255,255,0.4)' : isMatch ? 'rgba(76, 170, 100, 1)' : 'rgba(180, 120, 120, 1)';
 
   const initial = friend.username[0]?.toUpperCase() ?? '?';
 
   return (
     <View style={styles.friendBubbleWrap}>
-      <Animated.View style={[styles.friendBubble, containerStyle, borderStyle]}>
+      <View style={[styles.friendBubble, { borderColor }]}>
         {friend.avatar_url ? (
           <Image source={{ uri: friend.avatar_url }} style={styles.friendBubbleImage} />
         ) : (
@@ -147,22 +97,24 @@ function FriendAvatarBubble({ friend, userVote, index }: {
           </View>
         )}
         {/* Check / X overlay */}
-        <Animated.View style={[styles.friendBubbleIconOverlay, iconStyle]}>
-          <View style={[styles.friendBubbleIconBg, { backgroundColor: isMatch ? 'rgba(76,175,80,0.7)' : 'rgba(221,119,102,0.7)' }]}>
-            <Ionicons
-              name={isMatch ? 'checkmark' : 'close'}
-              size={20}
-              color="#FFFFFF"
-            />
+        {hasVoted && (
+          <View style={styles.friendBubbleIconOverlay}>
+            <View style={[styles.friendBubbleIconBg, { backgroundColor: 'rgba(0,0,0,0.35)' }]}>
+              <Ionicons
+                name={isMatch ? 'checkmark' : 'close'}
+                size={isMatch ? 28 : 32}
+                color={isMatch ? '#6ECF8E' : '#CC9999'}
+              />
+            </View>
           </View>
-        </Animated.View>
-      </Animated.View>
+        )}
+      </View>
 
       {/* Streak count badge — only on matched */}
-      {isMatch && streak > 0 && (
-        <Animated.View style={[styles.streakBadge, badgeStyle]}>
+      {hasVoted && isMatch && streak > 0 && (
+        <View style={styles.streakBadge}>
           <Text style={styles.streakBadgeText}>{streak}</Text>
-        </Animated.View>
+        </View>
       )}
     </View>
   );
@@ -361,7 +313,7 @@ export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost,
 
         {/* Friend avatar bubbles — show before vote (faces), animate to center on match after */}
         {friendVotes && friendVotes.length > 0 && (
-          <View style={styles.friendAvatarRow}>
+          <View style={styles.friendAvatarGrid}>
             {friendVotes.slice(0, 5).map((friend, i) => (
               <FriendAvatarBubble key={friend.username} friend={friend} userVote={userVote} index={i} />
             ))}
@@ -527,12 +479,12 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 8,
   },
-  friendAvatarRow: {
+  friendAvatarGrid: {
     position: 'absolute',
     top: 14,
     left: 14,
-    flexDirection: 'row',
-    gap: 6,
+    flexDirection: 'column',
+    gap: 4,
     overflow: 'visible',
     zIndex: 50,
   },

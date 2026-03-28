@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MaskedView from '@react-native-masked-view/masked-view';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Image } from 'expo-image';
 import * as Haptics from 'expo-haptics';
 import { useLocalSearchParams } from 'expo-router';
 import { useFeed, useFriendsFeed, useFollowingFeed, type FeedItem } from '@/hooks/useFeed';
@@ -390,7 +391,7 @@ export default function FeedScreen() {
                   swipeEnabled={true}
                   hasMilestone={index === 0 && milestoneHit?.postId === item.id}
                   friendVotes={index === 0 ? (feedMode === 'friends' ? item.friend_votes?.map((f) => ({ ...f, streak: localStreaks.get(f.username) ?? f.streak })) : friendRevealPostId === item.id ? friendVotesOnPost : undefined) : undefined}
-                  autoDismissDelay={index === 0 && feedMode === 'friends' ? 1200 + (item.friend_votes?.length ?? 0) * 250 : undefined}
+                  autoDismissDelay={index === 0 && milestoneHit?.postId === item.id ? null : index === 0 && feedMode === 'friends' ? 900 : undefined}
                 />
               );
             })

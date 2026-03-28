@@ -1,16 +1,6 @@
 #!/usr/bin/env node
 'use strict';
 
-/**
- * Seed script for testing the friendship system.
- *
- * Creates 5 friend users + 3 poster users.
- * Makes friend users accepted friends with Kevin (+ auto-follows).
- * Creates posts by posters and friends.
- * Friends vote on posts so Streak feed + avatar bubbles work.
- * Runs refresh_vote_streaks() to compute streaks.
- */
-
 const { createClient } = require('@supabase/supabase-js');
 const fs = require('fs');
 const path = require('path');
@@ -39,22 +29,36 @@ const supabase = createClient(SUPABASE_URL, SERVICE_KEY, {
 const PASSWORD = 'Testpass123!';
 const KEVIN_EMAIL = 'konakevin@gmail.com';
 
+// Real names + avatar photos from randomuser.me-style placeholder URLs
 const FRIEND_USERS = [
-  { email: 'frienduser1@radorbad.dev', username: 'frienduser1' },
-  { email: 'frienduser2@radorbad.dev', username: 'frienduser2' },
-  { email: 'frienduser3@radorbad.dev', username: 'frienduser3' },
-  { email: 'frienduser4@radorbad.dev', username: 'frienduser4' },
-  { email: 'frienduser5@radorbad.dev', username: 'frienduser5' },
+  { email: 'sarah@radorbad.dev',   username: 'sarah',   avatar: 'https://i.pravatar.cc/150?u=sarah' },
+  { email: 'bill@radorbad.dev',    username: 'bill',    avatar: 'https://i.pravatar.cc/150?u=bill' },
+  { email: 'maya@radorbad.dev',    username: 'maya',    avatar: 'https://i.pravatar.cc/150?u=maya' },
+  { email: 'jake@radorbad.dev',    username: 'jake',    avatar: 'https://i.pravatar.cc/150?u=jake' },
+  { email: 'luna@radorbad.dev',    username: 'luna',    avatar: 'https://i.pravatar.cc/150?u=luna' },
+  { email: 'alex@radorbad.dev',    username: 'alex',    avatar: 'https://i.pravatar.cc/150?u=alex' },
+  { email: 'nova@radorbad.dev',    username: 'nova',    avatar: 'https://i.pravatar.cc/150?u=nova' },
+  { email: 'finn@radorbad.dev',    username: 'finn',    avatar: 'https://i.pravatar.cc/150?u=finn' },
+  { email: 'zoe@radorbad.dev',     username: 'zoe',     avatar: 'https://i.pravatar.cc/150?u=zoe' },
+  { email: 'omar@radorbad.dev',    username: 'omar',    avatar: 'https://i.pravatar.cc/150?u=omar' },
+  { email: 'iris@radorbad.dev',    username: 'iris',    avatar: 'https://i.pravatar.cc/150?u=iris' },
+  { email: 'kai@radorbad.dev',     username: 'kai',     avatar: 'https://i.pravatar.cc/150?u=kai' },
+  { email: 'ruby@radorbad.dev',    username: 'ruby',    avatar: 'https://i.pravatar.cc/150?u=ruby' },
+  { email: 'cole@radorbad.dev',    username: 'cole',    avatar: 'https://i.pravatar.cc/150?u=cole' },
+  { email: 'jada@radorbad.dev',    username: 'jada',    avatar: 'https://i.pravatar.cc/150?u=jada' },
+  { email: 'milo@radorbad.dev',    username: 'milo',    avatar: 'https://i.pravatar.cc/150?u=milo' },
+  { email: 'eden@radorbad.dev',    username: 'eden',    avatar: 'https://i.pravatar.cc/150?u=eden' },
+  { email: 'theo@radorbad.dev',    username: 'theo',    avatar: 'https://i.pravatar.cc/150?u=theo' },
 ];
 
 const POSTER_USERS = [
-  { email: 'poster1@radorbad.dev', username: 'poster1' },
-  { email: 'poster2@radorbad.dev', username: 'poster2' },
-  { email: 'poster3@radorbad.dev', username: 'poster3' },
+  { email: 'poster1@radorbad.dev', username: 'dj_wave',  avatar: 'https://i.pravatar.cc/150?u=djwave' },
+  { email: 'poster2@radorbad.dev', username: 'neoncat',  avatar: 'https://i.pravatar.cc/150?u=neoncat' },
+  { email: 'poster3@radorbad.dev', username: 'pixel99',  avatar: 'https://i.pravatar.cc/150?u=pixel99' },
 ];
 
 const PLACEHOLDER_IMAGES = Array.from({ length: 50 }, (_, i) =>
-  `https://picsum.photos/seed/friend${i + 1}/600/800`
+  `https://picsum.photos/seed/fp${i + 1}/600/800`
 );
 
 function log(msg) { console.log(`  ${msg}`); }
@@ -85,12 +89,18 @@ async function cleanup() {
   log('Cleared streaks, friendships, reset watermark');
 }
 
-async function createUser(email, username) {
+async function createUser(email, username, avatar) {
   const { data, error } = await supabase.auth.admin.createUser({
     email, password: PASSWORD, email_confirm: true,
     user_metadata: { username },
   });
   if (error) { console.error(`  Failed ${username}: ${error.message}`); return null; }
+
+  // Set avatar
+  if (avatar) {
+    await supabase.from('users').update({ avatar_url: avatar }).eq('id', data.user.id);
+  }
+
   return { id: data.user.id, email, username };
 }
 
@@ -103,51 +113,42 @@ async function main() {
   if (!kevin) { console.error('Kevin not found!'); process.exit(1); }
   console.log(`\nKevin ID: ${kevin.id}`);
 
-  // Create users
+  // Create friend users with avatars
   console.log('\nCreating friend users...');
   const friends = [];
   for (const f of FRIEND_USERS) {
-    const user = await createUser(f.email, f.username);
+    const user = await createUser(f.email, f.username, f.avatar);
     if (user) friends.push(user);
     process.stdout.write('.');
   }
-  console.log(`\n  Created ${friends.length} friends`);
+  console.log(`\n  Created: ${friends.map(f => f.username).join(', ')}`);
 
+  // Create poster users with avatars
   console.log('\nCreating poster users...');
   const posters = [];
   for (const p of POSTER_USERS) {
-    const user = await createUser(p.email, p.username);
+    const user = await createUser(p.email, p.username, p.avatar);
     if (user) posters.push(user);
     process.stdout.write('.');
   }
-  console.log(`\n  Created ${posters.length} posters`);
+  console.log(`\n  Created: ${posters.map(p => p.username).join(', ')}`);
 
-  // Create accepted friendships between Kevin and all friend users
+  // Create accepted friendships + mutual follows
   console.log('\nCreating friendships with Kevin...');
   for (const f of friends) {
     const userA = kevin.id < f.id ? kevin.id : f.id;
     const userB = kevin.id < f.id ? f.id : kevin.id;
     await supabase.from('friendships').upsert({
-      user_a: userA,
-      user_b: userB,
-      status: 'accepted',
-      requester: f.id,
+      user_a: userA, user_b: userB, status: 'accepted', requester: f.id,
     }, { onConflict: 'user_a,user_b' });
-  }
-  log(`Created ${friends.length} accepted friendships`);
-
-  // Auto-follow both ways (friendship acceptance does this normally)
-  console.log('\nCreating mutual follows...');
-  for (const f of friends) {
     await supabase.from('follows').upsert([
       { follower_id: kevin.id, following_id: f.id },
       { follower_id: f.id, following_id: kevin.id },
     ], { onConflict: 'follower_id,following_id' });
   }
-  log('Mutual follows created');
+  log(`Friends: ${friends.map(f => '@' + f.username).join(', ')}`);
 
-  // Also create friendships between some friends (for testing friend lists on other profiles)
-  console.log('\nCreating inter-friend friendships...');
+  // Inter-friend friendships
   for (let i = 0; i < friends.length - 1; i++) {
     const a = friends[i].id < friends[i + 1].id ? friends[i].id : friends[i + 1].id;
     const b = friends[i].id < friends[i + 1].id ? friends[i + 1].id : friends[i].id;
@@ -159,22 +160,21 @@ async function main() {
       { follower_id: friends[i + 1].id, following_id: friends[i].id },
     ], { onConflict: 'follower_id,following_id' });
   }
-  log('Inter-friend friendships created');
 
-  // Create one pending request TO Kevin (from a poster, not a friend)
-  console.log('\nCreating a pending friend request to Kevin...');
-  const pendingUser = await createUser('pendinguser@radorbad.dev', 'pendinguser');
+  // Pending request
+  console.log('\nCreating pending friend request...');
+  const pendingUser = await createUser('pending@radorbad.dev', 'riley', 'https://i.pravatar.cc/150?u=riley');
   if (pendingUser) {
     const a = kevin.id < pendingUser.id ? kevin.id : pendingUser.id;
     const b = kevin.id < pendingUser.id ? pendingUser.id : kevin.id;
     await supabase.from('friendships').upsert({
       user_a: a, user_b: b, status: 'pending', requester: pendingUser.id,
     }, { onConflict: 'user_a,user_b' });
-    log(`Pending request from @${pendingUser.username}`);
+    log('Pending request from @riley');
   }
 
   // Create posts
-  console.log('\nCreating stranger posts (Everyone feed)...');
+  console.log('\nCreating stranger posts...');
   const strangerPosts = [];
   for (let i = 0; i < 20; i++) {
     const poster = posters[i % posters.length];
@@ -184,14 +184,14 @@ async function main() {
       image_url: PLACEHOLDER_IMAGES[i],
       media_type: 'image',
       width: 600, height: 800,
-      caption: `Everyone feed post ${i + 1}`,
+      caption: `Check this out #${i + 1}`,
       is_approved: true,
     }).select('id, user_id').single();
     if (!error) strangerPosts.push(data);
   }
-  log(`Created ${strangerPosts.length} stranger posts`);
+  log(`${strangerPosts.length} stranger posts`);
 
-  console.log('\nCreating friend posts (Following feed)...');
+  console.log('\nCreating friend posts...');
   const friendPosts = [];
   for (let i = 0; i < 20; i++) {
     const friend = friends[i % friends.length];
@@ -201,43 +201,41 @@ async function main() {
       image_url: PLACEHOLDER_IMAGES[20 + i],
       media_type: 'image',
       width: 600, height: 800,
-      caption: `${friend.username}'s post ${Math.floor(i / friends.length) + 1}`,
+      caption: `${friend.username}'s post`,
       is_approved: true,
     }).select('id, user_id').single();
     if (!error) friendPosts.push(data);
   }
-  log(`Created ${friendPosts.length} friend posts`);
+  log(`${friendPosts.length} friend posts`);
 
-  // Friends vote on posts
-  console.log('\nFriends voting on posts...');
+  // Voting pattern:
+  //   sarah, bill, maya → vote RAD (you'll match these when voting RAD)
+  //   jake, luna → vote BAD (you'll mismatch these when voting RAD)
+  // Vary rad vote counts so milestones are rare.
+  // Most posts get 7-8 or 11-12 rad votes (miss the #10 milestone).
+  // Only 2 posts get exactly 9 rad votes (Kevin's vote = #10 = milestone).
+  const allPosts = [...strangerPosts, ...friendPosts];
+  const milestonePostIndices = new Set([5, 25]); // 2 out of 40
+
+  console.log('\nFriends voting...');
   let voteCount = 0;
-
-  for (const post of strangerPosts) {
-    for (let i = 0; i < friends.length; i++) {
-      const vote = i < 3 ? 'rad' : 'bad';
-      const { error } = await supabase.from('votes').upsert({
-        voter_id: friends[i].id, upload_id: post.id, vote,
-      }, { onConflict: 'voter_id,upload_id' });
-      if (!error) voteCount++;
-    }
-  }
-
-  for (const post of friendPosts) {
+  for (let p = 0; p < allPosts.length; p++) {
+    const post = allPosts[p];
+    const radCount = milestonePostIndices.has(p) ? 9 : [7, 8, 11, 12][p % 4];
     for (let i = 0; i < friends.length; i++) {
       if (friends[i].id === post.user_id) continue;
-      const vote = i < 3 ? 'rad' : 'bad';
+      const vote = i < radCount ? 'rad' : 'bad';
       const { error } = await supabase.from('votes').upsert({
         voter_id: friends[i].id, upload_id: post.id, vote,
       }, { onConflict: 'voter_id,upload_id' });
       if (!error) voteCount++;
     }
   }
-  log(`Created ${voteCount} votes`);
+  log(`${voteCount} votes`);
 
   // Update vote counts
   console.log('\nUpdating vote counts...');
-  const allPosts = [...strangerPosts, ...friendPosts];
-  for (const post of allPosts) {
+  for (const post of [...strangerPosts, ...friendPosts]) {
     const { data: votes } = await supabase.from('votes').select('vote').eq('upload_id', post.id);
     if (!votes) continue;
     const rad = votes.filter(v => v.vote === 'rad').length;
@@ -250,33 +248,25 @@ async function main() {
 
   // Refresh streaks
   console.log('\nRefreshing streaks...');
-  const { error: streakErr } = await supabase.rpc('refresh_vote_streaks');
-  if (streakErr) console.error('  Streak error:', streakErr.message);
-  else log('Streaks computed');
+  await supabase.rpc('refresh_vote_streaks');
+  log('Streaks computed');
 
   // Verify
   console.log('\nVerifying...');
   const { data: mainFeed } = await supabase.rpc('get_feed', { p_user_id: kevin.id, p_limit: 50 });
-  log(`Everyone feed: ${mainFeed?.length ?? 0} posts`);
+  log(`Everyone: ${mainFeed?.length ?? 0}`);
   const { data: followFeed } = await supabase.rpc('get_following_feed', { p_user_id: kevin.id, p_limit: 50 });
-  log(`Following feed: ${followFeed?.length ?? 0} posts`);
+  log(`Following: ${followFeed?.length ?? 0}`);
   const { data: streakFeed } = await supabase.rpc('get_friends_feed', { p_user_id: kevin.id, p_limit: 50 });
-  log(`Streak feed: ${streakFeed?.length ?? 0} posts`);
-
-  const { data: friendCount } = await supabase.rpc('get_friend_count', { p_user_id: kevin.id });
-  log(`Kevin's friend count: ${friendCount}`);
-
-  const { data: pending } = await supabase.rpc('get_pending_requests', { p_user_id: kevin.id });
-  log(`Pending requests: ${pending?.length ?? 0}`);
+  log(`Streak: ${streakFeed?.length ?? 0}`);
+  log(`Friend count: ${(await supabase.rpc('get_friend_count', { p_user_id: kevin.id })).data}`);
+  log(`Pending: ${((await supabase.rpc('get_pending_requests', { p_user_id: kevin.id })).data ?? []).length}`);
 
   console.log('\n=== Done! ===');
-  console.log('\nHow to test:');
-  console.log('  1. Open app → Profile → Friends tab should show 5 friends + 1 pending request');
-  console.log('  2. Accept/decline the pending request from @pendinguser');
-  console.log('  3. View a friend profile → "Friends ✓" button should show');
-  console.log('  4. Streak feed should show posts friends voted on');
-  console.log('  5. Following feed should show friends\' posts');
-  console.log('  6. Vote RAD → avatar bubbles flip green (frienduser1-3) and red (frienduser4-5)');
+  console.log('\nFirst 10 friends vote RAD | Last 8 vote BAD');
+  console.log('Vote RAD → first 10 get green check, last 8 get red X');
+  console.log('18 friends total — should show 15 max (3 rows of 5)');
+  console.log('Pending request from @riley');
 }
 
 main().catch((err) => { console.error(err); process.exit(1); });

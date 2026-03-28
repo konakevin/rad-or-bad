@@ -6,19 +6,12 @@ export interface MilestoneHit {
   message: string;
 }
 
-const MESSAGES: Record<number, string[]> = {
-  10:   ["You're the 10th to vote this RAD!", "10 rads deep — you sealed it!"],
-  25:   ["You just dropped rad #25!", "25 rads and counting — you made it happen!"],
-  50:   ["You're #50! Half a hundred rads!", "50 rads! You pushed it over the edge!"],
-  100:  ["YOU are the 100th rad!", "100 rads! You just made history!"],
-  250:  ["250 rads — you're part of something big!", "You just landed rad #250!"],
-  500:  ["500 RADS. You lit the fuse!", "You're #500 — absolute legend!"],
-  1000: ["ONE THOUSAND. You are the one.", "1,000 rads — you completed the mission!"],
-};
+function formatNumber(n: number): string {
+  return n >= 1000 ? `${(n / 1000).toFixed(0)}K` : String(n);
+}
 
-function pickMessage(milestone: number): string {
-  const pool = MESSAGES[milestone];
-  return pool[Math.floor(Math.random() * pool.length)];
+function buildMessage(milestone: number): string {
+  return `You're rad vote #${formatNumber(milestone)}!`;
 }
 
 /**
@@ -30,5 +23,5 @@ export function checkMilestone(currentRadVotes: number): MilestoneHit | null {
   const next = currentRadVotes + 1;
   if (!(MILESTONES as readonly number[]).includes(next)) return null;
   const tier = next >= 500 ? 4 : next >= 100 ? 3 : next >= 50 ? 2 : 1;
-  return { milestone: next, tier, message: pickMessage(next) };
+  return { milestone: next, tier, message: buildMessage(next) };
 }
