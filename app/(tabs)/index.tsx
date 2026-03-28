@@ -398,7 +398,7 @@ export default function FeedScreen() {
                       bad_streak: local?.badStreak ?? f.bad_streak,
                     };
                   }) : undefined}
-                  autoDismissDelay={index === 0 && milestoneHit?.postId === item.id ? null : index === 0 && feedMode === 'friends' ? 900 : undefined}
+                  autoDismissDelay={index === 0 && milestoneHit?.postId === item.id ? null : undefined}
                 />
               );
             })
@@ -573,7 +573,9 @@ function StreakLockedState({ votesNeeded, onGoVote }: { votesNeeded: number; onG
         Vote on {votesNeeded} more {votesNeeded === 1 ? 'post' : 'posts'} to unlock! See what your friends voted on and build streaks by voting the same way.
       </Text>
       <TouchableOpacity style={styles.lockedButton} onPress={onGoVote} activeOpacity={0.7}>
+        <Ionicons name="flash" size={16} color="#FFD700" />
         <Text style={styles.lockedButtonText}>Go vote</Text>
+        <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
       </TouchableOpacity>
     </View>
   );

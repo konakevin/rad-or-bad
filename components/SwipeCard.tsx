@@ -24,6 +24,7 @@ import { getRating } from '@/lib/getRating';
 import { formatCount } from '@/lib/formatCount';
 import { CATEGORY_LABELS, CATEGORY_COLORS } from '@/constants/categories';
 import { animateScoreIn } from '@/lib/scoreAnimation';
+import { DISMISS_DELAY } from '@/constants/theme';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH;
@@ -177,8 +178,8 @@ export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost,
         scoreScale.value = 1;
       } else {
         animateScoreIn(scoreOpacity, scoreScale);
-        // autoDismissDelay: number = custom delay, null = no auto-dismiss, undefined = default (430ms)
-        const delay = autoDismissDelay !== undefined ? autoDismissDelay : (hasMilestone ? null : 430);
+        // autoDismissDelay: number = custom delay, null = no auto-dismiss, undefined = default
+        const delay = autoDismissDelay !== undefined ? autoDismissDelay : (hasMilestone ? null : DISMISS_DELAY);
         if (delay !== null) {
           dismissTimer.current = setTimeout(() => {
             translateY.value = withTiming(-SCREEN_HEIGHT * 1.3, { duration: 260 }, () => {

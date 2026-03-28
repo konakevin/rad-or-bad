@@ -74,9 +74,15 @@ export function StreakEmptyState() {
       <Text style={styles.emptySub}>
         Vote on posts your friends have voted on to build streaks!
       </Text>
-      <View style={{ marginTop: 16 }}>
-        <VoteWithFriendsButton />
-      </View>
+      <TouchableOpacity
+        style={styles.goVoteButton}
+        onPress={() => router.push('/(tabs)?mode=friends' as Href)}
+        activeOpacity={0.7}
+      >
+        <Ionicons name="flash" size={16} color="#FFD700" />
+        <Text style={styles.goVoteText}>Go vote</Text>
+        <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+      </TouchableOpacity>
     </View>
   );
 }
@@ -146,6 +152,23 @@ const styles = StyleSheet.create({
   },
   ctaText: {
     flex: 1,
+    color: colors.textPrimary,
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  goVoteButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  goVoteText: {
     color: colors.textPrimary,
     fontSize: 15,
     fontWeight: '600',

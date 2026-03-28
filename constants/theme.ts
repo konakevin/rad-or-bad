@@ -19,6 +19,9 @@ export const colors = {
   success: '#00BA7C',
 } as const;
 
+/** Auto-dismiss delay (ms) after voting on a card */
+export const DISMISS_DELAY = 430;
+
 /** Brand gradient arrays — pass directly to LinearGradient `colors` prop */
 export const gradients: { rad: string[]; bad: string[] } = {
   rad: ['#CCDD55', '#DDAA66', '#DD7766'],

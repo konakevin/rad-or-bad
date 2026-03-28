@@ -172,7 +172,7 @@ export default function PublicProfileScreen() {
         <FlatList<VibeSyncStreak>
           key="streaks"
           data={streaks}
-          keyExtractor={(item) => item.friendId}
+          keyExtractor={(item) => item.friendId || item.friendUsername}
           ListHeaderComponent={<>{header}<VoteWithFriendsButton /></>}
           ListEmptyComponent={
             <View style={styles.center}>
