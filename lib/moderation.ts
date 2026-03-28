@@ -15,6 +15,7 @@ export interface ModerationResult {
 export interface ModerationProvider {
   name: string;
   checkImage(imageUrl: string): Promise<ModerationResult>;
+  checkVideo(videoUrl: string): Promise<ModerationResult>;
   checkText(text: string): Promise<ModerationResult>;
 }
 
@@ -93,6 +94,48 @@ class SightengineProvider implements ModerationProvider {
     }
   }
 
+  async checkVideo(videoUrl: string): Promise<ModerationResult> {
+    try {
+      const params = new URLSearchParams({
+        stream_url: videoUrl,
+        models: 'nudity-2.1,gore-2.0,weapon,drugs,self-harm',
+        api_user: this.apiUser,
+        api_secret: this.apiSecret,
+      });
+
+      const res = await fetch(`https://api.sightengine.com/1.0/video/check-sync.json?${params}`, {
+        method: 'GET',
+      });
+      if (!res.ok) {
+        console.warn(`[${this.name}] Video API error:`, res.status);
+        return { passed: true, reason: null };
+      }
+
+      const data = await res.json();
+      if (data.status !== 'success') {
+        console.warn(`[${this.name}] Video response error:`, data.error?.message);
+        return { passed: true, reason: null };
+      }
+
+      // Video response has frames array — check each frame
+      const frames = data.data?.frames ?? [];
+      for (const frame of frames) {
+        for (const [path, threshold] of Object.entries(this.imageThresholds)) {
+          const score = this.getNestedValue(frame as Record<string, unknown>, path);
+          if (score > threshold) {
+            const category = path.split('.')[0];
+            return { passed: false, reason: `Video flagged: ${category}` };
+          }
+        }
+      }
+
+      return { passed: true, reason: null };
+    } catch (err) {
+      console.warn(`[${this.name}] Video check failed:`, err);
+      return { passed: true, reason: null };
+    }
+  }
+
   async checkText(text: string): Promise<ModerationResult> {
     if (!text || text.trim().length === 0) return { passed: true, reason: null };
 
@@ -143,6 +186,7 @@ class SightengineProvider implements ModerationProvider {
 class NoopProvider implements ModerationProvider {
   name = 'Noop';
   async checkImage(): Promise<ModerationResult> { return { passed: true, reason: null }; }
+  async checkVideo(): Promise<ModerationResult> { return { passed: true, reason: null }; }
   async checkText(): Promise<ModerationResult> { return { passed: true, reason: null }; }
 }
 
@@ -175,13 +219,21 @@ export async function moderateText(text: string): Promise<ModerationResult> {
   return activeProvider.checkText(text);
 }
 
-export async function moderateUpload(imageUrl: string, caption: string | null): Promise<ModerationResult> {
-  const [imageResult, textResult] = await Promise.all([
-    activeProvider.checkImage(imageUrl),
+export async function moderateUpload(
+  mediaUrl: string,
+  mediaType: 'image' | 'video',
+  caption: string | null,
+): Promise<ModerationResult> {
+  const mediaCheck = mediaType === 'video'
+    ? activeProvider.checkVideo(mediaUrl)
+    : activeProvider.checkImage(mediaUrl);
+
+  const [mediaResult, textResult] = await Promise.all([
+    mediaCheck,
     caption ? activeProvider.checkText(caption) : Promise.resolve({ passed: true, reason: null } as ModerationResult),
   ]);
 
-  if (!imageResult.passed) return imageResult;
+  if (!mediaResult.passed) return mediaResult;
   if (!textResult.passed) return textResult;
   return { passed: true, reason: null };
 }

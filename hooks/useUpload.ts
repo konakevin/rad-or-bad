@@ -62,8 +62,8 @@ export function useUpload() {
         ? await generateAndUploadThumbnail(uploadUri, user!.id)
         : null;
 
-      // Content moderation — check image + caption before making visible
-      const modResult = await moderateUpload(mediaUrl, caption.trim() || null);
+      // Content moderation — check media + caption before making visible
+      const modResult = await moderateUpload(mediaUrl, mediaType, caption.trim() || null);
       if (!modResult.passed) {
         // Clean up uploaded file
         const fileName = mediaUrl.split('/').slice(-2).join('/');
