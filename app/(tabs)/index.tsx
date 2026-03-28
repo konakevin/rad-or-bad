@@ -36,7 +36,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors } from '@/constants/theme';
 import { VoteButton } from '@/components/VoteButton';
 import { MilestoneBurst } from '@/components/MilestoneBurst';
+import { StreakMatchBurst } from '@/components/StreakMatchBurst';
 import { checkMilestone, type MilestoneHit } from '@/lib/milestones';
+import { useFriendVotesOnPost } from '@/hooks/useFriendVotesOnPost';
 import { CATEGORIES } from '@/constants/categories';
 
 
@@ -57,6 +59,10 @@ export default function FeedScreen() {
   const activeFeed = feedMode === 'friends' ? friendsFeed : feedMode === 'friendsPosts' ? followingFeed : defaultFeed;
   const { data: feed = [], isLoading, refetch, isRefetching } = activeFeed;
   const { mutate: castVote } = useVote();
+  // Post-vote friend reveal (Everyone/Following modes only)
+  const { data: friendVotesOnPost = [] } = useFriendVotesOnPost(
+    feedMode !== 'friends' ? friendRevealPostId : null
+  );
   const { data: favoriteIds = new Set<string>() } = useFavoriteIds();
   const { mutate: toggleFavorite } = useToggleFavorite();
   const { data: followingIds = new Set<string>() } = useFollowingIds();
@@ -74,6 +80,8 @@ export default function FeedScreen() {
   const [dismissing, setDismissing] = useState(false);
   const [milestoneHit, setMilestoneHit] = useState<(MilestoneHit & { postId: string }) | null>(null);
   const [streakMatch, setStreakMatch] = useState<{ matched: FriendVote[]; mismatched: FriendVote[]; vote: 'rad' | 'bad'; postId: string } | null>(null);
+  const [friendRevealPostId, setFriendRevealPostId] = useState<string | null>(null);
+  const [friendRevealVote, setFriendRevealVote] = useState<'rad' | 'bad' | null>(null);
   const [headerRowSize, setHeaderRowSize] = useState({ width: 0, height: 0 });
   const loadedFeedKey = useRef('');
   const sessionVotesRef = useRef(sessionVotes);
@@ -168,6 +176,12 @@ export default function FeedScreen() {
         const mismatched = item.friend_votes.filter((f) => f.vote !== vote);
         setStreakMatch({ matched, mismatched, vote, postId: item.id });
       }
+
+      // Everyone/Following feed: trigger friend votes check for reveal pill
+      if (feedMode !== 'friends') {
+        setFriendRevealPostId(item.id);
+        setFriendRevealVote(vote);
+      }
     },
     [castVote, sessionVotes, feedMode]
   );
@@ -186,6 +200,11 @@ export default function FeedScreen() {
     router.push(`/user/${item.user_id}?viewedPost=${item.id}`);
   }, []);
 
+  const handleFriendReveal = useCallback(() => {
+    if (!friendRevealPostId) return;
+    router.push(`/friendReveal/${friendRevealPostId}`);
+  }, [friendRevealPostId]);
+
   const handleSwipeUpBlocked = useCallback(() => {
     setJiggleTick((t) => t + 1);
   }, []);
@@ -195,6 +214,8 @@ export default function FeedScreen() {
     setDeck((prev) => prev.filter((c) => c.id !== item.id));
     setMilestoneHit(null);
     setStreakMatch(null);
+    setFriendRevealPostId(null);
+    setFriendRevealVote(null);
     if (showSwipeHint) {
       setShowSwipeHint(false);
       AsyncStorage.setItem('swipe_hint_seen', '1');
@@ -331,11 +352,14 @@ export default function FeedScreen() {
                   showSwipeHint={index === 0 && showSwipeHint}
                   swipeEnabled={true}
                   hasMilestone={index === 0 && (milestoneHit?.postId === item.id || streakMatch?.postId === item.id)}
+                  friendVoteCount={index === 0 && friendRevealPostId === item.id ? friendVotesOnPost.length : 0}
+                  onFriendReveal={index === 0 && friendRevealPostId === item.id && friendVotesOnPost.length > 0 ? handleFriendReveal : undefined}
                 />
               );
             })
           }
           <MilestoneBurst hit={milestoneHit?.postId === topItem?.id ? milestoneHit : null} />
+          <StreakMatchBurst match={streakMatch?.postId === topItem?.id ? streakMatch : null} />
         </>)}
       </View>
 
@@ -344,7 +368,15 @@ export default function FeedScreen() {
         milestoneHit?.postId === topItem.id && !dismissing ? (
           <GradientMessageRow message={milestoneHit.message} />
         ) : streakMatch?.postId === topItem.id && !dismissing ? (
-          <StreakMatchRow matched={streakMatch.matched} mismatched={streakMatch.mismatched} vote={streakMatch.vote} />
+          <GradientMessageRow message={
+            streakMatch.matched.length > 0
+              ? streakMatch.matched.length === 1
+                ? `You and @${streakMatch.matched[0].username} both voted ${streakMatch.vote}!`
+                : `You matched with ${streakMatch.matched.map(f => `@${f.username}`).join(' & ')}!`
+              : streakMatch.mismatched.length === 1
+                ? `You and @${streakMatch.mismatched[0].username} voted differently`
+                : 'No matches this time'
+          } />
         ) : topItemExternallyVoted && !dismissing ? (
           <GradientMessageRow message="You already rated this one" />
         ) : (
@@ -474,49 +506,6 @@ function StarDripParticle({ config, labelWidth }: { config: typeof DRIP_CONFIGS[
   );
 }
 
-
-function StreakMatchRow({ matched, mismatched, vote }: { matched: FriendVote[]; mismatched: FriendVote[]; vote: 'rad' | 'bad' }) {
-  const hasMatches = matched.length > 0;
-  const names = matched.map((f) => `@${f.username}`);
-  const message = hasMatches
-    ? names.length === 1
-      ? `You and ${names[0]} both voted ${vote}!`
-      : `You matched with ${names.slice(0, -1).join(', ')} & ${names[names.length - 1]}!`
-    : mismatched.length === 1
-      ? `You and @${mismatched[0].username} voted differently!`
-      : 'No matches this time!';
-
-  return (
-    <View style={styles.alreadyVotedRow}>
-      <View style={styles.alreadyVotedTextGroup}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-          <Ionicons
-            name={hasMatches ? 'flash' : 'sad-outline'}
-            size={18}
-            color={hasMatches ? '#FFD700' : colors.textSecondary}
-          />
-          <Text style={{
-            color: hasMatches ? '#FFD700' : colors.textSecondary,
-            fontSize: 15,
-            fontWeight: '700',
-          }}>
-            {hasMatches ? 'Streak!' : 'Broken!'}
-          </Text>
-        </View>
-        <Text style={{
-          color: colors.textPrimary,
-          fontSize: 14,
-          fontWeight: '600',
-          textAlign: 'center',
-          paddingHorizontal: 20,
-        }}>
-          {message}
-        </Text>
-        <Text style={[styles.alreadyVotedSub, { marginTop: 6 }]}>Swipe up to continue</Text>
-      </View>
-    </View>
-  );
-}
 
 function CaughtUpState() {
   return (

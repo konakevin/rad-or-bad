@@ -53,6 +53,8 @@ interface SwipeCardProps {
   showSwipeHint: boolean;
   swipeEnabled?: boolean;
   hasMilestone?: boolean;
+  friendVoteCount?: number;
+  onFriendReveal?: () => void;
 }
 
 function CategoryPill({ category }: { category: string }) {
@@ -69,7 +71,7 @@ function CategoryPill({ category }: { category: string }) {
   );
 }
 
-export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost, isAlreadyVoted = false, onDismiss, onDismissStart, onFavorite, onFollow, onUserPress, onSwipeUpBlocked, hideRank = false, isTop, index, containerHeight, showSwipeHint, swipeEnabled = true, hasMilestone = false }: SwipeCardProps) {
+export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost, isAlreadyVoted = false, onDismiss, onDismissStart, onFavorite, onFollow, onUserPress, onSwipeUpBlocked, hideRank = false, isTop, index, containerHeight, showSwipeHint, swipeEnabled = true, hasMilestone = false, friendVoteCount = 0, onFriendReveal }: SwipeCardProps) {
   const cardHeight = containerHeight > 0 ? containerHeight : SCREEN_HEIGHT * 0.65;
   const isVideo = item.media_type === 'video';
   const [muted, setMuted] = useState(true);
@@ -258,6 +260,16 @@ export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost,
           </Animated.View>
         )}
 
+        {/* Friend reveal pill — shows after voting if friends also voted */}
+        {friendVoteCount > 0 && userVote !== null && onFriendReveal && (
+          <TouchableOpacity style={styles.friendRevealPill} onPress={onFriendReveal} activeOpacity={0.7}>
+            <Ionicons name="people" size={14} color="#FFFFFF" />
+            <Text style={styles.friendRevealText}>
+              {friendVoteCount} {friendVoteCount === 1 ? 'friend' : 'friends'} voted
+            </Text>
+          </TouchableOpacity>
+        )}
+
         {/* Mute toggle for videos */}
         {isVideo && (
           <TouchableOpacity
@@ -416,6 +428,23 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
     borderRadius: 20,
     padding: 8,
+  },
+  friendRevealPill: {
+    position: 'absolute',
+    top: 62,
+    right: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    borderRadius: 14,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  friendRevealText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
   },
   ratingBadge: {
     position: 'absolute',
