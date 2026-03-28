@@ -17,7 +17,10 @@ export function StreakRow({ streak }: Props) {
   return (
     <TouchableOpacity
       style={styles.row}
-      onPress={() => router.push(`/user/${streak.friendId}`)}
+      onPress={() => {
+        if (streak.friendId) router.push(`/user/${streak.friendId}`);
+      }}
+      disabled={!streak.friendId}
       activeOpacity={0.7}
     >
       {streak.friendAvatar ? (

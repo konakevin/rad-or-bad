@@ -249,8 +249,8 @@ export default function FeedScreen() {
       </View>
 
       {/* Card stack */}
-      <View style={styles.cardArea} onLayout={(e) => setCardAreaHeight(e.nativeEvent.layout.height)}>
-        {feedMode === 'friends' && !streakUnlock.streakUnlocked ? (
+      <View style={styles.cardArea} onLayout={(e) => { if (!cardAreaHeight) setCardAreaHeight(e.nativeEvent.layout.height); }}>
+        {!cardAreaHeight ? null : feedMode === 'friends' && !streakUnlock.streakUnlocked ? (
           <StreakLockedState votesNeeded={10 - streakUnlock.totalVoteCount} onGoVote={() => activeFeed.setFeedMode('default')} />
         ) : deck.deck.length === 0 && !activeFeed.isLoading && !activeFeed.isRefetching && activeFeed.feed.length === 0 ? (
           <CaughtUpState />
