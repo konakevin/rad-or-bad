@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
+import { useFeedStore } from '@/store/feed';
 
 interface AuthState {
   session: Session | null;
@@ -22,6 +23,12 @@ export const useAuthStore = create<AuthState>((set) => ({
   signOut: async () => {
     await supabase.auth.signOut();
     set({ session: null, user: null });
+    // Clear all cached data from previous session
+    useFeedStore.getState().clearLocalStreaks();
+    useFeedStore.getState().bumpReset();
+    // Clear TanStack Query cache (imported lazily to avoid circular deps)
+    const { queryClient } = require('@/app/_layout');
+    queryClient.clear();
   },
 
   initialize: () => {

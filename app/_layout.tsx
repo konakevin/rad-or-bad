@@ -17,6 +17,8 @@ SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 
+export { queryClient };
+
 function AuthInitializer() {
   const initialize = useAuthStore((s) => s.initialize);
 
