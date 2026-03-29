@@ -356,27 +356,35 @@ async function main() {
   }
   if (deleted) console.log(`\n  Removed ${deleted} test user(s)`);
 
-  await supabase.from('notifications').delete().not('id', 'is', null);
-  await supabase.from('comment_likes').delete().not('user_id', 'is', null);
-  await supabase.from('comments').delete().not('id', 'is', null);
-  await supabase.from('post_shares').delete().not('id', 'is', null);
-  await supabase.from('vote_streaks').delete().not('user_a', 'is', null);
-  await supabase.from('friendships').delete().not('user_a', 'is', null);
-  await supabase.from('streak_cron_state').update({ last_processed_at: '2000-01-01T00:00:00Z' }).eq('id', 1);
-  log('Cleared notifications, comments, shares, streaks, friendships, watermark');
+  // Get protected user IDs to preserve their data
+  const { data: protectedUsers } = await supabase.from('users').select('id').in('email', PROTECTED_EMAILS);
+  const protectedIds = (protectedUsers ?? []).map(u => u.id);
 
-  // ── 2. Reset Kevin (sunnysteph is never touched) ─────────────────────────
+  // Delete data but preserve protected users' content
+  if (protectedIds.length > 0) {
+    const pIds = `(${protectedIds.join(',')})`;
+    await supabase.from('notifications').delete().not('recipient_id', 'in', pIds);
+    await supabase.from('comment_likes').delete().not('user_id', 'in', pIds);
+    await supabase.from('comments').delete().not('user_id', 'in', pIds);
+    await supabase.from('post_shares').delete().not('sender_id', 'in', pIds).not('receiver_id', 'in', pIds);
+    await supabase.from('vote_streaks').delete().not('user_a', 'in', pIds).not('user_b', 'in', pIds);
+    await supabase.from('friendships').delete().not('user_a', 'in', pIds).not('user_b', 'in', pIds);
+  } else {
+    await supabase.from('notifications').delete().not('id', 'is', null);
+    await supabase.from('comment_likes').delete().not('user_id', 'is', null);
+    await supabase.from('comments').delete().not('id', 'is', null);
+    await supabase.from('post_shares').delete().not('id', 'is', null);
+    await supabase.from('vote_streaks').delete().not('user_a', 'is', null);
+    await supabase.from('friendships').delete().not('user_a', 'is', null);
+  }
+  await supabase.from('streak_cron_state').update({ last_processed_at: '2000-01-01T00:00:00Z' }).eq('id', 1);
+  log('Cleared data (preserved protected users)');
+
+  // ── 2. Find Kevin (protected users' data is preserved) ───────────────────
   const { data: kevin } = await supabase.from('users').select('id').eq('email', KEVIN_EMAIL).single();
   if (!kevin) { console.error('Kevin not found!'); process.exit(1); }
   console.log(`\n👤 Kevin ID: ${kevin.id}`);
-
-  await supabase.from('votes').delete().eq('voter_id', kevin.id);
-  await supabase.from('uploads').delete().eq('user_id', kevin.id);
-  await supabase.from('users').update({
-    total_ratings_given: 0, critic_level: 1,
-    rad_score: null, user_rank: null, needs_rank_recalc: false,
-  }).eq('id', kevin.id);
-  log('Kevin reset to clean state (sunnysteph preserved)');
+  log('Protected users preserved: ' + PROTECTED_EMAILS.join(', '));
 
   // ── 3. Create friends ────────────────────────────────────────────────────
   console.log(`\n👥 Creating ${FRIENDS.length} friends...`);
@@ -825,9 +833,14 @@ async function main() {
   log('Streaks computed');
 
   // ── 14b. Clear auto-generated notifications (triggers fired during seeding)
+  // Preserve notifications for protected users
   console.log('\n🧹 Clearing seed-generated notifications...');
-  await supabase.from('notifications').delete().not('id', 'is', null);
-  log('Cleared all notifications');
+  if (protectedIds.length > 0) {
+    await supabase.from('notifications').delete().not('recipient_id', 'in', `(${protectedIds.join(',')})`);
+  } else {
+    await supabase.from('notifications').delete().not('id', 'is', null);
+  }
+  log('Cleared notifications (preserved protected users)');
 
   // ── 15. Verify ───────────────────────────────────────────────────────────
   console.log('\n✅ Verifying...');
