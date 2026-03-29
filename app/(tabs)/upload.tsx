@@ -86,11 +86,12 @@ export default function UploadScreen() {
         setMediaType('video');
         setMediaDimensions({ width: media.width, height: media.height });
       } else {
-        // Crop images — same library handles the modal stack so no timing issues
+        // Use original image with freeform crop option
         const cropped = await ImageCropPicker.openCropper({
           path: media.path,
           forceJpg: true,
           compressImageQuality: 0.95,
+          freeStyleCropEnabled: true,
           cropperCancelText: 'Cancel',
           cropperChooseText: 'Choose',
         });
@@ -112,6 +113,7 @@ export default function UploadScreen() {
       const media = await ImageCropPicker.openCamera({
         mediaType: 'any',
         cropping: true,
+        freeStyleCropEnabled: true,
         forceJpg: true,
         compressImageQuality: 0.95,
         cropperCancelText: 'Cancel',
