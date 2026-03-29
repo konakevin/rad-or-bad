@@ -174,6 +174,15 @@ function shuffle(arr) { const a = [...arr]; for (let i = a.length - 1; i > 0; i-
 function log(msg) { console.log(`  ${msg}`); }
 function hash(a, b) { const x = Math.sin(a * 127 + b * 311) * 43758.5453; return x - Math.floor(x); }
 
+const BATCH_SIZE = 500; // Supabase supports up to ~1000 rows per insert
+async function batchUpsert(table, rows, onConflict) {
+  for (let i = 0; i < rows.length; i += BATCH_SIZE) {
+    const chunk = rows.slice(i, i + BATCH_SIZE);
+    const { error } = await supabase.from(table).upsert(chunk, { onConflict });
+    if (error) console.error(`  Batch upsert error (${table}):`, error.message);
+  }
+}
+
 function casualize(alt) {
   if (!alt || alt.length < 5) return null;
   let text = alt.slice(0, 180);
@@ -408,39 +417,33 @@ async function main() {
 
   const allPosts = [...friendPosts, ...strangerPosts];
 
-  // ── 8. Generate follows ──────────────────────────────────────────────────
+  // ── 8. Generate follows (batched) ─────────────────────────────────────────
   console.log('\n🔗 Generating follow relationships...');
-  let followCount = 0;
+  const followRows = [];
   for (const user of strangers) {
     const toFollow = shuffle(allUsers.filter(u => u.id !== user.id))
       .slice(0, Math.floor(allUsers.length * (0.2 + Math.random() * 0.3)));
     for (const target of toFollow) {
-      const { error } = await supabase.from('follows').upsert({
-        follower_id: user.id, following_id: target.id,
-      }, { onConflict: 'follower_id,following_id' });
-      if (!error) followCount++;
+      followRows.push({ follower_id: user.id, following_id: target.id });
     }
   }
-  log(`${followCount} follows`);
+  await batchUpsert('follows', followRows, 'follower_id,following_id');
+  log(`${followRows.length} follows`);
 
-  // ── 9. Generate votes ────────────────────────────────────────────────────
+  // ── 9. Generate votes (batched) ───────────────────────────────────────────
   console.log('\n🗳️  Generating votes...');
-  let voteCount = 0;
+  const voteRows = [];
 
   // Friends vote on all posts with personality-based bias
   for (let p = 0; p < allPosts.length; p++) {
     const post = allPosts[p];
-    // ~5% of posts will be milestone candidates (exactly 9 rad votes from friends)
     const isMilestonePost = p % 20 === 0;
     for (let i = 0; i < friends.length; i++) {
       if (friends[i].id === post.user_id) continue;
       const vote = isMilestonePost
         ? (i < 9 ? 'rad' : 'bad')
         : hash(p, i) < (FRIEND_BIAS[friends[i].username] ?? 0.5) ? 'rad' : 'bad';
-      const { error } = await supabase.from('votes').upsert({
-        voter_id: friends[i].id, upload_id: post.id, vote,
-      }, { onConflict: 'voter_id,upload_id' });
-      if (!error) voteCount++;
+      voteRows.push({ voter_id: friends[i].id, upload_id: post.id, vote });
     }
   }
 
@@ -451,26 +454,28 @@ async function main() {
       .filter(p => p.user_id !== user.id)
       .slice(0, Math.floor(allPosts.length * (0.2 + Math.random() * 0.4)));
     for (const post of postsToVote) {
-      const { error } = await supabase.from('votes').upsert({
-        voter_id: user.id, upload_id: post.id,
-        vote: Math.random() < radBias ? 'rad' : 'bad',
-      }, { onConflict: 'voter_id,upload_id' });
-      if (!error) voteCount++;
+      voteRows.push({ voter_id: user.id, upload_id: post.id, vote: Math.random() < radBias ? 'rad' : 'bad' });
     }
-    process.stdout.write('.');
   }
-  console.log(`\n  ${voteCount} votes`);
 
-  // ── 10. Update vote counts ───────────────────────────────────────────────
+  await batchUpsert('votes', voteRows, 'voter_id,upload_id');
+  log(`${voteRows.length} votes`);
+
+  // ── 10. Update vote counts (computed from memory, batched updates) ────────
   console.log('\n📊 Updating vote counts...');
-  for (const post of allPosts) {
-    const { data: votes } = await supabase.from('votes').select('vote').eq('upload_id', post.id);
-    if (!votes) continue;
-    const rad = votes.filter(v => v.vote === 'rad').length;
-    const bad = votes.filter(v => v.vote === 'bad').length;
-    await supabase.from('uploads').update({
-      total_votes: rad + bad, rad_votes: rad, bad_votes: bad,
-    }).eq('id', post.id);
+  const voteCounts = {};
+  for (const v of voteRows) {
+    if (!voteCounts[v.upload_id]) voteCounts[v.upload_id] = { rad: 0, bad: 0 };
+    voteCounts[v.upload_id][v.vote]++;
+  }
+  const updatePromises = Object.entries(voteCounts).map(([uploadId, counts]) =>
+    supabase.from('uploads').update({
+      total_votes: counts.rad + counts.bad, rad_votes: counts.rad, bad_votes: counts.bad,
+    }).eq('id', uploadId)
+  );
+  // Run updates in parallel batches of 50
+  for (let i = 0; i < updatePromises.length; i += 50) {
+    await Promise.all(updatePromises.slice(i, i + 50));
   }
   log('Done');
 
@@ -508,7 +513,7 @@ async function main() {
   console.log('║              ALL DONE!               ║');
   console.log('╚══════════════════════════════════════╝');
   console.log(`  ${friends.length} friends + ${strangers.length} strangers`);
-  console.log(`  ${allPosts.length} posts, ${voteCount} votes`);
+  console.log(`  ${allPosts.length} posts, ${voteRows.length} votes`);
   console.log(`  ~5% milestone posts (every 20th)`);
   console.log(`  3 pending friend requests`);
 }

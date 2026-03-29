@@ -10,7 +10,16 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.konakevin.radorbad"
+      "bundleIdentifier": "com.konakevin.radorbad",
+      "infoPlist": {
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": [
+              "com.googleusercontent.apps.523080499421-ct234o3eo93kuakii3df5j29apa61j5h"
+            ]
+          }
+        ]
+      }
     },
     "android": {
       "adaptiveIcon": {
