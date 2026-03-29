@@ -80,9 +80,16 @@ export default function FeedScreen() {
   const headerTreadmillX = useSharedValue(-(Math.random() * TREADMILL_SCROLL));
   const headerTreadmillStyle = useAnimatedStyle(() => ({ transform: [{ translateX: headerTreadmillX.value }] }));
   useEffect(() => {
-    headerTreadmillX.value = withRepeat(
-      withTiming(0, { duration: 45000, easing: Easing.linear }),
-      -1, true,
+    // Scroll to one end first, then bounce back and forth at constant speed
+    headerTreadmillX.value = withSequence(
+      withTiming(-TREADMILL_SCROLL, { duration: 20000, easing: Easing.linear }),
+      withRepeat(
+        withSequence(
+          withTiming(0, { duration: 45000, easing: Easing.linear }),
+          withTiming(-TREADMILL_SCROLL, { duration: 45000, easing: Easing.linear }),
+        ),
+        -1, false,
+      ),
     );
   }, []);
 
