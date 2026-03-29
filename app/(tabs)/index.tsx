@@ -64,7 +64,7 @@ export default function FeedScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [cardAreaHeight, setCardAreaHeight] = useState(0);
   const cardAreaMeasured = useRef(false);
-  const [showSwipeHint, setShowSwipeHint] = useState(false);
+  const showSwipeHint = false; // disabled — users vote with buttons first
   const [jiggleTick, setJiggleTick] = useState(0);
   const [dismissing, setDismissing] = useState(false);
   const [headerRowSize, setHeaderRowSize] = useState({ width: 0, height: 0 });
@@ -92,12 +92,6 @@ export default function FeedScreen() {
     activeFeed.setFeedMode('default');
   }, [resetToken]);
 
-  // ── One-time swipe hint ──────────────────────────────────────────────────
-  useEffect(() => {
-    AsyncStorage.getItem('swipe_hint_seen').then((val) => {
-      if (!val) setShowSwipeHint(true);
-    });
-  }, []);
 
   // ── Feed mode change → reset deck ────────────────────────────────────────
   useEffect(() => {
@@ -143,11 +137,7 @@ export default function FeedScreen() {
   const handleDismiss = useCallback((item: FeedItem) => {
     deck.dismissCard(item.id);
     milestone.clear();
-    if (showSwipeHint) {
-      setShowSwipeHint(false);
-      AsyncStorage.setItem('swipe_hint_seen', '1');
-    }
-  }, [showSwipeHint]);
+  }, []);
 
   const handleFavorite = useCallback((item: FeedItem) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);

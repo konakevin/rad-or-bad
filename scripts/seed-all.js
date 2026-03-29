@@ -244,11 +244,45 @@ function casualize(alt) {
 }
 
 async function createUser(email, username, avatar) {
+  // Try to create — if already exists, find and reuse
   const { data, error } = await supabase.auth.admin.createUser({
     email, password: PASSWORD, email_confirm: true,
     user_metadata: { username },
   });
-  if (error) { console.error(`  Failed ${username}: ${error.message}`); return null; }
+  if (error) {
+    if (error.message.includes('already been registered')) {
+      // User exists in auth — find them and ensure public.users row exists
+      const { data: existing } = await supabase.from('users').select('id').eq('email', email).single();
+      if (existing) {
+        if (avatar) await supabase.from('users').update({ avatar_url: avatar, username }).eq('id', existing.id);
+        return { id: existing.id, username, email };
+      }
+      // Auth user exists but no public.users row — list auth users to find the ID
+      let page = 1;
+      while (true) {
+        const { data: users } = await supabase.auth.admin.listUsers({ page, perPage: 1000 });
+        const found = users?.users?.find(u => u.email === email);
+        if (found) {
+          // Delete and recreate to get a clean state
+          await supabase.auth.admin.deleteUser(found.id);
+          const { data: retry } = await supabase.auth.admin.createUser({
+            email, password: PASSWORD, email_confirm: true,
+            user_metadata: { username },
+          });
+          if (retry?.user) {
+            if (avatar) await supabase.from('users').update({ avatar_url: avatar }).eq('id', retry.user.id);
+            return { id: retry.user.id, username, email };
+          }
+        }
+        if (!users?.users?.length || users.users.length < 1000) break;
+        page++;
+      }
+      console.error(`  Failed ${username}: could not resolve existing user`);
+      return null;
+    }
+    console.error(`  Failed ${username}: ${error.message}`);
+    return null;
+  }
   if (avatar) await supabase.from('users').update({ avatar_url: avatar }).eq('id', data.user.id);
   return { id: data.user.id, username, email };
 }
