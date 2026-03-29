@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
   invisible: { opacity: 0 },
   categoryHero: {
     color: '#FFFFFF',
-    fontSize: 40,
+    fontSize: 32,
     fontWeight: '900',
     letterSpacing: -1,
     lineHeight: 44,

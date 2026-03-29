@@ -439,6 +439,23 @@ async function main() {
     log(`${cat.key}: ${photoPool[cat.key].length} photos, ${videoPool[cat.key].length} videos`);
   }
 
+  // ── 5b. Upload local quote images to Supabase storage ────────────────────
+  console.log('\n📝 Uploading quote images...');
+  const quotesDir = path.join(__dirname, '..', 'assets', 'seed-quotes');
+  const quoteFiles = fs.readdirSync(quotesDir).filter(f => f.endsWith('.jpg'));
+  const quoteUrls = [];
+  for (const file of quoteFiles) {
+    const filePath = path.join(quotesDir, file);
+    const fileData = fs.readFileSync(filePath);
+    const storagePath = `seed-quotes/${file}`;
+    await supabase.storage.from('uploads').upload(storagePath, fileData, { contentType: 'image/jpeg', upsert: true });
+    const { data } = supabase.storage.from('uploads').getPublicUrl(storagePath);
+    quoteUrls.push(data.publicUrl);
+  }
+  // Override quotes photo pool with our custom images
+  photoPool['quotes'] = quoteUrls.map(url => ({ url, width: 1080, height: 1350, alt: '' }));
+  log(`${quoteUrls.length} quote images uploaded`);
+
   // ── 6. Create friend posts (8 each) ──────────────────────────────────────
   console.log('\n📸 Creating friend posts...');
   const friendPosts = [];
