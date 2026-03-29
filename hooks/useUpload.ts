@@ -65,13 +65,17 @@ export function useUpload() {
         ? await generateAndUploadThumbnail(uploadUri, user!.id)
         : null;
 
-      // Content moderation — check media + caption before making visible
-      onPhase?.('Processing...');
+      // Content moderation — check the uploaded file URL
+      onPhase?.('Checking content...');
       const modResult = await moderateUpload(mediaUrl, mediaType, caption.trim() || null);
       if (!modResult.passed) {
-        // Clean up uploaded file
+        // Clean up rejected file from storage
         const fileName = mediaUrl.split('/').slice(-2).join('/');
         await supabase.storage.from('uploads').remove([fileName]);
+        if (thumbnailUrl) {
+          const thumbName = thumbnailUrl.split('/').slice(-2).join('/');
+          await supabase.storage.from('uploads').remove([thumbName]);
+        }
         throw new Error(modResult.reason ?? 'Content rejected by moderation');
       }
 

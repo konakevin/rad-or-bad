@@ -34,14 +34,25 @@ class SightengineProvider implements ModerationProvider {
     'nudity.sexual_activity': 0.2,
     'nudity.sexual_display': 0.2,
     'nudity.erotica': 0.4,
-    'nudity.very_suggestive': 0.85,
+    // suggestive/very_suggestive intentionally excluded — they flag bra/lingerie/bikini
     'gore.prob': 0.3,
-    'weapon.prob': 0.7,
-    'drugs.prob': 0.7,
+    'weapon.classes.firearm': 0.5,
+    'weapon.firearm_action.aiming_threat': 0.3,
+    'weapon.firearm_action.aiming_camera': 0.3,
+    'weapon.classes.knife': 0.7,
     'self-harm.prob': 0.3,
   };
 
-  private textProfanityThreshold = 0.5;
+  // nudity.none removed — it flags lingerie/bra the same as actual nudity.
+  // We rely on sexual_display + erotica to distinguish underwear from nude.
+
+  // Text moderation — only block threats, racial/sexual content.
+  // Casual insults and trash talk are allowed (toxic/insulting excluded).
+  private textThresholds: Record<string, number> = {
+    discriminatory: 0.5,
+    violent: 0.5,
+    sexual: 0.5,
+  };
 
   constructor(apiUser: string, apiSecret: string) {
     this.apiUser = apiUser;
@@ -60,28 +71,39 @@ class SightengineProvider implements ModerationProvider {
 
   async checkImage(imageUrl: string): Promise<ModerationResult> {
     try {
+      console.log(`[${this.name}] Checking image: ${imageUrl.slice(0, 80)}...`);
+      console.log(`[${this.name}] Credentials: user=${this.apiUser ? this.apiUser.slice(0, 4) + '...' : 'EMPTY'}, secret=${this.apiSecret ? 'SET' : 'EMPTY'}`);
+
       const params = new URLSearchParams({
         url: imageUrl,
-        models: 'nudity-2.1,gore-2.0,weapon,drugs,self-harm',
+        models: 'nudity-2.1,gore-2.0,weapon,self-harm',
         api_user: this.apiUser,
         api_secret: this.apiSecret,
       });
 
       const res = await fetch(`https://api.sightengine.com/1.0/check.json?${params}`);
+      console.log(`[${this.name}] HTTP status: ${res.status}`);
       if (!res.ok) {
-        console.warn(`[${this.name}] API error:`, res.status);
-        return { passed: true, reason: null };
+        const body = await res.text();
+        console.warn(`[${this.name}] API error: ${res.status} — ${body}`);
+        return { passed: false, reason: 'Unable to verify content. Please try again.' };
       }
 
       const data = await res.json();
+      console.log(`[${this.name}] Response:`, JSON.stringify(data.status === 'success' ? { status: data.status, nudity_none: data.nudity?.none } : data));
       if (data.status !== 'success') {
         console.warn(`[${this.name}] Response error:`, data.error?.message);
-        return { passed: true, reason: null };
+        return { passed: false, reason: 'Unable to verify content. Please try again.' };
       }
+
+      // Log nudity scores for debugging
+      const nudity = data.nudity ?? {};
+      console.log(`[${this.name}] Scores: none=${nudity.none}, sexual_display=${nudity.sexual_display}, erotica=${nudity.erotica}, suggestive=${nudity.suggestive}, very_suggestive=${nudity.very_suggestive}`);
 
       for (const [path, threshold] of Object.entries(this.imageThresholds)) {
         const score = this.getNestedValue(data as Record<string, unknown>, path);
         if (score > threshold) {
+          console.log(`[${this.name}] BLOCKED: ${path}=${score} > threshold ${threshold}`);
           const category = path.split('.')[0];
           return { passed: false, reason: `Content flagged: ${category}` };
         }
@@ -90,7 +112,7 @@ class SightengineProvider implements ModerationProvider {
       return { passed: true, reason: null };
     } catch (err) {
       console.warn(`[${this.name}] Image check failed:`, err);
-      return { passed: true, reason: null };
+      return { passed: false, reason: 'Unable to verify content. Please try again.' };
     }
   }
 
@@ -98,7 +120,7 @@ class SightengineProvider implements ModerationProvider {
     try {
       const params = new URLSearchParams({
         stream_url: videoUrl,
-        models: 'nudity-2.1,gore-2.0,weapon,drugs,self-harm',
+        models: 'nudity-2.1,gore-2.0,weapon,self-harm',
         api_user: this.apiUser,
         api_secret: this.apiSecret,
       });
@@ -108,13 +130,13 @@ class SightengineProvider implements ModerationProvider {
       });
       if (!res.ok) {
         console.warn(`[${this.name}] Video API error:`, res.status);
-        return { passed: true, reason: null };
+        return { passed: false, reason: 'Unable to verify content. Please try again.' };
       }
 
       const data = await res.json();
       if (data.status !== 'success') {
         console.warn(`[${this.name}] Video response error:`, data.error?.message);
-        return { passed: true, reason: null };
+        return { passed: false, reason: 'Unable to verify content. Please try again.' };
       }
 
       // Video response has frames array — check each frame
@@ -132,7 +154,7 @@ class SightengineProvider implements ModerationProvider {
       return { passed: true, reason: null };
     } catch (err) {
       console.warn(`[${this.name}] Video check failed:`, err);
-      return { passed: true, reason: null };
+      return { passed: false, reason: 'Unable to verify content. Please try again.' };
     }
   }
 
@@ -152,23 +174,20 @@ class SightengineProvider implements ModerationProvider {
       const res = await fetch(`https://api.sightengine.com/1.0/text/check.json?${params}`);
       if (!res.ok) {
         console.warn(`[${this.name}] Text API error:`, res.status);
-        return { passed: true, reason: null };
+        return { passed: false, reason: 'Unable to verify content. Please try again.' };
       }
 
       const data = await res.json();
       if (data.status !== 'success') {
         console.warn(`[${this.name}] Text response error:`, data.error?.message);
-        return { passed: true, reason: null };
+        return { passed: false, reason: 'Unable to verify content. Please try again.' };
       }
 
-      const profanity = data.profanity ?? {};
-      if (profanity.matches && profanity.matches.length > 0) {
-        const worstMatch = profanity.matches.reduce(
-          (worst: Record<string, unknown>, m: Record<string, unknown>) =>
-            ((m.intensity as number) ?? 0) > ((worst.intensity as number) ?? 0) ? m : worst,
-          profanity.matches[0]
-        );
-        if (((worstMatch?.intensity as number) ?? 0) >= this.textProfanityThreshold) {
+      const classes = data.moderation_classes ?? {};
+      for (const [category, threshold] of Object.entries(this.textThresholds)) {
+        const score = typeof classes[category] === 'number' ? classes[category] : 0;
+        if (score > threshold) {
+          console.log(`[${this.name}] Text BLOCKED: ${category}=${score} > ${threshold}`);
           return { passed: false, reason: 'Caption contains inappropriate language' };
         }
       }
@@ -176,7 +195,7 @@ class SightengineProvider implements ModerationProvider {
       return { passed: true, reason: null };
     } catch (err) {
       console.warn(`[${this.name}] Text check failed:`, err);
-      return { passed: true, reason: null };
+      return { passed: false, reason: 'Unable to verify content. Please try again.' };
     }
   }
 }

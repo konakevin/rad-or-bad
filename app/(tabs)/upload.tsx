@@ -199,6 +199,14 @@ export default function UploadScreen() {
                   <Text style={styles.videoBadgeText}>Video</Text>
                 </View>
               )}
+              <TouchableOpacity
+                style={styles.clearButton}
+                onPress={() => { setMediaUri(null); setMediaType('image'); setMediaDimensions(null); }}
+                activeOpacity={0.7}
+                hitSlop={8}
+              >
+                <Ionicons name="close" size={18} color="#FFFFFF" />
+              </TouchableOpacity>
               <TouchableOpacity style={styles.changePhotoButton} onPress={pickFromLibrary} activeOpacity={0.8}>
                 <Text style={styles.changePhotoText}>Change</Text>
               </TouchableOpacity>
@@ -358,6 +366,18 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   videoBadgeText: { color: colors.textPrimary, fontSize: 11, fontWeight: '600' },
+  clearButton: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
+  },
   changePhotoButton: {
     position: 'absolute',
     bottom: 12,

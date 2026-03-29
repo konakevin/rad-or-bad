@@ -159,9 +159,10 @@ export default function SettingsScreen() {
       {
         text: 'Sign out',
         style: 'destructive',
-        onPress: () => {
+        onPress: async () => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-          signOut();
+          await signOut();
+          router.replace('/(auth)');
         },
       },
     ]);
@@ -186,7 +187,8 @@ export default function SettingsScreen() {
                   try {
                     const { error } = await supabase.rpc('delete_own_account');
                     if (error) throw error;
-                    signOut();
+                    await signOut();
+                    router.replace('/(auth)');
                   } catch (err: unknown) {
                     Alert.alert('Error', (err as Error).message);
                   }
