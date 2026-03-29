@@ -307,8 +307,8 @@ export default function FeedScreen() {
           <GradientMessageRow message="You already rated this one" />
         ) : (
           <View style={styles.actionRow}>
-            <VoteButton vote="bad" onPress={() => handleVote(topItem, 'bad')} disabled={topItemVoted} jiggleTick={jiggleTick} />
-            <VoteButton vote="rad" onPress={() => handleVote(topItem, 'rad')} disabled={topItemVoted} jiggleTick={jiggleTick} />
+            <VoteButton vote="bad" onPress={() => handleVote(topItem, 'bad')} disabled={topItemVoted} jiggleTick={jiggleTick} size={60} />
+            <VoteButton vote="rad" onPress={() => handleVote(topItem, 'rad')} disabled={topItemVoted} jiggleTick={jiggleTick} size={60} />
           </View>
         )
       )}
@@ -514,7 +514,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingVertical: 6,
     backgroundColor: colors.background,
   },
   feedToggleRow: {
@@ -522,14 +522,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    paddingBottom: 6,
+    paddingBottom: 4,
   },
   feedToggle: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
+    gap: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: 'transparent',
@@ -540,7 +540,7 @@ const styles = StyleSheet.create({
   },
   feedToggleText: {
     color: colors.textSecondary,
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
   },
   feedToggleTextActive: {
@@ -628,13 +628,13 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     color: colors.textPrimary,
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '900',
     letterSpacing: 2,
   },
   headerOr: {
     color: colors.textSecondary,
-    fontSize: 17,
+    fontSize: 14,
     fontWeight: '700',
     letterSpacing: 2,
   },
@@ -652,19 +652,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 40,
+    gap: 32,
     paddingHorizontal: 40,
-    paddingBottom: 4,
-    paddingTop: 12,
+    paddingBottom: 2,
+    paddingTop: 8,
   },
   alreadyVotedRow: {
     alignItems: 'center',
     justifyContent: 'flex-start',
     flexDirection: 'column',
     overflow: 'visible',
-    paddingBottom: 12,
-    paddingTop: 15,
-    height: 74 + 12 + 4,
+    paddingBottom: 8,
+    paddingTop: 10,
+    height: 60 + 10 + 2,
   },
   alreadyVotedTextGroup: {
     alignItems: 'center',
