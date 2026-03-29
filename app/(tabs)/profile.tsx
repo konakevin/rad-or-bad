@@ -4,6 +4,8 @@ import { View, Text, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
+import MaskedView from '@react-native-masked-view/masked-view';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { useAuthStore } from '@/store/auth';
@@ -32,6 +34,17 @@ import type { FollowUser } from '@/hooks/useFollowersList';
 import type { VibeSyncStreak } from '@/hooks/useTopStreaks';
 
 type Tab = 'posts' | 'saved' | 'friends' | 'followers' | 'following' | 'streaks';
+
+const HOT_FLAME: [string, string, ...string[]] = ['#FFD700', '#FF8C00', '#FF4500'];
+const COLD_FLAME: [string, string, ...string[]] = ['#44DDCC', '#6699EE', '#BB88EE'];
+
+function GradientFlame({ colors, size }: { colors: [string, string, ...string[]]; size: number }) {
+  return (
+    <MaskedView maskElement={<Ionicons name="flame" size={size} color="#FFF" />}>
+      <LinearGradient colors={colors} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={{ width: size, height: size }} />
+    </MaskedView>
+  );
+}
 
 export default function ProfileScreen() {
   const user = useAuthStore((s) => s.user);
@@ -116,24 +129,31 @@ export default function ProfileScreen() {
                   onPress={() => s.friendId ? router.push(`/user/${s.friendId}`) : null}
                   activeOpacity={0.7}
                 >
-                  <View style={styles.streakAvatarWrap}>
-                    <View style={styles.streakCardRing}>
-                      {s.friendAvatar ? (
-                        <Image source={{ uri: s.friendAvatar }} style={styles.streakCardAvatar} />
-                      ) : (
-                        <View style={styles.streakCardAvatarFallback}>
-                          <Text style={styles.streakCardAvatarText}>{s.friendUsername[0].toUpperCase()}</Text>
-                        </View>
-                      )}
-                    </View>
-                    <View style={[styles.streakBadge, styles.streakBadgeRad]}>
-                      <Text style={styles.streakBadgeText}>{s.radStreak}</Text>
-                    </View>
-                    <View style={[styles.streakBadge, styles.streakBadgeBad]}>
-                      <Text style={styles.streakBadgeText}>{s.badStreak}</Text>
-                    </View>
+                  <View style={styles.streakCardRing}>
+                    {s.friendAvatar ? (
+                      <Image source={{ uri: s.friendAvatar }} style={styles.streakCardAvatar} />
+                    ) : (
+                      <View style={styles.streakCardAvatarFallback}>
+                        <Text style={styles.streakCardAvatarText}>{s.friendUsername[0].toUpperCase()}</Text>
+                      </View>
+                    )}
                   </View>
                   <Text style={styles.streakCardName} numberOfLines={1}>{s.friendUsername}</Text>
+                  {(s.radStreak > 0 || s.badStreak > 0) && (
+                    <View style={styles.streakScoreRow}>
+                      {s.radStreak > 0 && (<>
+                        <GradientFlame colors={HOT_FLAME} size={15} />
+                        <Text style={styles.streakScoreNum}>{s.radStreak}</Text>
+                      </>)}
+                      {s.radStreak > 0 && s.badStreak > 0 && (
+                        <Text style={styles.streakScoreSep}>·</Text>
+                      )}
+                      {s.badStreak > 0 && (<>
+                        <GradientFlame colors={COLD_FLAME} size={15} />
+                        <Text style={styles.streakScoreNum}>{s.badStreak}</Text>
+                      </>)}
+                    </View>
+                  )}
                 </TouchableOpacity>
               ))}
           </ScrollView>
@@ -355,13 +375,13 @@ const styles = StyleSheet.create({
   emptyText: { color: colors.textSecondary, fontSize: 15 },
   streakCard: {
     marginHorizontal: 16,
-    marginTop: 12,
-    marginBottom: 4,
+    marginTop: 14,
+    marginBottom: 6,
     backgroundColor: colors.card,
-    borderRadius: 16,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: '#2A2A3A',
-    padding: 14,
+    padding: 18,
   },
   streakCardHeader: {
     flexDirection: 'row',
@@ -376,7 +396,7 @@ const styles = StyleSheet.create({
   },
   streakCardTitle: {
     color: colors.textPrimary,
-    fontSize: 15,
+    fontSize: 17,
     fontWeight: '800',
   },
   streakCardScroll: {
@@ -389,69 +409,53 @@ const styles = StyleSheet.create({
   },
   streakCardItem: {
     alignItems: 'center',
-    gap: 4,
-    width: 54,
+    gap: 5,
+    width: 78,
   },
-  streakAvatarWrap: {
-    position: 'relative',
-    width: 50,
-    height: 50,
-  },
-  streakBadge: {
-    position: 'absolute',
-    minWidth: 18,
-    height: 18,
-    borderRadius: 9,
+  streakScoreRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 4,
-    borderWidth: 2,
-    borderColor: colors.card,
+    gap: 3,
+    marginTop: 4,
   },
-  streakBadgeRad: {
-    top: -4,
-    left: -4,
-    backgroundColor: '#FF4500',
+  streakScoreNum: {
+    color: colors.textPrimary,
+    fontSize: 13,
+    fontWeight: '700',
   },
-  streakBadgeBad: {
-    top: -4,
-    right: -4,
-    backgroundColor: '#6366F1',
-  },
-  streakBadgeText: {
-    color: '#FFFFFF',
-    fontSize: 10,
-    fontWeight: '900',
+  streakScoreSep: {
+    color: colors.textSecondary,
+    fontSize: 12,
   },
   streakCardRing: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
+    width: 66,
+    height: 66,
+    borderRadius: 33,
     borderWidth: 2,
     borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
   streakCardAvatar: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 58,
+    height: 58,
+    borderRadius: 29,
   },
   streakCardAvatarFallback: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 58,
+    height: 58,
+    borderRadius: 29,
     backgroundColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
   streakCardAvatarText: {
     color: colors.textPrimary,
-    fontSize: 14,
+    fontSize: 18,
     fontWeight: '700',
   },
   streakCardName: {
-    color: colors.textSecondary,
+    color: colors.textPrimary,
     fontSize: 10,
     fontWeight: '600',
     maxWidth: 52,
