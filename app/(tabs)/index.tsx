@@ -47,6 +47,7 @@ import { useStreakUnlock } from '@/hooks/useStreakUnlock';
 export default function FeedScreen() {
   const currentUser = useAuthStore((s) => s.user);
   const externalVotes = useFeedStore((s) => s.externalVotes);
+  const commentBumps = useFeedStore((s) => s.commentBumps);
   const regenerateSeed = useFeedStore((s) => s.regenerateSeed);
   const refreshToken = useFeedStore((s) => s.refreshToken);
   const resetToken = useFeedStore((s) => s.resetToken);
@@ -298,7 +299,7 @@ export default function FeedScreen() {
                   onRefresh={index === 0 ? handleRefresh : undefined}
                   onShare={() => router.push(`/sharePost?uploadId=${item.id}`)}
                   onComment={() => router.push(`/comments?uploadId=${item.id}`)}
-                  commentCount={item.comment_count ?? 0}
+                  commentCount={(item.comment_count ?? 0) + (commentBumps.get(item.id) ?? 0)}
                   hideRank={true}
                   isTop={index === 0}
                   index={index}

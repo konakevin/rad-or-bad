@@ -5,7 +5,7 @@ import { useFeedStore, type PendingPost } from '@/store/feed';
 import type { Category } from '@/types/database';
 import * as VideoThumbnails from 'expo-video-thumbnails';
 import { Video as CompressorVideo } from 'react-native-compressor';
-import { moderateUpload } from '@/lib/moderation';
+import { moderateText, moderateImage } from '@/lib/moderation';
 
 interface UploadArgs {
   uri: string;
@@ -53,6 +53,49 @@ export function useUpload() {
 
   return useMutation({
     mutationFn: async ({ uri, categories, caption, mediaType, width, height, onPhase }: UploadArgs): Promise<PendingPost> => {
+      // ── 1. Check caption text (instant, no upload needed) ───────────────
+      if (caption.trim()) {
+        onPhase?.('Processing...');
+        const textResult = await moderateText(caption.trim());
+        if (!textResult.passed) {
+          throw new Error(textResult.reason ?? 'Caption contains inappropriate language');
+        }
+      }
+
+      // ── 2. Check media BEFORE compressing/uploading the full file ────────
+      onPhase?.('Processing...');
+      if (mediaType === 'video') {
+        // Extract frames from the local video, upload tiny images to check
+        const frameTimes = [0, 2, 5, 8];
+        for (const time of frameTimes) {
+          try {
+            const { uri: frameUri } = await VideoThumbnails.getThumbnailAsync(uri, { time: time * 1000 });
+            const frameUrl = await uploadFile(frameUri, user!.id, 'image');
+            const frameCheck = await moderateImage(frameUrl);
+            const frameName = frameUrl.split('/').slice(-2).join('/');
+            await supabase.storage.from('uploads').remove([frameName]);
+            if (!frameCheck.passed) {
+              throw new Error(frameCheck.reason ?? 'Content rejected by moderation');
+            }
+          } catch (err) {
+            if ((err as Error).message?.includes('flagged') || (err as Error).message?.includes('rejected') || (err as Error).message?.includes('moderation')) {
+              throw err;
+            }
+            // Frame extraction failed (video shorter than this time) — skip
+          }
+        }
+      } else {
+        // Image: upload a temp copy to check, then delete
+        const tempUrl = await uploadFile(uri, user!.id, 'image');
+        const imageCheck = await moderateImage(tempUrl);
+        const tempName = tempUrl.split('/').slice(-2).join('/');
+        await supabase.storage.from('uploads').remove([tempName]);
+        if (!imageCheck.passed) {
+          throw new Error(imageCheck.reason ?? 'Content rejected by moderation');
+        }
+      }
+
+      // ── 3. Compress + upload the real file (only reached if moderation passed)
       onPhase?.('Compressing...');
       const uploadUri = mediaType === 'video'
         ? await CompressorVideo.compress(uri, { compressionMethod: 'auto', maxSize: 1280 })
@@ -64,20 +107,6 @@ export function useUpload() {
       const thumbnailUrl = mediaType === 'video'
         ? await generateAndUploadThumbnail(uploadUri, user!.id)
         : null;
-
-      // Content moderation — check the uploaded file URL
-      onPhase?.('Checking content...');
-      const modResult = await moderateUpload(mediaUrl, mediaType, caption.trim() || null);
-      if (!modResult.passed) {
-        // Clean up rejected file from storage
-        const fileName = mediaUrl.split('/').slice(-2).join('/');
-        await supabase.storage.from('uploads').remove([fileName]);
-        if (thumbnailUrl) {
-          const thumbName = thumbnailUrl.split('/').slice(-2).join('/');
-          await supabase.storage.from('uploads').remove([thumbName]);
-        }
-        throw new Error(modResult.reason ?? 'Content rejected by moderation');
-      }
 
       const { data: inserted, error } = await supabase
         .from('uploads')

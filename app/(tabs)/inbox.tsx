@@ -8,6 +8,7 @@ import * as Haptics from 'expo-haptics';
 import { useInbox, type NotificationItem } from '@/hooks/useInbox';
 import { useMarkShareSeen } from '@/hooks/useMarkShareSeen';
 import { useDeleteShare } from '@/hooks/useDeleteShare';
+import { useMarkAllSeen } from '@/hooks/useMarkAllSeen';
 import { colors } from '@/constants/theme';
 
 function formatTimeAgo(dateStr: string): string {
@@ -78,7 +79,7 @@ function NotificationRow({ item, onPress, onDelete }: { item: NotificationItem; 
       {/* Text */}
       <View style={styles.textCol}>
         <Text style={styles.mainLine} numberOfLines={2}>
-          <Text style={styles.actorName}>@{item.actorUsername}</Text>
+          <Text style={styles.actorName}>{item.actorUsername}</Text>
           <Text style={styles.actionText}> {action}</Text>
         </Text>
         {preview && (
@@ -108,8 +109,10 @@ export default function InboxScreen() {
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } = useInbox();
   const { mutate: markSeen } = useMarkShareSeen();
   const { mutate: deleteNotification } = useDeleteShare();
+  const { mutate: markAllSeen } = useMarkAllSeen();
 
   const inbox = useMemo(() => data?.pages.flat() ?? [], [data]);
+  const hasUnread = inbox.some((item) => !item.isSeen);
 
   function handleTap(item: NotificationItem) {
     if (!item.isSeen) {
@@ -125,6 +128,11 @@ export default function InboxScreen() {
     <SafeAreaView style={styles.root}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Inbox</Text>
+        {hasUnread && (
+          <TouchableOpacity onPress={() => markAllSeen()} activeOpacity={0.7} hitSlop={8}>
+            <Text style={styles.markAllRead}>Mark all read</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       <FlatList
@@ -169,6 +177,9 @@ export default function InboxScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 0.5,
@@ -178,6 +189,11 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     fontSize: 20,
     fontWeight: '800',
+  },
+  markAllRead: {
+    color: '#FFD700',
+    fontSize: 14,
+    fontWeight: '700',
   },
   row: {
     flexDirection: 'row',

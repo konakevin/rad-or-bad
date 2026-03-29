@@ -30,7 +30,7 @@ import { useAuthStore } from '@/store/auth';
 import { useAlbumStore } from '@/store/album';
 import { fetchPost } from '@/hooks/usePost';
 import { getRating } from '@/lib/getRating';
-import { formatCount } from '@/lib/formatCount';
+import { VoteCount } from '@/components/VoteCount';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { GradientUsername } from '@/components/GradientUsername';
 import { colors } from '@/constants/theme';
@@ -408,8 +408,7 @@ function DetailFooter({ post: p, isOwnPost, hasVoted, captionExpanded, setCaptio
               {p.total_votes > 0 && (
                 <>
                   <Text style={styles.metaDot}>·</Text>
-                  <Ionicons name="star" size={12} color="rgba(255,255,255,0.6)" />
-                  <Text style={styles.metaText}>{formatCount(p.total_votes)}</Text>
+                  <VoteCount count={p.total_votes} />
                 </>
               )}
               <TouchableOpacity onPress={onShare} hitSlop={12} style={styles.shareButton}>

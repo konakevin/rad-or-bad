@@ -22,10 +22,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 import type { FeedItem, FriendVote } from '@/hooks/useFeed';
 import { GradientUsername } from '@/components/GradientUsername';
 import { getRating } from '@/lib/getRating';
-import { formatCount } from '@/lib/formatCount';
+import { VoteCount } from '@/components/VoteCount';
 import { CATEGORY_LABELS, CATEGORY_COLORS } from '@/constants/categories';
 import { animateScoreIn } from '@/lib/scoreAnimation';
 import { DISMISS_DELAY } from '@/constants/theme';
+import { useFeedStore } from '@/store/feed';
 import { MilestoneBurst } from '@/components/MilestoneBurst';
 import type { MilestoneHit } from '@/lib/milestones';
 
@@ -137,7 +138,8 @@ function FriendAvatarBubble({ friend, userVote, index }: {
 export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost, isAlreadyVoted = false, onDismiss, onDismissStart, onFavorite, onFollow, onUserPress, onSwipeUpBlocked, onRefresh, hideRank = false, isTop, index, containerHeight, showSwipeHint, swipeEnabled = true, hasMilestone = false, friendVotes, autoDismissDelay, milestoneHit, pullY, onShare, onComment, commentCount }: SwipeCardProps) {
   const cardHeight = containerHeight > 0 ? containerHeight : SCREEN_HEIGHT * 0.65;
   const isVideo = item.media_type === 'video';
-  const [muted, setMuted] = useState(true);
+  const muted = useFeedStore((s) => s.videoMuted);
+  const toggleMute = useFeedStore((s) => s.toggleVideoMute);
 
   // Video player — only created for video posts
   const videoPlayer = useVideoPlayer(isVideo ? item.image_url : null, (p) => {
@@ -295,12 +297,14 @@ export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost,
           return (
             <>
               {isVideo ? (
-                <VideoView
-                  player={videoPlayer}
-                  style={styles.image}
-                  contentFit={blurBg ? 'contain' : 'cover'}
-                  nativeControls={false}
-                />
+                <Pressable onPress={toggleMute}>
+                  <VideoView
+                    player={videoPlayer}
+                    style={styles.image}
+                    contentFit={blurBg ? 'contain' : 'cover'}
+                    nativeControls={false}
+                  />
+                </Pressable>
               ) : (
                 <Image
                   source={{ uri: item.image_url }}
@@ -342,18 +346,19 @@ export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost,
           </View>
         )}
 
-        {/* Mute toggle for videos */}
-        {isVideo && (
+        {/* Mute indicator for videos — only shows when muted */}
+        {isVideo && muted && (
           <TouchableOpacity
-            style={styles.muteButton}
-            onPress={() => setMuted((m) => !m)}
+            style={styles.muteIndicator}
+            onPress={toggleMute}
             activeOpacity={0.7}
             hitSlop={12}
           >
             <Ionicons
-              name={muted ? 'volume-mute' : 'volume-high'}
-              size={18}
-              color="#FFFFFF"
+              name="volume-mute"
+              size={16}
+              color="rgba(255,255,255,0.6)"
+              style={styles.muteIcon}
             />
           </TouchableOpacity>
         )}
@@ -369,15 +374,13 @@ export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost,
               <Pressable onPress={onUserPress} hitSlop={8}>
                 <GradientUsername username={item.username} rank={item.user_rank} style={styles.username} photoOverlay hideRank={hideRank} avatarUrl={item.avatar_url} showAvatar avatarSize={24} />
               </Pressable>
-              {!isOwnPost && (
+              {!isOwnPost && !isFollowing && (
                 <Pressable
                   onPress={onFollow}
                   hitSlop={8}
-                  style={[styles.followPill, isFollowing && styles.followingPill]}
+                  style={styles.followPill}
                 >
-                  <Text style={[styles.followPillText, isFollowing && styles.followingPillText]}>
-                    {isFollowing ? 'Following' : '+ Follow'}
-                  </Text>
+                  <Text style={styles.followPillText}>+ Follow</Text>
                 </Pressable>
               )}
             </View>
@@ -407,8 +410,7 @@ export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost,
                       {total > 0 && (
                         <>
                           <Text style={styles.metaDot}>·</Text>
-                          <Ionicons name="star" size={12} color="rgba(255,255,255,0.65)" />
-                          <Text style={styles.metaText}>{formatCount(total)}</Text>
+                          <VoteCount count={total} />
                         </>
                       )}
                     </View>
@@ -520,13 +522,16 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: 1,
   },
-  muteButton: {
+  muteIndicator: {
     position: 'absolute',
     top: 14,
-    left: 14,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    borderRadius: 20,
-    padding: 8,
+    right: 14,
+    padding: 4,
+  },
+  muteIcon: {
+    textShadowColor: 'rgba(0,0,0,0.8)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 6,
   },
   friendAvatarGrid: {
     position: 'absolute',

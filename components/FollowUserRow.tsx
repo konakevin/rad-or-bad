@@ -1,6 +1,7 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
+import { useAuthStore } from '@/store/auth';
 import type { FollowUser } from '@/hooks/useFollowersList';
 import { colors } from '@/constants/theme';
 
@@ -11,10 +12,13 @@ interface Props {
 }
 
 export function FollowUserRow({ item, isFollowing, onFollow }: Props) {
+  const currentUserId = useAuthStore((s) => s.user?.id);
+  const isSelf = item.id === currentUserId;
+
   return (
     <TouchableOpacity
       style={styles.row}
-      onPress={() => router.push(`/user/${item.id}`)}
+      onPress={() => isSelf ? null : router.push(`/user/${item.id}`)}
       activeOpacity={0.7}
     >
       {item.avatar_url ? (
@@ -24,17 +28,19 @@ export function FollowUserRow({ item, isFollowing, onFollow }: Props) {
           <Text style={styles.avatarText}>{item.username[0].toUpperCase()}</Text>
         </View>
       )}
-      <Text style={styles.username}>@{item.username}</Text>
-      <TouchableOpacity
-        style={[styles.pill, isFollowing && styles.followingPill]}
-        onPress={() => onFollow(item.id)}
-        activeOpacity={0.7}
-        hitSlop={8}
-      >
-        <Text style={[styles.pillText, isFollowing && styles.followingPillText]}>
-          {isFollowing ? 'Following' : 'Follow'}
-        </Text>
-      </TouchableOpacity>
+      <Text style={styles.username}>{item.username}</Text>
+      {!isSelf && (
+        <TouchableOpacity
+          style={[styles.pill, isFollowing && styles.followingPill]}
+          onPress={() => onFollow(item.id)}
+          activeOpacity={0.7}
+          hitSlop={8}
+        >
+          <Text style={[styles.pillText, isFollowing && styles.followingPillText]}>
+            {isFollowing ? 'Following' : 'Follow'}
+          </Text>
+        </TouchableOpacity>
+      )}
     </TouchableOpacity>
   );
 }

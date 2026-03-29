@@ -86,6 +86,10 @@ export function useFeedDeck(feed: FeedItem[], currentUserId: string | undefined)
     setDeck((prev) => prev.filter((c) => c.id !== itemId));
   }, []);
 
+  const updateItem = useCallback((itemId: string, updates: Partial<FeedItem>) => {
+    setDeck((prev) => prev.map((item) => item.id === itemId ? { ...item, ...updates } : item));
+  }, []);
+
   const resetDeck = useCallback(() => {
     loadedFeedKey.current = '';
     setDeck([]);
@@ -100,6 +104,7 @@ export function useFeedDeck(feed: FeedItem[], currentUserId: string | undefined)
     sessionVotes,
     recordVote,
     dismissCard,
+    updateItem,
     resetDeck,
   };
 }

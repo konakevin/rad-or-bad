@@ -124,6 +124,7 @@ export default function PublicProfileScreen() {
           followingCount={profile.followingCount}
           activeTab={activeTab}
           onTabChange={setActiveTab}
+          hiddenTabs={isOwnProfile ? [] : ['friends', 'streaks']}
         />
       </View>
   );

@@ -108,14 +108,67 @@ const CATEGORIES = [
 ];
 
 const CAPTIONS = {
-  people:  ['golden hour was insane today', 'candid > posed', 'this light tho', 'main character energy', 'no filter needed'],
-  animals: ['this face right here', 'peak adorable', 'my whole heart', 'chaos goblin behavior', 'rescue life is the best life'],
-  food:    ['worth every calorie', 'this slaps different', 'chef kiss', 'brunch goals achieved', 'street food never misses'],
-  nature:  ['earth is showing off', 'no caption needed', 'golden hour magic', 'nature doing its thing', 'chasing light'],
-  funny:   ['I cant stop watching this', 'send help', 'the timing', 'absolutely unhinged', 'no thoughts just vibes'],
-  music:   ['front row was worth it', 'the crowd knew every word', 'beats hit different live', 'studio session was fire', 'pure sound'],
-  sports:  ['what a play', 'the send was clean', 'pure adrenaline', 'nothing but net', 'commit or eat it'],
-  art:     ['stopped me in my tracks', 'the colors in person were insane', 'gallery day well spent', 'art is everywhere', 'the process is the point'],
+  people: [
+    'caught this one by accident lol', 'idk why this pic goes so hard', 'me pretending im a model',
+    'the sun was hitting different today', 'ok but look at this lighting??', 'no im not ok',
+    'fit check nobody asked for', 'tuesday energy', 'living my best life or whatever',
+    'someone come get their mans', 'just vibes honestly', 'this is my good side apparently',
+    'pov: you actually left the house', 'my therapist would be proud', 'main character moment fr',
+    'im never taking a pic this good again', 'not pictured: the 47 bad takes before this',
+  ],
+  animals: [
+    'tell me this isnt the cutest thing ever', 'he has no idea how famous hes about to be',
+    'would literally die for this animal', 'look at this dumdum', 'shes judging you rn',
+    'rent free in my head since forever', 'the face when you hear the treat bag',
+    'hes doing his best ok', 'chaotic energy', 'this ones got the whole neighborhood fooled',
+    'adopted him 3 years ago best decision ever', 'proof that dogs are better than people',
+    'she literally posed for this', 'how is this real', 'the audacity of this cat',
+  ],
+  food: [
+    'ate this 2 hours ago still thinking about it', 'is it normal to photograph your food this much',
+    'the first bite was spiritual', 'found this spot on accident and wow', 'brunch was a personality trait today',
+    'i made this and honestly shocked', 'if youre not eating this what are you doing',
+    'this taco changed my life not even joking', 'calories dont count on vacation right',
+    'my kitchen my rules', 'street food > fancy restaurants every time', 'the cheese pull tho',
+    'idk who needs to hear this but go eat something good today', 'im not a chef but',
+  ],
+  nature: [
+    'phone doesnt do it justice tbh', 'i just stood here for like 20 minutes',
+    'ok earth you didnt have to go that hard', 'sometimes you just gotta stop and look up',
+    'no filter i swear', 'woke up at 5am for this and zero regrets', 'places like this actually exist??',
+    'this is why i hike', 'the clouds were showing off today', 'im moving here bye',
+    'peaceful af', 'how does this not have more likes come on', 'currently offline from life',
+    'put the phone down and just breathe', 'the universe said here you go',
+  ],
+  funny: [
+    'im crying actual tears', 'why is this so accurate', 'showed this to everyone at work',
+    'me at 3am for no reason', 'the way i just screamed', 'im sending this to everyone i know',
+    'this should not be this funny', 'pov me trying to adult', 'how do i unsee this',
+    'i have watched this 400 times', 'whoever made this deserves an award',
+    'my sense of humor is broken and i dont care', 'this is peak internet', 'help',
+  ],
+  music: [
+    'this song has been on repeat all week', 'goosebumps every single time',
+    'the bass hit my chest and i felt alive', 'best night of my life no cap',
+    'if you know you know', 'this set was unreal', 'my ears are still ringing worth it',
+    'music is literally therapy', 'the crowd energy was insane', 'vinyl sounds hit different',
+    'found this artist last week and im obsessed', 'the drop tho', 'need to go back immediately',
+  ],
+  sports: [
+    'absolutely filthy move', 'how do you even do that', 'the reaction from the crowd says it all',
+    'been rewatching this nonstop', 'clean af', 'this is what happens when you dont give up',
+    'physics said no and they said watch me', 'the commitment is insane',
+    'my jaw literally dropped', 'years of practice in one clip', 'thats going on the highlight reel',
+    'someone call the police this was a robbery', 'im just a spectator and im exhausted',
+  ],
+  art: [
+    'walked past this three times before i actually looked', 'ok this is actually incredible',
+    'the detail up close is wild', 'art that makes you feel something >>> ',
+    'i want this on my wall', 'took me a sec to realize this was painted not a photo',
+    'the colors are even crazier in person', 'support your local artists seriously',
+    'i dont know art but i know what i like', 'the texture on this', 'someone put their whole soul into this',
+    'gallery hopping is my new personality', 'stared at this for way too long',
+  ],
 };
 
 const pexelsCache = {};
@@ -346,7 +399,7 @@ async function main() {
         const photos = photoPool[catKey];
         if (!photos.length) continue;
         const photo = photos[(friends.indexOf(friend) * 15 + j) % photos.length];
-        const caption = casualize(photo.alt) || pick(CAPTIONS[catKey]);
+        const caption = pick(CAPTIONS[catKey]);
         const { data, error } = await supabase.from('uploads').insert({
           user_id: friend.id, categories: [catKey],
           image_url: photo.url, media_type: 'image',
@@ -402,7 +455,7 @@ async function main() {
         photoIdx[catKey]++;
         usedUrls.add(photo.url);
 
-        const caption = casualize(photo.alt) || pick(CAPTIONS[catKey]);
+        const caption = pick(CAPTIONS[catKey]);
         const categories = [catKey];
         if (Math.random() > 0.7) categories.push(pick(catKeys.filter(k => k !== catKey)));
 
@@ -565,21 +618,40 @@ async function main() {
   console.log('\n💬 Generating comments...');
 
   const COMMENT_TEMPLATES = [
-    'this is absolutely fire 🔥', 'no way lol', 'hard pass on this one',
-    'underrated post', 'this goes crazy', 'not feeling it tbh',
-    'W post', 'clean 🤌', 'mid at best', 'someone explain the hype',
-    'need more of this energy', 'this aint it chief', 'bruh 💀',
-    'sending this to everyone', 'instant classic', 'the vibes are immaculate',
-    'how does this not have more votes', 'yo this slaps', 'respectfully... bad',
-    'ok ok I see you', 'top tier content', 'delete this nephew',
+    'oh wow', 'yooo', 'this is crazy', 'nah', 'wait what', 'lol',
+    'bro', 'im weak', 'ok this is actually sick', 'not bad ngl',
+    'hard pass', 'lets goooo', 'idk about this one', 'hmm',
+    'the more i look at it the better it gets', 'this aint it',
+    'genuinely cant tell if this is rad or bad', 'respectfully no',
+    'ok i see you', 'sleeper hit', 'how is nobody talking about this',
+    'showed my roommate and they said bad but theyre wrong',
+    'this deserves more love', 'im torn on this one honestly',
+    'the lighting carries this hard', 'clean', 'mid', 'elite',
+    'whoever posted this has taste', 'instant rad from me',
+    'voting bad and i dont feel bad about it', 'rad all day',
+    'wait is this edited or real', 'this photo has a vibe idk',
+    'straight heat', 'this pic goes crazy actually',
+    'the composition tho', 'top 5 post ive seen this week',
+    'love this', 'terrible lol', 'vibes', 'not my thing but respect',
+    'i keep coming back to this one', 'this shouldnt work but it does',
+    'bruh who uploaded this 💀', 'obsessed', 'meh',
+    'lowkey fire', 'highkey fire', 'criminally underrated',
+    'the people need to see this', 'why does this have so few votes',
+    'im voting rad just for the audacity', 'bold choice posting this',
   ];
 
   const REPLY_TEMPLATES = [
-    'facts', 'couldn\'t agree more', 'nah you\'re wrong for this',
-    'exactly what I was thinking', 'L take', 'W take',
-    'bro what 💀', 'this is the way', 'say it louder',
-    'hard disagree', 'spitting rn', 'ratio',
-    'you get it', 'not even close', 'finally someone said it',
+    'fr', 'nah fr', 'exactly', 'wrong', 'how', 'literally',
+    'this', 'say less', 'w', 'huge L', 'based',
+    'you spitting', 'nah you trippin', 'facts tho', 'cope',
+    'agree to disagree', 'bro what are you looking at',
+    'i thought the same thing lmao', 'huh??', 'real',
+    'no way you actually think that', 'respect the take',
+    'finally someone with taste', 'youre seeing things',
+    'hard agree', 'couldn\'t disagree more', 'ok fair point',
+    'lol what', 'i mean youre not wrong', 'youre not wrong but',
+    'delete this comment', 'best comment here', 'underrated reply',
+    'came here to say this', 'honestly yeah', 'wait actually true',
   ];
 
   const commentRows = [];

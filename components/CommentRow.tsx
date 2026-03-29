@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   replyRow: {
-    paddingLeft: 58,
+    paddingLeft: 48,
   },
   avatar: {
     width: 32,
@@ -225,17 +225,17 @@ const styles = StyleSheet.create({
     color: '#FF4500',
   },
   repliesContainer: {
-    paddingLeft: 42,
+    paddingLeft: 0,
   },
   repliesToggle: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    gap: 10,
+    paddingLeft: 58,
+    paddingVertical: 6,
+    gap: 6,
   },
   repliesLine: {
-    width: 24,
+    width: 12,
     height: 1,
     backgroundColor: colors.textSecondary,
   },

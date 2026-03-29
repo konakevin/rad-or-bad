@@ -37,6 +37,12 @@ interface FeedStore {
   // Votes cast outside the feed screen (e.g. photo detail view)
   externalVotes: Map<string, 'rad' | 'bad'>;
   addExternalVote: (uploadId: string, vote: 'rad' | 'bad') => void;
+  // Global video mute — muted by default, one toggle affects all videos
+  videoMuted: boolean;
+  toggleVideoMute: () => void;
+  // Comment count bumps — tracks increments from this session
+  commentBumps: Map<string, number>;
+  bumpCommentCount: (uploadId: string) => void;
   // Session seed for feed shuffle — changes on pull-to-refresh
   feedSeed: number;
   regenerateSeed: () => void;
@@ -57,6 +63,13 @@ export const useFeedStore = create<FeedStore>((set) => ({
   regenerateSeed: () => set({ feedSeed: Math.random() }),
   pendingPost: null,
   setPendingPost: (post) => set({ pendingPost: post }),
+  videoMuted: true,
+  toggleVideoMute: () => set((s) => ({ videoMuted: !s.videoMuted })),
+  commentBumps: new Map(),
+  bumpCommentCount: (uploadId) =>
+    set((s) => ({
+      commentBumps: new Map(s.commentBumps).set(uploadId, (s.commentBumps.get(uploadId) ?? 0) + 1),
+    })),
   externalVotes: new Map(),
   addExternalVote: (uploadId, vote) =>
     set((s) => ({ externalVotes: new Map(s.externalVotes).set(uploadId, vote) })),

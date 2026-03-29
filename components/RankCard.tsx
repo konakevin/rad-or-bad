@@ -6,7 +6,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useAlbumStore } from '@/store/album';
 import { getRating } from '@/lib/getRating';
-import { formatCount } from '@/lib/formatCount';
+import { VoteCount } from '@/components/VoteCount';
 import type { ExplorePost } from '@/hooks/useCategoryPosts';
 import { colors } from '@/constants/theme';
 
@@ -66,8 +66,7 @@ export function RankCard({ post, rank, height, albumIds, accentColor, featured =
           <View style={styles.cellFooterRow}>
             {post.total_votes > 0 && (
               <View style={styles.cellVotesRow}>
-                <Ionicons name="star" size={9} color="rgba(255,255,255,0.6)" />
-                <Text style={styles.cellVotesText}>{formatCount(post.total_votes)}</Text>
+                <VoteCount count={post.total_votes} size="sm" />
               </View>
             )}
 
@@ -123,8 +122,7 @@ export function RankCard({ post, rank, height, albumIds, accentColor, featured =
           <View style={styles.heroFooterLeft}>
             {post.total_votes > 0 && (
               <View style={styles.votesRow}>
-                <Ionicons name="star" size={11} color="rgba(255,255,255,0.6)" />
-                <Text style={styles.votesText}>{formatCount(post.total_votes)}</Text>
+                <VoteCount count={post.total_votes} />
               </View>
             )}
           </View>

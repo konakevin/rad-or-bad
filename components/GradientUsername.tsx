@@ -47,7 +47,7 @@ export function GradientUsername({
   username, rank, style, photoOverlay = false, hideRank = false,
   avatarUrl, showAvatar = false, avatarSize = 20,
 }: GradientUsernameProps) {
-  const text = `@${username}`;
+  const text = username;
 
   function wrapWithAvatar(node: React.ReactNode) {
     if (!showAvatar) return node;

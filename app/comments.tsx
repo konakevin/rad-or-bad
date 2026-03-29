@@ -1,7 +1,7 @@
 import { useState, useRef, useMemo, useEffect } from 'react';
 import {
   View, Text, TouchableOpacity, FlatList, TextInput, ActivityIndicator,
-  StyleSheet, Dimensions, Pressable, KeyboardAvoidingView, Platform,
+  StyleSheet, Dimensions, Pressable, KeyboardAvoidingView, Platform, Animated,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,6 +11,7 @@ import { useAuthStore } from '@/store/auth';
 import { useComments, type Comment } from '@/hooks/useComments';
 import { useAddComment } from '@/hooks/useAddComment';
 import { CommentRow } from '@/components/CommentRow';
+import { useSheetDismiss } from '@/hooks/useSheetDismiss';
 import { colors } from '@/constants/theme';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -22,6 +23,7 @@ export default function CommentsScreen() {
   const currentUser = useAuthStore((s) => s.user);
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } = useComments(uploadId ?? '');
   const { mutate: addComment, isPending } = useAddComment();
+  const { translateY, panHandlers } = useSheetDismiss();
 
   const [text, setText] = useState('');
   const [replyTo, setReplyTo] = useState<Comment | null>(null);
@@ -75,9 +77,10 @@ export default function CommentsScreen() {
       <Pressable style={styles.backdrop} onPress={() => router.back()} />
 
       {/* Bottom sheet */}
+      <Animated.View {...panHandlers} style={[styles.sheet, { transform: [{ translateY }] }]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.sheet}
+        style={{ flex: 1 }}
         keyboardVerticalOffset={0}
       >
         {/* Handle */}
@@ -137,7 +140,7 @@ export default function CommentsScreen() {
         {replyTo && (
           <View style={styles.replyBar}>
             <Text style={styles.replyBarText}>
-              Replying to <Text style={styles.replyBarUsername}>@{replyTo.username ?? 'comment'}</Text>
+              Replying to <Text style={styles.replyBarUsername}>{replyTo.username ?? 'comment'}</Text>
             </Text>
             <TouchableOpacity onPress={cancelReply} hitSlop={8}>
               <Ionicons name="close" size={16} color={colors.textSecondary} />
@@ -177,6 +180,7 @@ export default function CommentsScreen() {
           )}
         </View>
       </KeyboardAvoidingView>
+      </Animated.View>
     </View>
   );
 }

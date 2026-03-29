@@ -118,6 +118,8 @@ class SightengineProvider implements ModerationProvider {
 
   async checkVideo(videoUrl: string): Promise<ModerationResult> {
     try {
+      console.log(`[${this.name}] Checking video: ${videoUrl.slice(0, 80)}...`);
+
       const params = new URLSearchParams({
         stream_url: videoUrl,
         models: 'nudity-2.1,gore-2.0,weapon,self-harm',
@@ -128,12 +130,15 @@ class SightengineProvider implements ModerationProvider {
       const res = await fetch(`https://api.sightengine.com/1.0/video/check-sync.json?${params}`, {
         method: 'GET',
       });
+      console.log(`[${this.name}] Video HTTP status: ${res.status}`);
       if (!res.ok) {
-        console.warn(`[${this.name}] Video API error:`, res.status);
+        const body = await res.text();
+        console.warn(`[${this.name}] Video API error: ${res.status} — ${body}`);
         return { passed: false, reason: 'Unable to verify content. Please try again.' };
       }
 
       const data = await res.json();
+      console.log(`[${this.name}] Video response status: ${data.status}, frames: ${data.data?.frames?.length ?? 0}`);
       if (data.status !== 'success') {
         console.warn(`[${this.name}] Video response error:`, data.error?.message);
         return { passed: false, reason: 'Unable to verify content. Please try again.' };
@@ -232,6 +237,10 @@ const activeProvider: ModerationProvider = new SightengineProvider(
 
 export async function moderateImage(imageUrl: string): Promise<ModerationResult> {
   return activeProvider.checkImage(imageUrl);
+}
+
+export async function moderateVideo(videoUrl: string): Promise<ModerationResult> {
+  return activeProvider.checkVideo(videoUrl);
 }
 
 export async function moderateText(text: string): Promise<ModerationResult> {

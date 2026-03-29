@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/auth';
+import { useFeedStore } from '@/store/feed';
 import { moderateText } from '@/lib/moderation';
 
 interface AddCommentArgs {
@@ -40,9 +41,9 @@ export function useAddComment() {
       if (parentId) {
         queryClient.invalidateQueries({ queryKey: ['replies', parentId] });
       }
-      // Update comment count in feed/post caches
-      queryClient.invalidateQueries({ queryKey: ['post'] });
-      queryClient.invalidateQueries({ queryKey: ['feed'] });
+      // Bump comment count so the card updates instantly
+      useFeedStore.getState().bumpCommentCount(uploadId);
+      queryClient.invalidateQueries({ queryKey: ['post', uploadId] });
     },
   });
 }

@@ -242,7 +242,7 @@ export default function SettingsScreen() {
               changingUsername
                 ? <ActivityIndicator size="small" color={colors.textSecondary} />
                 : <View style={styles.rowTrailing}>
-                    <Text style={styles.rowValue}>@{profile?.username ?? ''}</Text>
+                    <Text style={styles.rowValue}>{profile?.username ?? ''}</Text>
                     <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
                   </View>
             }

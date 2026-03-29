@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { View, Text, TouchableOpacity, FlatList, TextInput, ActivityIndicator, StyleSheet, Alert, Dimensions, Pressable } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, TextInput, ActivityIndicator, StyleSheet, Alert, Dimensions, Pressable, Animated, Share } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -7,6 +7,7 @@ import * as Haptics from 'expo-haptics';
 import { useAuthStore } from '@/store/auth';
 import { useShareableVibers, type ShareableViber } from '@/hooks/useShareableVibers';
 import { useSendShare } from '@/hooks/useSendShare';
+import { useSheetDismiss } from '@/hooks/useSheetDismiss';
 import { colors } from '@/constants/theme';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -52,6 +53,7 @@ export default function SharePostScreen() {
   const { mutate: sendShare, isPending } = useSendShare();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState('');
+  const { translateY, panHandlers } = useSheetDismiss();
 
   const isSearching = search.trim().length > 0;
 
@@ -95,7 +97,7 @@ export default function SharePostScreen() {
       <Pressable style={styles.backdrop} onPress={() => router.back()} />
 
       {/* Bottom sheet */}
-      <View style={styles.sheet}>
+      <Animated.View {...panHandlers} style={[styles.sheet, { transform: [{ translateY }] }]}>
         {/* Drag handle */}
         <View style={styles.handleRow}>
           <View style={styles.handle} />
@@ -119,6 +121,27 @@ export default function SharePostScreen() {
             )}
           </TouchableOpacity>
         </View>
+
+        {/* Share link */}
+        <TouchableOpacity
+          style={styles.shareLinkRow}
+          onPress={() => {
+            Share.share({
+              url: `https://radorbad.co/post/${uploadId}`,
+              message: `Check this out on Rad or Bad`,
+            });
+          }}
+          activeOpacity={0.7}
+        >
+          <View style={styles.shareLinkIcon}>
+            <Ionicons name="link-outline" size={20} color={colors.textPrimary} />
+          </View>
+          <View style={styles.shareLinkText}>
+            <Text style={styles.shareLinkTitle}>Share link</Text>
+            <Text style={styles.shareLinkUrl}>radorbad.co/post/{uploadId?.slice(0, 8)}...</Text>
+          </View>
+          <Ionicons name="open-outline" size={16} color={colors.textSecondary} />
+        </TouchableOpacity>
 
         {/* Search */}
         <View style={styles.searchWrap}>
@@ -168,7 +191,7 @@ export default function SharePostScreen() {
           }
           keyboardShouldPersistTaps="handled"
         />
-      </View>
+      </Animated.View>
     </View>
   );
 }
@@ -228,6 +251,40 @@ const styles = StyleSheet.create({
   },
   sendButtonTextDisabled: {
     color: colors.textSecondary,
+  },
+  shareLinkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 16,
+    marginBottom: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    backgroundColor: colors.background,
+    borderRadius: 12,
+    gap: 10,
+  },
+  shareLinkIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  shareLinkText: {
+    flex: 1,
+    gap: 1,
+  },
+  shareLinkTitle: {
+    color: colors.textPrimary,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  shareLinkUrl: {
+    color: colors.textSecondary,
+    fontSize: 12,
   },
   searchWrap: {
     flexDirection: 'row',
