@@ -168,6 +168,7 @@ export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost,
   const [catsExpanded, setCatsExpanded] = useState(false);
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
+  const cardOpacity = useSharedValue(1);
   const canSwipeUp = useSharedValue(userVote !== null || isOwnPost || isAlreadyVoted);
   useEffect(() => {
     canSwipeUp.value = userVote !== null || isOwnPost || isAlreadyVoted;
@@ -192,7 +193,7 @@ export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost,
         const delay = autoDismissDelay !== undefined ? autoDismissDelay : (hasMilestone ? null : DISMISS_DELAY);
         if (delay !== null) {
           dismissTimer.current = setTimeout(() => {
-            translateY.value = withTiming(-SCREEN_HEIGHT * 1.3, { duration: 200 }, () => {
+            cardOpacity.value = withTiming(0, { duration: 250 }, () => {
               runOnJS(onDismiss)();
             });
           }, delay);
@@ -234,15 +235,10 @@ export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost,
       runOnJS(cancelDismissTimer)();
     })
     .onUpdate((e) => {
-      // Downward pull — always allowed (for pull-to-refresh), locked vertical
-      if (e.translationY > 0) {
-        translateY.value = e.translationY * 0.15;
-        if (pullY) pullY.value = e.translationY;
-        return;
-      }
+      // Ignore downward pulls
+      if (e.translationY > 0) return;
       // Upward — requires vote
       if (!canSwipeUp.value) return;
-      // No horizontal movement — left swipe detected on release only
       translateY.value = e.translationY;
     })
     .onEnd((e) => {
@@ -258,19 +254,15 @@ export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost,
       } else {
         translateX.value = withSpring(0, SPRING_CONFIG);
         translateY.value = withSpring(0, SPRING_CONFIG);
-        if (pullY) pullY.value = withTiming(0, { duration: 300 });
         // User tried to swipe up without voting — nudge the vote buttons
         if (e.translationY < -60 && !canSwipeUp.value && onSwipeUpBlocked) {
           runOnJS(onSwipeUpBlocked)();
-        }
-        // Pull down to refresh
-        if (e.translationY > 120 && onRefresh) {
-          runOnJS(onRefresh)();
         }
       }
     });
 
   const cardStyle = useAnimatedStyle(() => ({
+    opacity: cardOpacity.value,
     transform: [
       { translateX: translateX.value },
       { translateY: translateY.value },
@@ -308,7 +300,7 @@ export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost,
                   source={{ uri: item.image_url }}
                   style={styles.image}
                   contentFit={blurBg ? 'contain' : 'cover'}
-                  transition={200}
+                  transition={0}
                 />
               )}
             </>

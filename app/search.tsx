@@ -142,11 +142,9 @@ export default function SearchScreen() {
             <View style={styles.empty}>
               {isLoading ? (
                 <ActivityIndicator color={colors.textSecondary} />
-              ) : query.length < 2 ? (
-                <Text style={styles.emptyText}>Type at least 2 characters</Text>
-              ) : (
+              ) : query.length >= 2 ? (
                 <Text style={styles.emptyText}>No users found</Text>
-              )}
+              ) : null}
             </View>
           }
         />

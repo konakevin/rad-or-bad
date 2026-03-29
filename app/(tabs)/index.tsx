@@ -34,7 +34,6 @@ import { useCategoryPosts } from '@/hooks/useCategoryPosts';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors } from '@/constants/theme';
 import { VoteButton } from '@/components/VoteButton';
-import { RefreshIndicator } from '@/components/RefreshIndicator';
 import { CATEGORIES } from '@/constants/categories';
 
 // Extracted hooks — each owns one concern
@@ -49,7 +48,6 @@ export default function FeedScreen() {
   const currentUser = useAuthStore((s) => s.user);
   const externalVotes = useFeedStore((s) => s.externalVotes);
   const commentBumps = useFeedStore((s) => s.commentBumps);
-  const regenerateSeed = useFeedStore((s) => s.regenerateSeed);
   const refreshToken = useFeedStore((s) => s.refreshToken);
   const resetToken = useFeedStore((s) => s.resetToken);
 
@@ -61,8 +59,6 @@ export default function FeedScreen() {
   const streakUnlock = useStreakUnlock();
 
   // ── Remaining local state (UI-only, minimal) ────────────────────────────
-  const pullY = useSharedValue(0);
-  const [refreshing, setRefreshing] = useState(false);
   const [cardAreaHeight, setCardAreaHeight] = useState(0);
   const cardAreaMeasured = useRef(false);
   const showSwipeHint = false; // disabled — users vote with buttons first
@@ -161,13 +157,6 @@ export default function FeedScreen() {
     router.push(`/user/${item.user_id}?viewedPost=${item.id}`);
   }, []);
 
-  const handleRefresh = useCallback(async () => {
-    setRefreshing(true);
-    regenerateSeed();
-    deck.resetDeck();
-    await activeFeed.refetch();
-    setRefreshing(false);
-  }, []);
 
   const handleSwipeUpBlocked = useCallback(() => {
     setJiggleTick((t) => t + 1);
@@ -178,7 +167,7 @@ export default function FeedScreen() {
   const topItemVoted = deck.topItemVoted;
   const { feedMode } = activeFeed;
 
-  // Prefetch next 3 cards (images + video thumbnails) so they load instantly
+  // Prefetch next 5 cards (images + video thumbnails) so they load instantly
   useEffect(() => {
     const deckItems = deck.deck;
     const topIdx = deckItems.findIndex((d) => d.id === topItem?.id);
@@ -275,7 +264,7 @@ export default function FeedScreen() {
           activeOpacity={0.7}
         >
           <Ionicons name="flash" size={14} color={feedMode === 'friends' ? '#FFD700' : colors.textSecondary} />
-          <Text style={[styles.feedToggleText, feedMode === 'friends' && styles.feedToggleTextActive]}>Vibes</Text>
+          <Text style={[styles.feedToggleText, feedMode === 'friends' && styles.feedToggleTextActive]}>Vibe</Text>
         </TouchableOpacity>
       </View>
 
@@ -287,16 +276,16 @@ export default function FeedScreen() {
           setCardAreaHeight(h);
         }
       }}>
-        <RefreshIndicator pullY={pullY} />
         {!cardAreaHeight ? null : feedMode === 'friends' && !streakUnlock.streakUnlocked ? (
           <StreakLockedState votesNeeded={10 - streakUnlock.totalVoteCount} onGoVote={() => activeFeed.setFeedMode('default')} />
         ) : deck.deck.length === 0 && !activeFeed.isLoading && !activeFeed.isRefetching && activeFeed.feed.length === 0 ? (
           <CaughtUpState />
         ) : (<>
           {topCards
-            .slice(0, 1)
-            .map((item) => {
-              const index = 0;
+            .slice(0, 2)
+            .reverse()
+            .map((item, reversedIndex) => {
+              const index = topCards.slice(0, 2).length - 1 - reversedIndex;
               return (
                 <SwipeCard
                   key={item.id}
@@ -312,7 +301,6 @@ export default function FeedScreen() {
                   onFollow={() => handleFollow(item)}
                   onUserPress={() => handleUserPress(item)}
                   onSwipeUpBlocked={index === 0 ? handleSwipeUpBlocked : undefined}
-                  onRefresh={index === 0 ? handleRefresh : undefined}
                   onShare={() => router.push(`/sharePost?uploadId=${item.id}`)}
                   onComment={() => router.push(`/comments?uploadId=${item.id}&postOwnerId=${item.user_id}`)}
                   commentCount={(item.comment_count ?? 0) + (commentBumps.get(item.id) ?? 0)}
@@ -326,7 +314,6 @@ export default function FeedScreen() {
                   friendVotes={feedMode === 'friends' ? streakVoting.applyLocalStreaks(item.friend_votes) : undefined}
                   autoDismissDelay={index === 0 && milestone.isActive(item.id) ? null : undefined}
                   milestoneHit={index === 0 && milestone.milestoneHit?.postId === item.id ? milestone.milestoneHit : null}
-                  pullY={index === 0 ? pullY : undefined}
                 />
               );
             })

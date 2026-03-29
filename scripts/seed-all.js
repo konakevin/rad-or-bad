@@ -54,8 +54,8 @@ function getArg(name, fallback) {
   const idx = args.indexOf(`--${name}`);
   return idx !== -1 && args[idx + 1] ? parseInt(args[idx + 1], 10) : fallback;
 }
-const NUM_STRANGERS = getArg('strangers', 40);
-const POSTS_PER_STRANGER = getArg('posts', 10);
+const NUM_STRANGERS = getArg('strangers', 80);
+const POSTS_PER_STRANGER = getArg('posts', 20);
 
 const PASSWORD = 'Testpass123!';
 const KEVIN_EMAIL = 'konakevin@gmail.com';
@@ -98,18 +98,18 @@ function generateUsername(index) {
 
 // ── Pexels API ───────────────────────────────────────────────────────────────
 const CATEGORIES = [
-  { key: 'people',  queries: ['portrait golden hour', 'street style fashion', 'candid lifestyle'] },
-  { key: 'animals', queries: ['cute puppy', 'kitten playing', 'wildlife close up'] },
-  { key: 'food',    queries: ['gourmet plating', 'street food colorful', 'coffee art latte'] },
-  { key: 'nature',  queries: ['dramatic sunset', 'mountain landscape', 'ocean waves aerial'] },
-  { key: 'funny',   queries: ['funny cat', 'dogs being silly', 'humor animals'] },
-  { key: 'music',   queries: ['concert crowd lights', 'vinyl records aesthetic', 'guitar close up'] },
-  { key: 'sports',  queries: ['surfing wave', 'skateboard trick', 'basketball slam dunk'] },
-  { key: 'art',     queries: ['street mural colorful', 'abstract painting', 'neon lights art'] },
-  { key: 'memes',   queries: ['funny meme', 'internet humor', 'reaction face'] },
-  { key: 'beauty',  queries: ['makeup look', 'skincare routine', 'beauty aesthetic'] },
+  { key: 'people',  queries: ['golden hour portrait', 'street style outfit', 'group friends laughing', 'festival crowd', 'rooftop party vibes', 'couple aesthetic'] },
+  { key: 'animals', queries: ['golden retriever happy', 'baby elephant playing', 'parrot colorful', 'fox in snow', 'cat loaf position', 'corgi beach'] },
+  { key: 'food',    queries: ['ramen close up', 'pizza cheese pull', 'acai bowl colorful', 'sushi platter', 'ice cream aesthetic', 'tacos street food'] },
+  { key: 'nature',  queries: ['northern lights aurora', 'cherry blossom japan', 'waterfall tropical', 'desert sand dunes', 'lightning storm dramatic', 'milky way stars'] },
+  { key: 'funny',   queries: ['funny dog face', 'cat stuck silly', 'surprised animal', 'birds funny', 'hamster cute funny', 'dog costume'] },
+  { key: 'music',   queries: ['dj neon lights', 'crowd surfing concert', 'guitar sunset', 'headphones aesthetic', 'piano keys', 'drum set stage'] },
+  { key: 'sports',  queries: ['surfing barrel wave', 'bmx trick air', 'rock climbing mountain', 'snowboard jump', 'parkour urban', 'skateboard grind'] },
+  { key: 'art',     queries: ['neon sign aesthetic', 'graffiti wall colorful', 'pottery hands clay', 'light painting long exposure', 'sculpture modern', 'tattoo art design'] },
+  { key: 'memes',   queries: ['confused dog', 'dramatic cat', 'funny animal face', 'dog side eye', 'cat surprised', 'puppy head tilt'] },
+  { key: 'beauty',  queries: ['nails art design', 'hair color aesthetic', 'makeup neon glow', 'jewelry close up', 'perfume bottle aesthetic', 'skincare flat lay'] },
   { key: 'quotes',  queries: ['motivational quote', 'typography poster', 'inspirational text'] },
-  { key: 'cute',    queries: ['baby animals cute', 'adorable kitten', 'cute puppy sleeping'] },
+  { key: 'cute',    queries: ['baby otter floating', 'kitten yawning', 'puppy paws close up', 'baby bunny', 'hedgehog tiny', 'duckling swimming'] },
 ];
 
 const CAPTIONS = {
@@ -431,13 +431,23 @@ async function main() {
   const allUsers = [...friends, ...strangers];
 
   // ── 5. Fetch photos ──────────────────────────────────────────────────────
-  console.log('\n📷 Fetching Pexels photos + videos...');
+  console.log('\n📷 Fetching Pexels photos + videos (all queries per category)...');
   const photoPool = {};
   const videoPool = {};
   for (const cat of CATEGORIES) {
-    const query = pick(cat.queries);
-    photoPool[cat.key] = await fetchPexelsPhotos(query, 80);
-    videoPool[cat.key] = await fetchPexelsVideos(query, 30);
+    const allPhotos = [];
+    const allVideos = [];
+    for (const query of cat.queries) {
+      const photos = await fetchPexelsPhotos(query, 80);
+      const videos = await fetchPexelsVideos(query, 20);
+      allPhotos.push(...photos);
+      allVideos.push(...videos);
+      process.stdout.write('.');
+    }
+    // Deduplicate by URL
+    const seenUrls = new Set();
+    photoPool[cat.key] = allPhotos.filter(p => { if (seenUrls.has(p.url)) return false; seenUrls.add(p.url); return true; });
+    videoPool[cat.key] = allVideos.filter(v => { if (seenUrls.has(v.url)) return false; seenUrls.add(v.url); return true; });
     log(`${cat.key}: ${photoPool[cat.key].length} photos, ${videoPool[cat.key].length} videos`);
   }
 
@@ -466,7 +476,7 @@ async function main() {
   catKeys.forEach(k => friendVideoIdx[k] = 0);
 
   for (const friend of friends) {
-    for (let j = 0; j < 15; j++) {
+    for (let j = 0; j < 30; j++) {
       const catKey = catKeys[j % catKeys.length];
       const useVideo = Math.random() < VIDEO_RATE && videoPool[catKey].length > 0;
 

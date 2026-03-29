@@ -16,7 +16,7 @@ export function VoteCount({ count, size = 'md' }: VoteCountProps) {
 
   return (
     <View style={styles.row}>
-      <Ionicons name="people-outline" size={iconSize} color={colors.textSecondary} style={styles.icon} />
+      <Ionicons name="people-outline" size={iconSize} color="rgba(255,255,255,0.85)" style={styles.icon} />
       <Text style={[styles.text, { fontSize }]}>{formatCount(count)}</Text>
     </View>
   );
@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
     textShadowRadius: 4,
   },
   text: {
-    color: colors.textSecondary,
+    color: 'rgba(255,255,255,0.85)',
     textShadowColor: 'rgba(0,0,0,0.6)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 4,
