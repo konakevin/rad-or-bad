@@ -26,6 +26,7 @@ import { useFollowingIds } from '@/hooks/useFollowingIds';
 import { useToggleFollow } from '@/hooks/useToggleFollow';
 import { useFeedStore } from '@/store/feed';
 import { useAuthStore } from '@/store/auth';
+import { Image as ExpoImage } from 'expo-image';
 import { SwipeCard } from '@/components/SwipeCard';
 import { RankCard } from '@/components/RankCard';
 import { router } from 'expo-router';
@@ -177,6 +178,22 @@ export default function FeedScreen() {
   const topItemVoted = deck.topItemVoted;
   const { feedMode } = activeFeed;
 
+  // Prefetch next 3 cards (images + video thumbnails) so they load instantly
+  useEffect(() => {
+    const deckItems = deck.deck;
+    const topIdx = deckItems.findIndex((d) => d.id === topItem?.id);
+    if (topIdx >= 0) {
+      const upcoming = deckItems.slice(topIdx + 1, topIdx + 6);
+      for (const item of upcoming) {
+        if (item.media_type === 'video') {
+          if (item.thumbnail_url) ExpoImage.prefetch(item.thumbnail_url);
+        } else {
+          ExpoImage.prefetch(item.image_url);
+        }
+      }
+    }
+  }, [topItem?.id]);
+
   // ── Loading state ────────────────────────────────────────────────────────
   if (activeFeed.isLoading) {
     return (
@@ -277,10 +294,9 @@ export default function FeedScreen() {
           <CaughtUpState />
         ) : (<>
           {topCards
-            .slice()
-            .reverse()
-            .map((item, reversedIndex) => {
-              const index = topCards.length - 1 - reversedIndex;
+            .slice(0, 1)
+            .map((item) => {
+              const index = 0;
               return (
                 <SwipeCard
                   key={item.id}

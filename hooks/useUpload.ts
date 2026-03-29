@@ -98,7 +98,7 @@ export function useUpload() {
       // ── 3. Compress + upload the real file (only reached if moderation passed)
       onPhase?.('Compressing...');
       const uploadUri = mediaType === 'video'
-        ? await CompressorVideo.compress(uri, { compressionMethod: 'auto', maxSize: 1280 })
+        ? await CompressorVideo.compress(uri, { compressionMethod: 'auto', maxSize: 1920 })
         : uri;
 
       onPhase?.('Uploading...');

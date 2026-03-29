@@ -68,8 +68,9 @@ export default function UploadScreen() {
     try {
       const media = await ImageCropPicker.openPicker({
         mediaType: 'any',
-        cropping: false, // false = show all media (images + videos); crop images in next step
+        cropping: false,
         forceJpg: true,
+        compressImageQuality: 0.95,
       });
 
       if (media.mime.startsWith('video/')) {
@@ -88,6 +89,7 @@ export default function UploadScreen() {
         const cropped = await ImageCropPicker.openCropper({
           path: media.path,
           forceJpg: true,
+          compressImageQuality: 0.95,
           cropperCancelText: 'Cancel',
           cropperChooseText: 'Choose',
         });
@@ -110,6 +112,7 @@ export default function UploadScreen() {
         mediaType: 'any',
         cropping: true,
         forceJpg: true,
+        compressImageQuality: 0.95,
         cropperCancelText: 'Cancel',
         cropperChooseText: 'Choose',
         videoMaxDuration: MAX_VIDEO_DURATION,
@@ -232,7 +235,7 @@ export default function UploadScreen() {
             <Text style={styles.sectionLabel}>CATEGORY</Text>
             <Text style={styles.categoryLimit}>{categories.length}/3</Text>
           </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryRow}>
+          <View style={styles.categoryRow}>
             {CATEGORIES.map((cat) => {
               const selected = categories.includes(cat.key);
               const atMax = categories.length >= 3 && !selected;
@@ -259,13 +262,14 @@ export default function UploadScreen() {
                   }}
                   activeOpacity={0.8}
                 >
+                  <Ionicons name={cat.icon as keyof typeof Ionicons.glyphMap} size={13} color={selected ? '#FFFFFF' : colors.textSecondary} />
                   <Text style={[styles.categoryChipText, selected && styles.categoryChipTextSelected, atMax && styles.categoryChipTextDisabled]} numberOfLines={1}>
                     {cat.label}
                   </Text>
                 </TouchableOpacity>
               );
             })}
-          </ScrollView>
+          </View>
 
           {/* Caption */}
           <Text style={styles.sectionLabel}>CAPTION <Text style={styles.optional}>(optional)</Text></Text>
@@ -273,7 +277,7 @@ export default function UploadScreen() {
             <TextInput
               style={styles.captionInput}
               placeholder="Say something about it..."
-              placeholderTextColor="#3E4144"
+              placeholderTextColor="rgba(255,255,255,0.35)"
               value={caption}
               onChangeText={(t) => setCaption(t.slice(0, CAPTION_LIMIT))}
               multiline
@@ -345,7 +349,7 @@ const styles = StyleSheet.create({
   pickerButtonText: { color: colors.textSecondary, fontSize: 14, fontWeight: '500' },
   pickerDivider: { width: 1, backgroundColor: colors.border },
   pickerHint: {
-    color: colors.textTertiary,
+    color: colors.textSecondary,
     fontSize: 12,
     textAlign: 'center',
     marginTop: 8,
@@ -389,25 +393,27 @@ const styles = StyleSheet.create({
   },
   changePhotoText: { color: colors.textPrimary, fontSize: 13, fontWeight: '600' },
   sectionLabel: {
-    color: colors.textSecondary,
-    fontSize: 11,
+    color: '#FFFFFF',
+    fontSize: 12,
     fontWeight: '600',
     letterSpacing: 0.8,
   },
-  optional: { color: colors.textTertiary, fontWeight: '400', letterSpacing: 0 },
+  optional: { color: colors.textSecondary, fontWeight: '400', letterSpacing: 0 },
   categoryHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, marginTop: 4 },
-  categoryLimit: { color: colors.textTertiary, fontSize: 12, fontWeight: '600' },
-  categoryRow: { flexDirection: 'row', gap: 8, marginBottom: 28, paddingRight: 16 },
+  categoryLimit: { color: colors.textSecondary, fontSize: 12, fontWeight: '600' },
+  categoryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 28, justifyContent: 'space-between' },
   categoryChipDisabled: { opacity: 0.35 },
   categoryChipTextDisabled: { color: colors.textTertiary },
   categoryChip: {
+    width: '31%',
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 4,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.25)',
     borderRadius: 16,
     paddingVertical: 10,
-    paddingHorizontal: 16,
   },
   categoryChipSelected: {
     backgroundColor: 'rgba(255,255,255,0.12)',
@@ -422,13 +428,13 @@ const styles = StyleSheet.create({
   },
   captionInput: {
     color: colors.textPrimary,
-    fontSize: 15,
+    fontSize: 14,
     lineHeight: 22,
     minHeight: 80,
     textAlignVertical: 'top',
   },
   charCount: {
-    color: colors.textTertiary,
+    color: colors.textSecondary,
     fontSize: 12,
     textAlign: 'right',
     marginTop: 6,
@@ -436,7 +442,7 @@ const styles = StyleSheet.create({
   },
   charCountWarning: { color: colors.spark },
   charCountError: { color: colors.error, fontWeight: '700' },
-  hint: { color: colors.textTertiary, fontSize: 13, textAlign: 'center', marginTop: 20 },
+  hint: { color: colors.textSecondary, fontSize: 13, textAlign: 'center', marginTop: 20 },
   uploadStatus: {
     color: colors.textSecondary,
     fontSize: 12,

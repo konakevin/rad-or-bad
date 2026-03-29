@@ -3,6 +3,7 @@ import {
   TouchableOpacity, StyleSheet, type NativeSyntheticEvent, type NativeScrollEvent,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -110,6 +111,7 @@ export default function TopScreen() {
                     : styles.chipInactive,
                 ]}
               >
+                <Ionicons name={cat.icon as keyof typeof Ionicons.glyphMap} size={13} color={isActive ? '#FFFFFF' : colors.textSecondary} />
                 <Text style={[styles.chipText, isActive && styles.chipTextActive]}>
                   {cat.label}
                 </Text>
@@ -236,6 +238,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   chip: {
+    flexDirection: 'row',
+    gap: 5,
     borderWidth: 1,
     borderRadius: 16,
     paddingVertical: 10,

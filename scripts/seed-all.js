@@ -110,7 +110,6 @@ const CATEGORIES = [
   { key: 'beauty',  queries: ['makeup look', 'skincare routine', 'beauty aesthetic'] },
   { key: 'quotes',  queries: ['motivational quote', 'typography poster', 'inspirational text'] },
   { key: 'cute',    queries: ['baby animals cute', 'adorable kitten', 'cute puppy sleeping'] },
-  { key: 'science', queries: ['space nebula', 'microscope close up', 'chemistry lab aesthetic'] },
 ];
 
 const CAPTIONS = {
@@ -198,12 +197,6 @@ const CAPTIONS = {
     'how are you even real', 'the tiniest beans', 'im not crying youre crying',
     'protect at all costs', 'this made my whole week', 'the little face omg',
     'i need twelve of these immediately', 'cuteness overload', 'this healed me',
-  ],
-  science: [
-    'the universe is insane', 'this blew my mind', 'how is this even real',
-    'science is beautiful and terrifying', 'zoom in more', 'the detail at this scale is wild',
-    'we are so small', 'this is what peak nerd looks like', 'my new wallpaper tbh',
-    'the colors under a microscope tho', 'space never gets old', 'chemistry is art',
   ],
 };
 
