@@ -157,7 +157,7 @@ export default function SettingsScreen() {
   }
 
   function handleRefreshAll() {
-    Alert.alert('Refresh App', 'This will reload all your data. Continue?', [
+    Alert.alert('Refresh App', 'Refresh all app data?', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Refresh',
