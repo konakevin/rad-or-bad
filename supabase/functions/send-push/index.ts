@@ -35,6 +35,8 @@ function getNotificationContent(type: string, actorName: string, body: string | 
       return { title: `${actorName} wants to vibe with you`, body: 'Tap to respond' };
     case 'friend_accepted':
       return { title: `${actorName} accepted your vibe request`, body: "You're now vibers!" };
+    case 'post_milestone':
+      return { title: `Your post just hit ${body ?? 'a milestone'}!`, body: '🔥' };
     default:
       return { title: 'New notification', body: '' };
   }
