@@ -13,6 +13,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useAuthStore } from '@/store/auth';
 import { supabase } from '@/lib/supabase';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { AlertProvider } from '@/components/CustomAlert';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -83,6 +84,7 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <QueryClientProvider client={queryClient}>
+        <AlertProvider>
         <AuthInitializer />
         <PushRegistrar />
         <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#000000' } }}>
@@ -99,6 +101,7 @@ export default function RootLayout() {
           <Stack.Screen name="categoryPrefs" options={{ presentation: 'transparentModal', gestureEnabled: true, animation: 'fade', contentStyle: { backgroundColor: 'transparent' } }} />
         </Stack>
         <StatusBar style="light" />
+        </AlertProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>
   );

@@ -1,3 +1,4 @@
+import { showAlert } from '@/components/CustomAlert';
 import { useState, useMemo } from 'react';
 import { View, Text, TouchableOpacity, FlatList, ActivityIndicator, StyleSheet, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -67,6 +68,14 @@ function NotificationRow({ item, onPress, onDelete, selectMode, isSelected, onTo
     <TouchableOpacity
       style={[styles.row, !item.isSeen && styles.rowUnseen]}
       onPress={selectMode ? onToggleSelect : onPress}
+      onLongPress={selectMode ? undefined : () => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        showAlert('Delete', 'Remove this item?', [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Delete', style: 'destructive', onPress: onDelete },
+        ]);
+      }}
+      delayLongPress={400}
       activeOpacity={0.7}
     >
       {/* Checkbox in select mode */}
@@ -123,11 +132,6 @@ function NotificationRow({ item, onPress, onDelete, selectMode, isSelected, onTo
         {!item.isSeen && <View style={styles.unseenDot} />}
       </View>
 
-      {!selectMode && (
-        <TouchableOpacity onPress={onDelete} hitSlop={8} style={styles.trashButton}>
-          <Ionicons name="trash-outline" size={16} color="rgba(255,255,255,0.25)" />
-        </TouchableOpacity>
-      )}
     </TouchableOpacity>
   );
 }
@@ -142,6 +146,7 @@ export default function InboxScreen() {
 
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [allSelectedGlobal, setAllSelectedGlobal] = useState(false);
 
   const inbox = useMemo(() => data?.pages.flat() ?? [], [data]);
   const hasUnread = inbox.some((item) => !item.isSeen);
@@ -158,24 +163,33 @@ export default function InboxScreen() {
   }
 
   function toggleSelectAll() {
-    if (allSelected) {
+    if (allSelectedGlobal) {
+      setAllSelectedGlobal(false);
       setSelected(new Set());
     } else {
+      setAllSelectedGlobal(true);
       setSelected(new Set(inbox.map((item) => item.id)));
     }
   }
 
   function deleteSelected() {
-    for (const id of selected) {
-      deleteNotification(id);
+    if (allSelectedGlobal) {
+      // Delete ALL notifications server-side, not just loaded ones
+      deleteAll();
+    } else {
+      for (const id of selected) {
+        deleteNotification(id);
+      }
     }
     setSelected(new Set());
+    setAllSelectedGlobal(false);
     setSelectMode(false);
   }
 
   function exitSelectMode() {
     setSelectMode(false);
     setSelected(new Set());
+    setAllSelectedGlobal(false);
   }
 
   function handleTap(item: NotificationItem) {
@@ -198,24 +212,43 @@ export default function InboxScreen() {
             <TouchableOpacity onPress={exitSelectMode} activeOpacity={0.7}>
               <Text style={styles.headerCancel}>Cancel</Text>
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>{selected.size} selected</Text>
+            <Text style={styles.headerTitle}>{allSelectedGlobal ? 'All' : selected.size} selected</Text>
             <View style={styles.headerActions}>
               <TouchableOpacity onPress={toggleSelectAll} activeOpacity={0.7} hitSlop={8}>
-                <Text style={styles.selectAllText}>{allSelected ? 'Deselect all' : 'Select all'}</Text>
+                <Text style={styles.selectAllText}>{allSelectedGlobal ? 'Deselect all' : 'Select all'}</Text>
               </TouchableOpacity>
-              {selected.size > 0 && (
-                <TouchableOpacity
-                  onPress={() => {
-                    Alert.alert(`Delete ${selected.size} notifications?`, 'This cannot be undone.', [
-                      { text: 'Cancel', style: 'cancel' },
-                      { text: 'Delete', style: 'destructive', onPress: deleteSelected },
-                    ]);
-                  }}
-                  activeOpacity={0.7}
-                  hitSlop={8}
-                >
-                  <Ionicons name="trash" size={20} color="#F4212E" />
-                </TouchableOpacity>
+              {(selected.size > 0 || allSelectedGlobal) && (
+                <>
+                  <TouchableOpacity
+                    onPress={() => {
+                      if (allSelectedGlobal) {
+                        markAllSeen();
+                      } else {
+                        for (const id of selected) markSeen(id);
+                      }
+                      setSelected(new Set());
+                      setAllSelectedGlobal(false);
+                      setSelectMode(false);
+                    }}
+                    activeOpacity={0.7}
+                    hitSlop={8}
+                  >
+                    <Ionicons name="checkmark-done" size={20} color="#FFD700" />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => {
+                      const label = allSelectedGlobal ? 'all' : `${selected.size}`;
+                      showAlert(`Delete ${label} notifications?`, 'This cannot be undone.', [
+                        { text: 'Cancel', style: 'cancel' },
+                        { text: 'Delete', style: 'destructive', onPress: deleteSelected },
+                      ]);
+                    }}
+                    activeOpacity={0.7}
+                    hitSlop={8}
+                  >
+                    <Ionicons name="trash" size={20} color="#F4212E" />
+                  </TouchableOpacity>
+                </>
               )}
             </View>
           </>

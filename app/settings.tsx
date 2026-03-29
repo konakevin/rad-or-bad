@@ -1,3 +1,4 @@
+import { showAlert } from '@/components/CustomAlert';
 import { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Alert, StyleSheet, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -43,7 +44,7 @@ export default function SettingsScreen() {
   const [changingUsername, setChangingUsername] = useState(false);
 
   function handleChangePhoto() {
-    Alert.alert('Profile picture', '', [
+    showAlert('Profile picture', '', [
       {
         text: 'Choose from library',
         onPress: async () => {
@@ -60,7 +61,7 @@ export default function SettingsScreen() {
             uploadAvatar(uri);
           } catch (e: unknown) {
             if ((e as { code?: string }).code !== 'E_PICKER_CANCELLED') {
-              Alert.alert('Error', 'Could not open photo library.');
+              showAlert('Error', 'Could not open photo library.');
             }
           }
         },
@@ -81,7 +82,7 @@ export default function SettingsScreen() {
             uploadAvatar(uri);
           } catch (e: unknown) {
             if ((e as { code?: string }).code !== 'E_PICKER_CANCELLED') {
-              Alert.alert('Error', 'Could not open camera.');
+              showAlert('Error', 'Could not open camera.');
             }
           }
         },
@@ -106,7 +107,7 @@ export default function SettingsScreen() {
       async (newUsername: string) => {
         const trimmed = newUsername.trim().toLowerCase();
         if (!trimmed || trimmed.length < 3) {
-          Alert.alert('Too short', 'Username must be at least 3 characters.');
+          showAlert('Too short', 'Username must be at least 3 characters.');
           return;
         }
         setChangingUsername(true);
@@ -117,9 +118,9 @@ export default function SettingsScreen() {
             .eq('id', user!.id);
           if (error) {
             if (error.message.includes('unique') || error.message.includes('duplicate')) {
-              Alert.alert('Taken', 'That username is already in use.');
+              showAlert('Taken', 'That username is already in use.');
             } else {
-              Alert.alert('Error', error.message);
+              showAlert('Error', error.message);
             }
             return;
           }
@@ -128,7 +129,7 @@ export default function SettingsScreen() {
           queryClient.invalidateQueries({ queryKey: ['feed'] });
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         } catch (err: unknown) {
-          Alert.alert('Error', (err as Error).message);
+          showAlert('Error', (err as Error).message);
         } finally {
           setChangingUsername(false);
         }
@@ -139,7 +140,7 @@ export default function SettingsScreen() {
   }
 
   function handleChangePassword() {
-    Alert.alert(
+    showAlert(
       'Reset password',
       `We'll send a reset link to ${user?.email}`,
       [
@@ -149,7 +150,7 @@ export default function SettingsScreen() {
           onPress: async () => {
             await supabase.auth.resetPasswordForEmail(user!.email!);
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            Alert.alert('Sent', 'Check your email for the reset link.');
+            showAlert('Sent', 'Check your email for the reset link.');
           },
         },
       ],
@@ -157,7 +158,7 @@ export default function SettingsScreen() {
   }
 
   function handleRefreshAll() {
-    Alert.alert('Refresh App', 'Refresh all app data?', [
+    showAlert('Refresh App', 'Refresh all app data?', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Refresh',
@@ -173,7 +174,7 @@ export default function SettingsScreen() {
   }
 
   function handleSignOut() {
-    Alert.alert('Sign out', 'Are you sure?', [
+    showAlert('Sign out', 'Are you sure?', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Sign out',
@@ -188,7 +189,7 @@ export default function SettingsScreen() {
   }
 
   function handleDeleteAccount() {
-    Alert.alert(
+    showAlert(
       'Delete account',
       'This will permanently delete all your posts, votes, and data. This cannot be undone.',
       [
@@ -197,7 +198,7 @@ export default function SettingsScreen() {
           text: 'Delete everything',
           style: 'destructive',
           onPress: () => {
-            Alert.alert('Are you absolutely sure?', 'There is no going back.', [
+            showAlert('Are you absolutely sure?', 'There is no going back.', [
               { text: 'Cancel', style: 'cancel' },
               {
                 text: 'Yes, delete my account',
@@ -209,7 +210,7 @@ export default function SettingsScreen() {
                     await signOut();
                     router.replace('/(auth)');
                   } catch (err: unknown) {
-                    Alert.alert('Error', (err as Error).message);
+                    showAlert('Error', (err as Error).message);
                   }
                 },
               },

@@ -1,3 +1,4 @@
+import { showAlert } from '@/components/CustomAlert';
 import { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
@@ -20,7 +21,7 @@ export default function LoginScreen() {
 
   async function handleLogin() {
     if (!email.trim() || !password.trim()) {
-      Alert.alert('Missing fields', 'Please enter your email and password.');
+      showAlert('Missing fields', 'Please enter your email and password.');
       return;
     }
     setLoading(true);
@@ -28,7 +29,7 @@ export default function LoginScreen() {
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
     setLoading(false);
     if (error) {
-      Alert.alert('Sign in failed', 'Invalid email or password.');
+      showAlert('Sign in failed', 'Invalid email or password.');
     } else {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.replace('/(tabs)');
@@ -115,7 +116,7 @@ export default function LoginScreen() {
                   } catch (err: unknown) {
                     const msg = (err as Error).message;
                     if (!msg.includes('canceled') && !msg.includes('cancelled') && !msg.includes('ERR_CANCELED')) {
-                      Alert.alert('Apple Sign-In failed', msg);
+                      showAlert('Apple Sign-In failed', msg);
                     }
                   } finally {
                     setLoading(false);
@@ -141,7 +142,7 @@ export default function LoginScreen() {
                 } catch (err: unknown) {
                   const msg = (err as Error).message;
                   if (!msg.includes('canceled') && !msg.includes('cancelled')) {
-                    Alert.alert('Google Sign-In failed', msg);
+                    showAlert('Google Sign-In failed', msg);
                   }
                 } finally {
                   setLoading(false);
@@ -166,7 +167,7 @@ export default function LoginScreen() {
                 } catch (err: unknown) {
                   const msg = (err as Error).message;
                   if (!msg.includes('canceled') && !msg.includes('cancelled')) {
-                    Alert.alert('Facebook Sign-In failed', msg);
+                    showAlert('Facebook Sign-In failed', msg);
                   }
                 } finally {
                   setLoading(false);

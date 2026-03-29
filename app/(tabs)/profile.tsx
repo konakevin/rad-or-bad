@@ -7,7 +7,7 @@ import { Image } from 'expo-image';
 import MaskedView from '@react-native-masked-view/masked-view';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import { useAuthStore } from '@/store/auth';
 import { usePublicProfile } from '@/hooks/usePublicProfile';
 import { useFollowersList } from '@/hooks/useFollowersList';
@@ -118,8 +118,16 @@ export default function ProfileScreen() {
           <View style={styles.streakCardHeader}>
             <View style={styles.streakCardTitleRow}>
               <Ionicons name="flame" size={18} color="#FFD700" />
-              <Text style={styles.streakCardTitle}>Vibe Streaks</Text>
+              <Text style={styles.streakCardTitle}>Vibe streaks</Text>
             </View>
+            <TouchableOpacity
+              style={styles.goVibeButton}
+              onPress={() => router.push('/(tabs)?mode=friends' as Href)}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="flash" size={16} color="#FFD700" />
+              <Text style={styles.goVibeText}>Go Vibe</Text>
+            </TouchableOpacity>
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.streakCardScroll} contentContainerStyle={styles.streakCardAvatars}>
             {[...streaks].sort((a, b) => (b.radStreak + b.badStreak) - (a.radStreak + a.badStreak)).map((s) => (
@@ -387,7 +395,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    paddingBottom: 14,
+    marginBottom: 14,
+    borderBottomWidth: 0.5,
+    borderBottomColor: colors.border,
   },
   streakCardTitleRow: {
     flexDirection: 'row',
@@ -396,6 +407,16 @@ const styles = StyleSheet.create({
   },
   streakCardTitle: {
     color: colors.textPrimary,
+    fontSize: 17,
+    fontWeight: '800',
+  },
+  goVibeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  goVibeText: {
+    color: '#FFD700',
     fontSize: 17,
     fontWeight: '800',
   },

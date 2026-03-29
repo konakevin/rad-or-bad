@@ -1,3 +1,4 @@
+import { showAlert } from '@/components/CustomAlert';
 import { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
@@ -61,7 +62,7 @@ export function CommentRow({ comment, uploadId, postOwnerId, isReply = false, on
   function handleLongPress() {
     if (!canDelete) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    Alert.alert('Delete comment', 'Are you sure?', [
+    showAlert('Delete comment', 'Are you sure?', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Delete',

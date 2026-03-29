@@ -1,3 +1,4 @@
+import { showAlert } from '@/components/CustomAlert';
 import { Alert, TouchableOpacity, Text, View, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -30,7 +31,7 @@ export function FriendButton({ status, onSendRequest, onCancelRequest, onAccept,
           style={styles.declineButton}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            Alert.alert('Decline request?', 'They won\'t be notified.', [
+            showAlert('Decline request?', 'They won\'t be notified.', [
               { text: 'Keep', style: 'cancel' },
               { text: 'Decline', style: 'destructive', onPress: onDecline },
             ]);
@@ -48,7 +49,7 @@ export function FriendButton({ status, onSendRequest, onCancelRequest, onAccept,
       <TouchableOpacity
         style={styles.pendingButton}
         onPress={() => {
-          Alert.alert('Cancel request?', 'Withdraw your friend request?', [
+          showAlert('Cancel request?', 'Withdraw your friend request?', [
             { text: 'No', style: 'cancel' },
             { text: 'Cancel request', style: 'destructive', onPress: onCancelRequest },
           ]);
@@ -65,7 +66,7 @@ export function FriendButton({ status, onSendRequest, onCancelRequest, onAccept,
       <TouchableOpacity
         style={styles.friendsButton}
         onPress={() => {
-          Alert.alert('Remove friend?', 'You can always add them back later.', [
+          showAlert('Remove friend?', 'You can always add them back later.', [
             { text: 'Cancel', style: 'cancel' },
             { text: 'Remove', style: 'destructive', onPress: onRemove },
           ]);

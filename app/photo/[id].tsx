@@ -1,3 +1,4 @@
+import { showAlert } from '@/components/CustomAlert';
 import { View, Text, TouchableOpacity, Pressable, StyleSheet, ActivityIndicator, Share, Dimensions, Alert } from 'react-native';
 import * as MediaLibrary from 'expo-media-library';
 import { File, Paths } from 'expo-file-system/next';
@@ -194,7 +195,7 @@ export default function PhotoDetailScreen() {
     castVote({ uploadId: p.id, vote }, {
       onError: (err) => {
         setVotePending(null);
-        Alert.alert('Vote failed', err.message);
+        showAlert('Vote failed', err.message);
       },
     });
     // Let button shrink + burst play, then reveal score

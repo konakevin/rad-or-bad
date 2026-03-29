@@ -1,3 +1,4 @@
+import { showAlert } from '@/components/CustomAlert';
 import { useState } from 'react';
 import { View, Text, TouchableOpacity, Alert, ActivityIndicator, Platform, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -87,7 +88,7 @@ export default function WelcomeScreen() {
       const msg = (err as Error).message;
       if (!msg.includes('canceled') && !msg.includes('cancelled') && !msg.includes('ERR_CANCELED')) {
         const label = provider === 'google' ? 'Google' : 'Apple';
-        Alert.alert(`${label} Sign-In failed`, msg);
+        showAlert(`${label} Sign-In failed`, msg);
       }
     } finally {
       setLoading(null);

@@ -1,3 +1,4 @@
+import { showAlert } from '@/components/CustomAlert';
 import { useState, useMemo } from 'react';
 import {
   View, Text, TouchableOpacity, TextInput, ScrollView,
@@ -76,7 +77,7 @@ export default function UploadScreen() {
       if (media.mime.startsWith('video/')) {
         const durationSec = (media.duration ?? 0) / 1000;
         if (durationSec > MAX_VIDEO_DURATION) {
-          Alert.alert('Too long', `Videos must be ${MAX_VIDEO_DURATION} seconds or less. Trim it in the Photos app first.`);
+          showAlert('Too long', `Videos must be ${MAX_VIDEO_DURATION} seconds or less. Trim it in the Photos app first.`);
           return;
         }
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -101,7 +102,7 @@ export default function UploadScreen() {
       }
     } catch (e: unknown) {
       if ((e as { code?: string }).code !== 'E_PICKER_CANCELLED') {
-        Alert.alert('Error', 'Could not open photo library.');
+        showAlert('Error', 'Could not open photo library.');
       }
     }
   }
@@ -124,7 +125,7 @@ export default function UploadScreen() {
       setMediaDimensions({ width: media.width, height: media.height });
     } catch (e: unknown) {
       if ((e as { code?: string }).code !== 'E_PICKER_CANCELLED') {
-        Alert.alert('Error', 'Could not open camera.');
+        showAlert('Error', 'Could not open camera.');
       }
     }
   }
@@ -132,12 +133,12 @@ export default function UploadScreen() {
   function handlePost() {
     if (!mediaUri) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-      Alert.alert('No content, no glory.', 'Pick a photo or video first.');
+      showAlert('No content, no glory.', 'Pick a photo or video first.');
       return;
     }
     if (categories.length === 0) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-      Alert.alert('Whoa there.', 'Category-less posts are illegal here. Pick one.');
+      showAlert('Whoa there.', 'Category-less posts are illegal here. Pick one.');
       return;
     }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -155,7 +156,7 @@ export default function UploadScreen() {
           router.replace('/(tabs)');
         },
         onError: (err) => {
-          Alert.alert('Upload failed', err.message);
+          showAlert('Upload failed', err.message);
         },
       },
     );
@@ -250,7 +251,7 @@ export default function UploadScreen() {
                   onPress={() => {
                     if (atMax) {
                       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-                      Alert.alert('Max 3 categories', 'Remove one before adding another.');
+                      showAlert('Max 3 categories', 'Remove one before adding another.');
                       return;
                     }
                     Haptics.selectionAsync();

@@ -1,3 +1,4 @@
+import { showAlert } from '@/components/CustomAlert';
 import { useState, useMemo } from 'react';
 import { View, Text, TouchableOpacity, FlatList, TextInput, ActivityIndicator, StyleSheet, Alert, Dimensions, Pressable, Animated, Share } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
@@ -85,7 +86,7 @@ export default function SharePostScreen() {
           router.back();
         },
         onError: () => {
-          Alert.alert('Error', 'Failed to share. Please try again.');
+          showAlert('Error', 'Failed to share. Please try again.');
         },
       }
     );

@@ -1,3 +1,4 @@
+import { showAlert } from '@/components/CustomAlert';
 import { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
@@ -20,11 +21,11 @@ export default function SignupScreen() {
 
   async function handleSignup() {
     if (!username.trim() || !email.trim() || !password.trim()) {
-      Alert.alert('Missing fields', 'Please fill in all fields.');
+      showAlert('Missing fields', 'Please fill in all fields.');
       return;
     }
     if (password.length < 8) {
-      Alert.alert('Weak password', 'Password must be at least 8 characters.');
+      showAlert('Weak password', 'Password must be at least 8 characters.');
       return;
     }
     setLoading(true);
@@ -36,7 +37,7 @@ export default function SignupScreen() {
     });
     setLoading(false);
     if (error) {
-      Alert.alert('Sign up failed', error.message);
+      showAlert('Sign up failed', error.message);
     } else if (data.session) {
       // Email confirmation is off — logged in immediately
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -52,9 +53,9 @@ export default function SignupScreen() {
     setResendCooldown(true);
     const { error } = await supabase.auth.resend({ type: 'signup', email: email.trim() });
     if (error) {
-      Alert.alert('Could not resend', error.message);
+      showAlert('Could not resend', error.message);
     } else {
-      Alert.alert('Email sent', 'Check your inbox again.');
+      showAlert('Email sent', 'Check your inbox again.');
     }
     // 30-second cooldown to prevent spam
     setTimeout(() => setResendCooldown(false), 30_000);
