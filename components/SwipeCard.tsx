@@ -431,7 +431,7 @@ export function SwipeCard({ item, userVote, isFavorited, isFollowing, isOwnPost,
                         </TouchableOpacity>
                       )}
                       {!isOwnPost && currentUserId && (
-                        <TouchableOpacity onPress={() => reportPost(item.id, currentUserId)} hitSlop={12} style={styles.saveButton} activeOpacity={0.6}>
+                        <TouchableOpacity onPress={() => reportPost(item.id, currentUserId, () => onDismiss())} hitSlop={12} style={styles.saveButton} activeOpacity={0.6}>
                           <Ionicons name="flag-outline" size={18} color="rgba(255,255,255,0.35)" />
                         </TouchableOpacity>
                       )}

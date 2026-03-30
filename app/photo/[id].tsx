@@ -433,7 +433,7 @@ function DetailFooter({ post: p, isOwnPost, hasVoted, captionExpanded, setCaptio
                 </TouchableOpacity>
               )}
               {!isOwnPost && user && (
-                <TouchableOpacity onPress={() => reportPost(p.id, user.id)} hitSlop={12} style={styles.shareButton}>
+                <TouchableOpacity onPress={() => reportPost(p.id, user.id, () => router.back())} hitSlop={12} style={styles.shareButton}>
                   <Ionicons name="flag-outline" size={16} color="rgba(255,255,255,0.35)" />
                 </TouchableOpacity>
               )}

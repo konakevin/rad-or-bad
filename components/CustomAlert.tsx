@@ -52,9 +52,16 @@ export function AlertProvider({ children }: { children: React.ReactNode }) {
     setTimeout(() => button.onPress?.(), 150);
   }
 
+  const isStacked = alert.buttons.length > 2;
+  // For stacked: cancel at bottom. For row: cancel on left.
   const sortedButtons = [...alert.buttons].sort((a, b) => {
-    if (a.style === 'cancel') return -1;
-    if (b.style === 'cancel') return 1;
+    if (isStacked) {
+      if (a.style === 'cancel') return 1;
+      if (b.style === 'cancel') return -1;
+    } else {
+      if (a.style === 'cancel') return -1;
+      if (b.style === 'cancel') return 1;
+    }
     return 0;
   });
 
@@ -66,7 +73,7 @@ export function AlertProvider({ children }: { children: React.ReactNode }) {
           <View style={styles.card}>
             <Text style={styles.title}>{alert.title}</Text>
             {alert.message ? <Text style={styles.message}>{alert.message}</Text> : null}
-            <View style={styles.buttonRow}>
+            <View style={isStacked ? styles.buttonCol : styles.buttonRow}>
               {sortedButtons.map((btn, i) => (
                 <TouchableOpacity
                   key={i}
@@ -130,14 +137,18 @@ const styles = StyleSheet.create({
     gap: 10,
     marginTop: 8,
   },
+  buttonCol: {
+    flexDirection: 'column',
+    gap: 8,
+    marginTop: 8,
+  },
   button: {
-    flex: 1,
     paddingVertical: 13,
     borderRadius: 14,
     alignItems: 'center',
   },
   buttonDefault: {
-    backgroundColor: '#FFD700',
+    backgroundColor: '#FF4500',
   },
   buttonDestructive: {
     backgroundColor: '#F4212E',
@@ -150,7 +161,7 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#000000',
+    color: '#FFFFFF',
   },
   buttonTextDestructive: {
     color: '#FFFFFF',
