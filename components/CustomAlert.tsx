@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, useRef } from 'react';
-import { View, Text, TouchableOpacity, Modal, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, Pressable, Modal, StyleSheet } from 'react-native';
 import { colors } from '@/constants/theme';
 
 interface AlertButton {
@@ -69,9 +69,9 @@ export function AlertProvider({ children }: { children: React.ReactNode }) {
     <>
       {children}
       <Modal visible={alert.visible} transparent animationType="fade" statusBarTranslucent>
-        <View style={styles.overlay}>
-          <View style={styles.card}>
-            <Text style={styles.title}>{alert.title}</Text>
+        <Pressable style={styles.overlay} onPress={dismiss}>
+          <Pressable style={styles.card} onPress={() => {}}>
+            {alert.title ? <Text style={styles.title}>{alert.title}</Text> : null}
             {alert.message ? <Text style={styles.message}>{alert.message}</Text> : null}
             <View style={isStacked ? styles.buttonCol : styles.buttonRow}>
               {sortedButtons.map((btn, i) => (
@@ -79,6 +79,7 @@ export function AlertProvider({ children }: { children: React.ReactNode }) {
                   key={i}
                   style={[
                     styles.button,
+                    !isStacked && styles.buttonFlex,
                     btn.style === 'destructive' && styles.buttonDestructive,
                     btn.style === 'cancel' && styles.buttonCancel,
                     btn.style !== 'cancel' && btn.style !== 'destructive' && styles.buttonDefault,
@@ -96,8 +97,8 @@ export function AlertProvider({ children }: { children: React.ReactNode }) {
                 </TouchableOpacity>
               ))}
             </View>
-          </View>
-        </View>
+          </Pressable>
+        </Pressable>
       </Modal>
     </>
   );
@@ -143,10 +144,12 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   button: {
-    flex: 1,
     paddingVertical: 13,
     borderRadius: 14,
     alignItems: 'center',
+  },
+  buttonFlex: {
+    flex: 1,
   },
   buttonDefault: {
     backgroundColor: '#FF4500',

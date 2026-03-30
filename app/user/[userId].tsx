@@ -60,14 +60,21 @@ export default function PublicProfileScreen() {
   const isBlocked = blockedIds.has(userId);
 
   function handleMoreMenu() {
-    showAlert('', '', [
+    showAlert('Options', '', [
       {
         text: isBlocked ? 'Unblock User' : 'Block User',
         style: isBlocked ? 'default' : 'destructive',
         onPress: () => {
-          toggleBlock({ userId, currentlyBlocked: isBlocked });
-          if (!isBlocked) {
-            router.replace('/(tabs)');
+          if (isBlocked) {
+            toggleBlock({ userId, currentlyBlocked: true });
+          } else {
+            showAlert('Block User?', 'They won\'t be able to see your posts or contact you.', [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Block', style: 'destructive', onPress: () => {
+                toggleBlock({ userId, currentlyBlocked: false });
+                router.replace('/(tabs)');
+              }},
+            ]);
           }
         },
       },
@@ -131,7 +138,7 @@ export default function PublicProfileScreen() {
   const header = (
     <View style={styles.header}>
         <View style={styles.headerTop}>
-          <GradientUsername username={profile.username} rank={profile.user_rank} style={styles.username} avatarUrl={profile.avatar_url} showAvatar avatarSize={32} />
+          <GradientUsername username={profile.username} rank={profile.user_rank} hideRank style={styles.username} avatarUrl={profile.avatar_url} showAvatar avatarSize={32} />
           {!isOwnProfile && (
             <View style={styles.headerButtons}>
               {friendshipStatus !== 'friends' && (
@@ -326,11 +333,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: 10,
     marginBottom: 16,
   },
   headerButtons: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexWrap: 'wrap',
     gap: 8,
   },
   username: { color: colors.textPrimary, fontSize: 22, fontWeight: '800' },

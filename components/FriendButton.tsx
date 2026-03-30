@@ -49,7 +49,7 @@ export function FriendButton({ status, onSendRequest, onCancelRequest, onAccept,
       <TouchableOpacity
         style={styles.pendingButton}
         onPress={() => {
-          showAlert('Cancel request?', 'Withdraw your friend request?', [
+          showAlert('Cancel request?', 'Withdraw your vibe request?', [
             { text: 'No', style: 'cancel' },
             { text: 'Cancel request', style: 'destructive', onPress: onCancelRequest },
           ]);
@@ -66,7 +66,7 @@ export function FriendButton({ status, onSendRequest, onCancelRequest, onAccept,
       <TouchableOpacity
         style={styles.friendsButton}
         onPress={() => {
-          showAlert('Remove friend?', 'You can always add them back later.', [
+          showAlert('Remove vibe?', 'You can always add them back later.', [
             { text: 'Cancel', style: 'cancel' },
             { text: 'Remove', style: 'destructive', onPress: onRemove },
           ]);
