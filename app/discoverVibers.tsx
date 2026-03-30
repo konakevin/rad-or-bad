@@ -8,12 +8,14 @@ import * as Haptics from 'expo-haptics';
 import { showAlert } from '@/components/CustomAlert';
 import { useVibeSuggestions, type VibeSuggestion } from '@/hooks/useVibeSuggestions';
 import { useSendFriendRequest } from '@/hooks/useSendFriendRequest';
+import { useRemoveFriend } from '@/hooks/useRemoveFriend';
 import { VibeSuggestionRow } from '@/components/VibeSuggestionRow';
 import { colors } from '@/constants/theme';
 
 export default function DiscoverVibersScreen() {
   const { data: suggestions = [], isLoading } = useVibeSuggestions();
   const { mutate: sendFriendRequest } = useSendFriendRequest();
+  const { mutate: removeFriend } = useRemoveFriend();
   const [sentIds, setSentIds] = useState<Set<string>>(new Set());
 
   function handleVibe(userId: string, username: string) {
@@ -60,6 +62,10 @@ export default function DiscoverVibersScreen() {
             suggestion={item}
             localSent={sentIds.has(item.userId)}
             onStartVibing={(id) => handleVibe(id, item.username)}
+            onCancelRequest={(id) => {
+              removeFriend(id);
+              setSentIds((prev) => { const next = new Set(prev); next.delete(id); return next; });
+            }}
           />
         )}
         ListEmptyComponent={

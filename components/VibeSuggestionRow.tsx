@@ -2,6 +2,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { showAlert } from '@/components/CustomAlert';
 import { useFriendshipStatus } from '@/hooks/useFriendshipStatus';
 import { colors } from '@/constants/theme';
 import type { VibeSuggestion } from '@/hooks/useVibeSuggestions';
@@ -16,10 +17,11 @@ function getVibeColor(score: number): string {
 interface Props {
   suggestion: VibeSuggestion;
   onStartVibing: (userId: string) => void;
+  onCancelRequest?: (userId: string) => void;
   localSent?: boolean;
 }
 
-export function VibeSuggestionRow({ suggestion, onStartVibing, localSent }: Props) {
+export function VibeSuggestionRow({ suggestion, onStartVibing, onCancelRequest, localSent }: Props) {
   const scoreColor = getVibeColor(suggestion.vibeScore);
   const { data: status = 'none' } = useFriendshipStatus(suggestion.userId);
 
@@ -57,9 +59,19 @@ export function VibeSuggestionRow({ suggestion, onStartVibing, localSent }: Prop
           <Text style={styles.friendsButtonText}>Vibers</Text>
         </View>
       ) : isPending ? (
-        <View style={styles.requestedButton}>
+        <TouchableOpacity
+          style={styles.requestedButton}
+          onPress={() => {
+            showAlert('Cancel request?', 'Withdraw your vibe request?', [
+              { text: 'No', style: 'cancel' },
+              { text: 'Cancel request', style: 'destructive', onPress: () => onCancelRequest?.(suggestion.userId) },
+            ]);
+          }}
+          activeOpacity={0.7}
+          hitSlop={8}
+        >
           <Text style={styles.requestedButtonText}>Requested</Text>
-        </View>
+        </TouchableOpacity>
       ) : (
         <TouchableOpacity
           onPress={() => onStartVibing(suggestion.userId)}

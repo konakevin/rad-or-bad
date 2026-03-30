@@ -98,18 +98,18 @@ function generateUsername(index) {
 
 // ── Pexels API ───────────────────────────────────────────────────────────────
 const CATEGORIES = [
-  { key: 'people',  queries: ['golden hour portrait', 'street style outfit', 'group friends laughing', 'festival crowd', 'rooftop party vibes', 'couple aesthetic'] },
-  { key: 'animals', queries: ['golden retriever happy', 'baby elephant playing', 'parrot colorful', 'fox in snow', 'cat loaf position', 'corgi beach'] },
-  { key: 'food',    queries: ['ramen close up', 'pizza cheese pull', 'acai bowl colorful', 'sushi platter', 'ice cream aesthetic', 'tacos street food'] },
-  { key: 'nature',  queries: ['northern lights aurora', 'cherry blossom japan', 'waterfall tropical', 'desert sand dunes', 'lightning storm dramatic', 'milky way stars'] },
-  { key: 'funny',   queries: ['funny dog face', 'cat stuck silly', 'surprised animal', 'birds funny', 'hamster cute funny', 'dog costume'] },
-  { key: 'music',   queries: ['dj neon lights', 'crowd surfing concert', 'guitar sunset', 'headphones aesthetic', 'piano keys', 'drum set stage'] },
-  { key: 'sports',  queries: ['surfing barrel wave', 'bmx trick air', 'rock climbing mountain', 'snowboard jump', 'parkour urban', 'skateboard grind'] },
-  { key: 'art',     queries: ['neon sign aesthetic', 'graffiti wall colorful', 'pottery hands clay', 'light painting long exposure', 'sculpture modern', 'tattoo art design'] },
-  { key: 'memes',   queries: ['confused dog', 'dramatic cat', 'funny animal face', 'dog side eye', 'cat surprised', 'puppy head tilt'] },
-  { key: 'beauty',  queries: ['nails art design', 'hair color aesthetic', 'makeup neon glow', 'jewelry close up', 'perfume bottle aesthetic', 'skincare flat lay'] },
+  { key: 'people',  queries: ['festival neon crowd', 'skater girl sunset', 'friends road trip', 'rooftop city night', 'beach bonfire party', 'vintage car girl'] },
+  { key: 'animals', queries: ['corgi beach running', 'baby otter floating', 'fox in snow', 'parrot colorful tropical', 'golden retriever puppy', 'cat in sunbeam'] },
+  { key: 'food',    queries: ['ramen steam close up', 'pizza cheese pull', 'acai bowl tropical', 'sushi aesthetic', 'ice cream melting colorful', 'street tacos night'] },
+  { key: 'nature',  queries: ['northern lights aurora', 'cherry blossom japan', 'waterfall tropical jungle', 'bioluminescent ocean', 'milky way mountains', 'volcano lava glow'] },
+  { key: 'funny',   queries: ['funny dog costume', 'cat stuck silly', 'surprised animal face', 'dog zoomies beach', 'hamster eating tiny', 'parrot dancing'] },
+  { key: 'music',   queries: ['dj neon festival', 'crowd surfing concert', 'guitar campfire sunset', 'vinyl record aesthetic', 'drummer stage lights', 'singer stage glow'] },
+  { key: 'sports',  queries: ['surfing barrel wave', 'bmx trick sunset', 'rock climbing cliff', 'snowboard powder jump', 'skateboard trick urban', 'wakeboarding splash'] },
+  { key: 'art',     queries: ['neon sign city night', 'graffiti mural colorful', 'ceramic pottery art', 'light painting long exposure', 'abstract sculpture', 'street art vibrant'] },
+  { key: 'memes',   queries: ['dog side eye funny', 'dramatic cat pose', 'confused puppy face', 'cat surprised eyes', 'dog head tilt cute', 'raccoon stealing food'] },
+  { key: 'beauty',  queries: ['nail art colorful', 'hair color pastel', 'makeup neon glow', 'jewelry gold aesthetic', 'perfume bottle elegant', 'flowers aesthetic flat lay'] },
   { key: 'quotes',  queries: ['motivational quote', 'typography poster', 'inspirational text'] },
-  { key: 'cute',    queries: ['baby otter floating', 'kitten yawning', 'puppy paws close up', 'baby bunny', 'hedgehog tiny', 'duckling swimming'] },
+  { key: 'cute',    queries: ['kitten tiny yawning', 'puppy paws close up', 'baby bunny fluffy', 'hedgehog tiny cute', 'duckling swimming pond', 'baby deer fawn'] },
 ];
 
 const CAPTIONS = {
