@@ -28,6 +28,7 @@ export interface DreamPostItem {
   avatar_url: string | null;
   is_ai_generated: boolean;
   created_at: string;
+  comment_count?: number;
 }
 
 interface Props {
@@ -86,10 +87,10 @@ export function DreamCard({ item, bottomPadding, isLiked, onLike, onToggleLike, 
 
   // Horizontal pan — left swipe navigates to profile (no card animation)
   const panGesture = Gesture.Pan()
-    .activeOffsetX([-ACTIVE_OFFSET, ACTIVE_OFFSET])
-    .failOffsetY([-5, 5])
+    .activeOffsetX([-20, 20])
+    .failOffsetY([-15, 15])
     .onEnd((e) => {
-      if (e.translationX < -SWIPE_THRESHOLD && e.velocityX < -200) {
+      if (e.translationX < -60 || e.velocityX < -500) {
         runOnJS(goToProfile)();
       }
     });
@@ -98,7 +99,7 @@ export function DreamCard({ item, bottomPadding, isLiked, onLike, onToggleLike, 
     <GestureDetector gesture={panGesture}>
       <Animated.View style={s.card}>
       <Pressable style={StyleSheet.absoluteFill} onPress={handleDoubleTap}>
-        <Image source={{ uri: item.image_url }} style={s.fullImage} contentFit="cover" transition={200} />
+        <Image source={{ uri: item.image_url }} style={s.fullImage} contentFit="cover" cachePolicy="memory-disk" />
 
         {/* Double-tap heart animation */}
         <Animated.View style={[s.heartBurst, heartStyle]} pointerEvents="none">
@@ -133,13 +134,14 @@ export function DreamCard({ item, bottomPadding, isLiked, onLike, onToggleLike, 
           {onComment && (
             <TouchableOpacity style={s.sideButton} onPress={onComment} activeOpacity={0.7}>
               <Ionicons name="chatbubble-outline" size={26} color="#FFFFFF" />
+              {(item.comment_count ?? 0) > 0 && (
+                <Text style={s.sideCount}>{item.comment_count}</Text>
+              )}
             </TouchableOpacity>
           )}
-          {onShare && (
-            <TouchableOpacity style={s.sideButton} onPress={onShare} activeOpacity={0.7}>
-              <Ionicons name="share-outline" size={26} color="#FFFFFF" />
-            </TouchableOpacity>
-          )}
+          <TouchableOpacity style={s.sideButton} onPress={onShare ?? (() => router.push(`/sharePost?uploadId=${item.id}`))} activeOpacity={0.7}>
+            <Ionicons name="paper-plane-outline" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
         </View>
       </Pressable>
       </Animated.View>
@@ -160,6 +162,12 @@ const s = StyleSheet.create({
   sideButton: {
     width: 44, height: 44, alignItems: 'center', justifyContent: 'center',
     backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: 22,
+  },
+  sideCount: {
+    color: '#FFFFFF', fontSize: 11, fontWeight: '700',
+    position: 'absolute', bottom: -2,
+    textShadowColor: 'rgba(0,0,0,0.5)', textShadowRadius: 3,
+    textShadowOffset: { width: 0, height: 1 },
   },
   postInfo: {
     position: 'absolute', bottom: 0, left: 0, right: 70,

@@ -123,27 +123,6 @@ export default function SharePostScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Share link */}
-        <TouchableOpacity
-          style={styles.shareLinkRow}
-          onPress={() => {
-            Share.share({
-              url: `https://radorbad.co/post/${uploadId}`,
-              message: `Check this out on Rad or Bad`,
-            });
-          }}
-          activeOpacity={0.7}
-        >
-          <View style={styles.shareLinkIcon}>
-            <Ionicons name="link-outline" size={20} color={colors.textPrimary} />
-          </View>
-          <View style={styles.shareLinkText}>
-            <Text style={styles.shareLinkTitle}>Share link</Text>
-            <Text style={styles.shareLinkUrl}>radorbad.co/post/{uploadId?.slice(0, 8)}...</Text>
-          </View>
-          <Ionicons name="open-outline" size={16} color={colors.textSecondary} />
-        </TouchableOpacity>
-
         {/* Search */}
         <View style={styles.searchWrap}>
           <Ionicons name="search" size={16} color={colors.textSecondary} style={styles.searchIcon} />
@@ -192,6 +171,27 @@ export default function SharePostScreen() {
           }
           keyboardShouldPersistTaps="handled"
         />
+
+        {/* Share link — anchored at bottom */}
+        <TouchableOpacity
+          style={styles.shareLinkRow}
+          onPress={() => {
+            Share.share({
+              url: `https://dreambot.app/post/${uploadId}`,
+              message: `Check out this dream on Dream Bot`,
+            });
+          }}
+          activeOpacity={0.7}
+        >
+          <View style={styles.shareLinkIcon}>
+            <Ionicons name="link-outline" size={20} color={colors.textPrimary} />
+          </View>
+          <View style={styles.shareLinkText}>
+            <Text style={styles.shareLinkTitle}>Share link</Text>
+            <Text style={styles.shareLinkUrl}>dreambot.app/post/{uploadId?.slice(0, 8)}...</Text>
+          </View>
+          <Ionicons name="open-outline" size={16} color={colors.textSecondary} />
+        </TouchableOpacity>
       </Animated.View>
     </View>
   );
@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginHorizontal: 16,
-    marginBottom: 12,
+    marginBottom: 32,
     paddingVertical: 10,
     paddingHorizontal: 12,
     backgroundColor: colors.background,

@@ -123,7 +123,7 @@ export default function ExploreScreen() {
           keyExtractor={(item) => item.id}
           pagingEnabled
           showsVerticalScrollIndicator={false}
-          snapToInterval={SCREEN_HEIGHT}
+          getItemLayout={(_, index) => ({ length: SCREEN_HEIGHT, offset: SCREEN_HEIGHT * index, index })}
           decelerationRate="fast"
           onViewableItemsChanged={onViewableItemsChanged}
           viewabilityConfig={viewabilityConfig}

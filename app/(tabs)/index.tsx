@@ -11,6 +11,7 @@ import { useFavoriteIds } from '@/hooks/useFavoriteIds';
 import { useToggleFavorite } from '@/hooks/useToggleFavorite';
 import { DreamCard } from '@/components/DreamCard';
 import type { DreamPostItem } from '@/components/DreamCard';
+import { Image as ExpoImage } from 'expo-image';
 import { colors } from '@/constants/theme';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
@@ -56,13 +57,14 @@ function useDreamFeed(tab: FeedTab) {
           avatar_url: row.avatar_url as string | null,
           is_ai_generated: true,
           created_at: row.created_at as string,
+          comment_count: (row.comment_count as number) ?? 0,
         }));
       }
 
       // Following and Dreamers tabs — filtered queries
       let query = supabase
         .from('uploads')
-        .select('id, user_id, image_url, caption, created_at, is_ai_generated, users!inner(username, avatar_url)')
+        .select('id, user_id, image_url, caption, created_at, is_ai_generated, comment_count, users!inner(username, avatar_url)')
         .eq('is_active', true)
         .order('created_at', { ascending: false })
         .range(pageParam, pageParam + PAGE_SIZE - 1);
@@ -96,6 +98,7 @@ function useDreamFeed(tab: FeedTab) {
           avatar_url: u.avatar_url as string | null,
           is_ai_generated: (row.is_ai_generated as boolean) ?? false,
           created_at: row.created_at as string,
+          comment_count: (row.comment_count as number) ?? 0,
         };
       });
     },
@@ -169,9 +172,15 @@ export default function HomeScreen() {
 
   const onViewableItemsChanged = useCallback(({ viewableItems }: { viewableItems: Array<{ index: number | null }> }) => {
     if (viewableItems.length > 0 && viewableItems[0].index !== null) {
-      setCurrentIndex(viewableItems[0].index);
+      const idx = viewableItems[0].index;
+      setCurrentIndex(idx);
+      // Prefetch the next 3 images
+      const upcoming = posts.slice(idx + 1, idx + 4);
+      if (upcoming.length > 0) {
+        ExpoImage.prefetch(upcoming.map((p) => p.image_url));
+      }
     }
-  }, []);
+  }, [posts]);
 
   const viewabilityConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
 
@@ -199,8 +208,12 @@ export default function HomeScreen() {
           keyExtractor={(item) => item.id}
           pagingEnabled
           showsVerticalScrollIndicator={false}
-          snapToInterval={SCREEN_HEIGHT}
           decelerationRate="fast"
+          windowSize={7}
+          maxToRenderPerBatch={5}
+          initialNumToRender={3}
+          removeClippedSubviews={false}
+          getItemLayout={(_, index) => ({ length: SCREEN_HEIGHT, offset: SCREEN_HEIGHT * index, index })}
           onViewableItemsChanged={onViewableItemsChanged}
           viewabilityConfig={viewabilityConfig}
           onEndReached={() => { if (hasNextPage && !isFetchingNextPage) fetchNextPage(); }}
