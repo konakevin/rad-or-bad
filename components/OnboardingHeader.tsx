@@ -9,6 +9,9 @@ import { router } from 'expo-router';
 import { colors } from '@/constants/theme';
 import { TOTAL_STEPS } from '@/constants/onboarding';
 
+/** Steps visible in the progress bar (excludes welcome screen) */
+const VISIBLE_STEPS = TOTAL_STEPS - 1;
+
 interface Props {
   stepNumber: number;
   onBack?: () => void;
@@ -26,7 +29,7 @@ export function OnboardingHeader({ stepNumber, onBack }: Props) {
       )}
       <View style={s.center}>
         <View style={s.bar}>
-          {Array.from({ length: TOTAL_STEPS }, (_, i) => (
+          {Array.from({ length: VISIBLE_STEPS }, (_, i) => (
             <View
               key={i}
               style={[s.dot, i < stepNumber && s.dotActive]}

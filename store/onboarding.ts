@@ -4,6 +4,7 @@ import type {
   Era, Setting, SceneAtmosphere, SpiritCompanion,
 } from '@/types/recipe';
 import { DEFAULT_RECIPE } from '@/types/recipe';
+import { MOOD_TILES } from '@/constants/onboarding';
 
 interface OnboardingStore {
   step: number;
@@ -13,6 +14,10 @@ interface OnboardingStore {
   setIsEditing: (v: boolean) => void;
 
   recipe: Recipe;
+
+  /** Mood keys selected during onboarding (maps to energy/brightness axes) */
+  selectedMoods: string[];
+  toggleMood: (key: string) => void;
 
   toggleInterest: (interest: Interest) => void;
   setRealism: (value: number) => void;
@@ -39,6 +44,29 @@ export const useOnboardingStore = create<OnboardingStore>((set) => ({
   setStep: (step) => set({ step }),
 
   recipe: { ...DEFAULT_RECIPE },
+
+  selectedMoods: [],
+  toggleMood: (key) =>
+    set((s) => {
+      const current = s.selectedMoods;
+      const next = current.includes(key)
+        ? current.filter((k) => k !== key)
+        : [...current, key];
+      // Compute average energy/brightness from selected moods
+      const selectedData = MOOD_TILES.filter((m) => next.includes(m.key));
+      if (selectedData.length > 0) {
+        const avgEnergy = selectedData.reduce((sum, m) => sum + m.energy, 0) / selectedData.length;
+        const avgBrightness = selectedData.reduce((sum, m) => sum + m.brightness, 0) / selectedData.length;
+        return {
+          selectedMoods: next,
+          recipe: {
+            ...s.recipe,
+            axes: { ...s.recipe.axes, energy: clamp(avgEnergy), brightness: clamp(avgBrightness) },
+          },
+        };
+      }
+      return { selectedMoods: next };
+    }),
 
   toggleInterest: (interest) =>
     set((s) => {
@@ -135,5 +163,5 @@ export const useOnboardingStore = create<OnboardingStore>((set) => ({
 
   isEditing: false,
   setIsEditing: (v) => set({ isEditing: v }),
-  reset: () => set({ step: 1, isEditing: false, recipe: { ...DEFAULT_RECIPE } }),
+  reset: () => set({ step: 1, isEditing: false, selectedMoods: [], recipe: { ...DEFAULT_RECIPE } }),
 }));

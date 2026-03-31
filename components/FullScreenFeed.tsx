@@ -12,10 +12,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image as ExpoImage } from 'expo-image';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import { useQueryClient } from '@tanstack/react-query';
 import { DreamCard } from '@/components/DreamCard';
 import type { DreamPostItem } from '@/components/DreamCard';
 import { useFavoriteIds } from '@/hooks/useFavoriteIds';
 import { useToggleFavorite } from '@/hooks/useToggleFavorite';
+import { useAuthStore } from '@/store/auth';
+import { supabase } from '@/lib/supabase';
+import { Toast } from '@/components/Toast';
 import { colors } from '@/constants/theme';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -44,8 +48,22 @@ export function FullScreenFeed({
   const internalRef = useRef<FlatList>(null);
   const ref = listRef ?? internalRef;
 
+  const user = useAuthStore((s) => s.user);
+  const queryClient = useQueryClient();
   const { data: favoriteIds = new Set<string>() } = useFavoriteIds();
   const { mutate: toggleFavorite } = useToggleFavorite();
+
+  const handleDelete = useCallback(async (uploadId: string) => {
+    const { error } = await supabase.from('uploads').update({ is_active: false }).eq('id', uploadId);
+    if (error) {
+      Toast.show('Failed to delete', 'close-circle');
+      return;
+    }
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    Toast.show('Dream deleted', 'checkmark-circle');
+    queryClient.invalidateQueries({ queryKey: ['dreamFeed'] });
+    queryClient.invalidateQueries({ queryKey: ['userUploads'] });
+  }, [queryClient]);
 
   const viewabilityConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
 
@@ -103,6 +121,7 @@ export function FullScreenFeed({
           }}
           onComment={() => router.push(`/comments?uploadId=${item.id}`)}
           disableSwipeToProfile={disableSwipeToProfile}
+          onDelete={item.user_id === user?.id ? () => handleDelete(item.id) : undefined}
         />
       )}
     />

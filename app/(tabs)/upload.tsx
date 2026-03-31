@@ -220,7 +220,7 @@ NO poetry. NO abstract words. Output ONLY the prompt.`;
         is_ai_generated: true,
         ai_prompt: prompt,
         total_votes: 0, rad_votes: 0, bad_votes: 0,
-        width: 768, height: 1344,
+        width: 768, height: 1664,
       });
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);

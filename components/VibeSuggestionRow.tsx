@@ -8,10 +8,10 @@ import { colors } from '@/constants/theme';
 import type { VibeSuggestion } from '@/hooks/useVibeSuggestions';
 
 function getVibeColor(score: number): string {
-  if (score >= 80) return '#4CAA64';
-  if (score >= 60) return colors.accent;
-  if (score >= 40) return '#FF8C00';
-  return '#CC6666';
+  if (score >= 80) return colors.accent;
+  if (score >= 60) return colors.accentLight;
+  if (score >= 40) return colors.textSecondary;
+  return colors.textMuted;
 }
 
 interface Props {

@@ -348,18 +348,32 @@ Sparks power daydreams (on-demand generation). Nightly dreams are free. Daydream
 | **Profit** | | **~$18,400/mo** |
 
 ### Technical Cost Estimate
-Per user per day (1 nightly dream):
-- Flux Dev generation: $0.01
+
+**IMPORTANT: Original estimates below were wrong.** Real-world testing on fal.ai showed ~$0.33/image at 768x1664, not $0.01. fal.ai charges based on resolution and adds margin on top of model costs.
+
+Per user per day (1 nightly dream) on fal.ai Flux Dev at 768x1664:
+- Generation: ~$0.33
 - Haiku prompt enhancement: $0.001
 - Storage: negligible
-- **Total: ~$0.33/user/month**
+- **Total: ~$10/user/month**
 
-| DAU | Monthly Cost | Break-even (ads only) |
-|-----|-------------|----------------------|
-| 100 | $66 | ~75 users |
-| 500 | $218 | ~500 users |
-| 1,000 | $391 | ~500 users |
-| 10,000 | $3,383 | ~7,500 users |
+| DAU | Monthly Cost (fal.ai) | Break-even |
+|-----|----------------------|------------|
+| 100 | ~$1,000 | Needs premium tier |
+| 500 | ~$5,000 | Needs premium tier |
+| 1,000 | ~$10,000 | Needs premium tier |
+
+### Cost Reduction Options (TODO: evaluate)
+
+1. **Lower resolution** — Generate at 512x896 instead of 768x1664. ~3-4x fewer pixels = proportionally cheaper. Still looks good on phone screens.
+2. **Replicate** — Flux Dev on Replicate is reportedly ~$0.03/image flat regardless of resolution. Would bring 100 DAU down to ~$90/month.
+3. **Together.ai / Fireworks.ai** — Alternative inference providers, often cheaper than fal.ai for the same models.
+4. **Self-hosted GPU** — Run Flux Dev on a rented GPU (~$0.50/hr on RunPod/Lambda). Can generate hundreds of images per hour. Best unit economics at scale but requires infra management.
+5. **SDXL or SD3** — Cheaper/free open-source models with lower quality. Could be a free-tier option while Flux stays premium.
+6. **Batch generation** — Generate during off-peak hours when GPU providers offer discounts.
+7. **Caching/reuse** — For similar recipes, cache prompt components and reuse partial generations.
+
+**Recommended path:** Switch to Replicate for immediate 10x cost reduction, evaluate self-hosting when DAU exceeds 1,000.
 
 ## Design Inspirations — Systems We're Stealing From
 

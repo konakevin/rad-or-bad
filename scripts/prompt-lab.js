@@ -234,10 +234,10 @@ function pickCategory(prompt) {
 // ── Image Gen + Upload ──────────────────────────────────────────────────────
 
 async function generateImage(fal, prompt) {
-  const result = await fal.subscribe('fal-ai/flux-pro/v1.1', {
+  const result = await fal.subscribe('fal-ai/flux/dev', {
     input: {
       prompt,
-      image_size: { width: 768, height: 1344 },
+      image_size: { width: 768, height: 1664 },
       num_images: 1,
       output_format: 'jpeg',
       safety_tolerance: '2',
@@ -269,7 +269,7 @@ async function createPost(userId, imageUrl, prompt, category) {
     user_id: userId, image_url: imageUrl, media_type: 'image',
     categories: [category], caption: makeCaption(prompt),
     is_active: true, is_approved: true, is_moderated: true,
-    total_votes: 0, rad_votes: 0, bad_votes: 0, width: 768, height: 1344,
+    total_votes: 0, rad_votes: 0, bad_votes: 0, width: 768, height: 1664,
   }).select('id').single();
   if (error) throw new Error(`Post failed: ${error.message}`);
   return data.id;

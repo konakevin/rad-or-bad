@@ -157,10 +157,10 @@ function pickCategory(prompt) {
 // ── Generation ───────────────────────────────────────────────────────────────
 
 async function generateImage(fal, prompt) {
-  const result = await fal.subscribe('fal-ai/flux-pro/v1.1', {
+  const result = await fal.subscribe('fal-ai/flux/dev', {
     input: {
       prompt,
-      image_size: { width: 768, height: 1344 },
+      image_size: { width: 768, height: 1664 },
       num_images: 1,
       output_format: 'jpeg',
       safety_tolerance: '2',
@@ -233,7 +233,7 @@ async function main() {
         is_ai_generated: true,
         ai_prompt: prompt,
         total_votes: 0, rad_votes: 0, bad_votes: 0,
-        width: 768, height: 1344,
+        width: 768, height: 1664,
       });
 
       console.log(' ✓');

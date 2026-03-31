@@ -8,6 +8,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { runOnJS } from 'react-native-reanimated';
 import { useOnboardingStore } from '@/store/onboarding';
 import { OnboardingHeader } from '@/components/OnboardingHeader';
 import { colors } from '@/constants/theme';
@@ -33,11 +35,14 @@ interface Props {
   singleSelect?: boolean;
   /** Accent color for selected tiles */
   accentColor?: string;
+  /** When true, renders without SafeAreaView and OnboardingHeader (for pager embedding) */
+  hideChrome?: boolean;
 }
 
 export function OnboardingTileScreen({
   stepNumber, title, subtitle, tiles, selected, onToggle,
   onNext, onBack, minRequired = 1, singleSelect, accentColor = colors.accent,
+  hideChrome,
 }: Props) {
   const isEditing = useOnboardingStore((s) => s.isEditing);
   const canProceed = selected.length >= minRequired;
@@ -53,9 +58,13 @@ export function OnboardingTileScreen({
     onNext();
   }
 
+  const Wrapper = hideChrome ? View : SafeAreaView;
+
   return (
-    <SafeAreaView style={styles.root}>
-      <OnboardingHeader stepNumber={stepNumber} onBack={onBack ?? (isEditing ? () => router.replace('/(tabs)') : undefined)} />
+    <Wrapper style={styles.root}>
+      {!hideChrome && (
+        <OnboardingHeader stepNumber={stepNumber} onBack={onBack ?? (isEditing ? () => router.replace('/(tabs)') : undefined)} />
+      )}
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
         <Text style={styles.title}>{title}</Text>
@@ -93,17 +102,25 @@ export function OnboardingTileScreen({
       </ScrollView>
 
       <View style={styles.footer}>
-        <TouchableOpacity
-          style={[styles.nextButton, !canProceed && styles.nextButtonDisabled]}
-          onPress={handleNext}
-          disabled={!canProceed}
-          activeOpacity={0.7}
-        >
-          <Text style={[styles.nextButtonText, !canProceed && styles.nextButtonTextDisabled]}>Next</Text>
-          <Ionicons name="arrow-forward" size={18} color={canProceed ? '#FFFFFF' : colors.textSecondary} />
-        </TouchableOpacity>
+        <View style={styles.footerRow}>
+          {onBack && (
+            <TouchableOpacity style={styles.backBtn} onPress={onBack} activeOpacity={0.7}>
+              <Ionicons name="arrow-back" size={18} color="#FFFFFF" />
+              <Text style={styles.backBtnText}>Back</Text>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity
+            style={[styles.nextButton, !onBack && { flex: 1 }, !canProceed && styles.nextButtonDisabled]}
+            onPress={handleNext}
+            disabled={!canProceed}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.nextButtonText, !canProceed && styles.nextButtonTextDisabled]}>Next</Text>
+            <Ionicons name="arrow-forward" size={18} color={canProceed ? '#FFFFFF' : colors.textSecondary} />
+          </TouchableOpacity>
+        </View>
       </View>
-    </SafeAreaView>
+    </Wrapper>
   );
 }
 
@@ -167,7 +184,16 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   footer: { paddingHorizontal: 20, paddingBottom: 16 },
+  footerRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  backBtn: {
+    flex: 1,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+    paddingVertical: 16, borderRadius: 14,
+    backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.accentBorder,
+  },
+  backBtnText: { color: '#FFFFFF', fontSize: 15, fontWeight: '600' },
   nextButton: {
+    flex: 1,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, backgroundColor: colors.accent, borderRadius: 14, paddingVertical: 16,
   },

@@ -20,7 +20,7 @@ export function useSwipeBack() {
         if (gs.dx > 0) translateX.setValue(gs.dx);
       },
       onPanResponderRelease: (_, gs) => {
-        if (gs.dx > 40 || gs.vx > 0.3) {
+        if (gs.dx > 25 || gs.vx > 0.2) {
           Animated.timing(translateX, {
             toValue: 400,
             duration: SLIDE_OFF_DURATION,

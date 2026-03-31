@@ -7,7 +7,7 @@
  */
 
 import { useRef } from 'react';
-import { View, Text, TouchableOpacity, Pressable, StyleSheet, Dimensions, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, Pressable, StyleSheet, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
@@ -17,9 +17,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import * as MediaLibrary from 'expo-media-library';
-import { File, Paths } from 'expo-file-system/next';
 import { colors, ui } from '@/constants/theme';
+import { handleImageLongPress } from '@/lib/imageLongPress';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -44,9 +43,10 @@ interface Props {
   onComment?: () => void;
   onShare?: () => void;
   disableSwipeToProfile?: boolean;
+  onDelete?: () => void;
 }
 
-export function DreamCard({ item, bottomPadding, isLiked, onLike, onToggleLike, onComment, onShare, disableSwipeToProfile }: Props) {
+export function DreamCard({ item, bottomPadding, isLiked, onLike, onToggleLike, onComment, onShare, disableSwipeToProfile, onDelete }: Props) {
   const lastTap = useRef(0);
   const swiped = useRef(false);
 
@@ -58,17 +58,15 @@ export function DreamCard({ item, bottomPadding, isLiked, onLike, onToggleLike, 
     opacity: heartOpacity.value,
   }));
 
-  // Pinch to zoom
-  const pinchScale = useSharedValue(1);
-  const pinchFocalX = useSharedValue(0);
-  const pinchFocalY = useSharedValue(0);
+  // Pinch to zoom — simple focal point approach
+  const zoomScale = useSharedValue(1);
+  const zoomTransX = useSharedValue(0);
+  const zoomTransY = useSharedValue(0);
   const imageStyle = useAnimatedStyle(() => ({
     transform: [
-      { translateX: pinchFocalX.value },
-      { translateY: pinchFocalY.value },
-      { scale: pinchScale.value },
-      { translateX: -pinchFocalX.value },
-      { translateY: -pinchFocalY.value },
+      { translateX: zoomTransX.value },
+      { translateY: zoomTransY.value },
+      { scale: zoomScale.value },
     ],
   }));
 
@@ -102,52 +100,45 @@ export function DreamCard({ item, bottomPadding, isLiked, onLike, onToggleLike, 
     lastTap.current = now;
   }
 
-  async function handleLongPress() {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-    Alert.alert('Save Image', 'Save this dream to your photos?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Save',
-        onPress: async () => {
-          const { status } = await MediaLibrary.requestPermissionsAsync();
-          if (status !== 'granted') {
-            Alert.alert('Permission needed', 'Allow access to save images.');
-            return;
-          }
-          try {
-            const file = new File(Paths.cache, `${item.id}.jpg`);
-            await (file as unknown as { downloadAsync: (url: string) => Promise<void> }).downloadAsync(item.image_url);
-            await MediaLibrary.saveToLibraryAsync(file.uri);
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          } catch {
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-          }
-        },
-      },
-    ]);
+  function handleLongPress() {
+    handleImageLongPress({ id: item.id, imageUrl: item.image_url, onDelete });
   }
 
   // Gestures
   const panGesture = Gesture.Pan()
-    .activeOffsetX([-12, 12])
-    .failOffsetY([-20, 20])
+    .activeOffsetX([-8, 8])
+    .failOffsetY([-15, 15])
     .enabled(!disableSwipeToProfile)
     .onEnd((e) => {
-      if (e.translationX < -40 || e.velocityX < -300) {
+      if (e.translationX < -25 || e.velocityX < -200) {
         runOnJS(goToProfile)();
       }
     });
 
+  const focalX = useSharedValue(0);
+  const focalY = useSharedValue(0);
+  const startFocalX = useSharedValue(0);
+  const startFocalY = useSharedValue(0);
+
   const pinchGesture = Gesture.Pinch()
+    .onStart((e) => {
+      focalX.value = e.focalX - SCREEN_WIDTH / 2;
+      focalY.value = e.focalY - SCREEN_HEIGHT / 2;
+      startFocalX.value = e.focalX;
+      startFocalY.value = e.focalY;
+    })
     .onUpdate((e) => {
-      pinchScale.value = Math.max(1, Math.min(4, e.scale));
-      pinchFocalX.value = e.focalX - SCREEN_WIDTH / 2;
-      pinchFocalY.value = e.focalY - SCREEN_HEIGHT / 2;
+      const s = Math.max(1, Math.min(5, e.scale));
+      zoomScale.value = s;
+      const panX = e.focalX - startFocalX.value;
+      const panY = e.focalY - startFocalY.value;
+      zoomTransX.value = focalX.value * (1 - s) + panX;
+      zoomTransY.value = focalY.value * (1 - s) + panY;
     })
     .onEnd(() => {
-      pinchScale.value = withSpring(1, { damping: 15, stiffness: 150 });
-      pinchFocalX.value = withSpring(0, { damping: 15, stiffness: 150 });
-      pinchFocalY.value = withSpring(0, { damping: 15, stiffness: 150 });
+      zoomScale.value = withTiming(1, { duration: 200 });
+      zoomTransX.value = withTiming(0, { duration: 200 });
+      zoomTransY.value = withTiming(0, { duration: 200 });
     });
 
   const composed = Gesture.Simultaneous(panGesture, pinchGesture);

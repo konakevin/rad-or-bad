@@ -154,8 +154,8 @@ async function main() {
       process.stdout.write(`  ${String(i+1).padStart(2)}/${POSTS_PER_USER} `);
 
       try {
-        const result = await fal.subscribe('fal-ai/flux-pro/v1.1', {
-          input: { prompt, image_size: { width: 768, height: 1344 }, num_images: 1, output_format: 'jpeg', safety_tolerance: '2' },
+        const result = await fal.subscribe('fal-ai/flux/dev', {
+          input: { prompt, image_size: { width: 768, height: 1664 }, num_images: 1, output_format: 'jpeg', safety_tolerance: '2' },
           logs: false,
         });
         const falUrl = result.data?.images?.[0]?.url;
@@ -172,7 +172,7 @@ async function main() {
           categories: [pick(dreamer.categories)], caption: makeCaption(prompt),
           is_active: true, is_approved: true, is_moderated: true,
           is_ai_generated: true, ai_prompt: prompt,
-          total_votes: 0, rad_votes: 0, bad_votes: 0, width: 768, height: 1344,
+          total_votes: 0, rad_votes: 0, bad_votes: 0, width: 768, height: 1664,
         });
         console.log('✓');
         total++;

@@ -278,11 +278,11 @@ export default function SettingsScreen() {
         {/* Dream Engine */}
         <Text style={styles.sectionHeader}>DREAM ENGINE</Text>
         <View style={styles.section}>
-          <SettingsRow icon="sparkles" label="Edit My Character" onPress={() => {
+          <SettingsRow icon="sparkles" label="Edit My Dream Bot" onPress={() => {
             const { useOnboardingStore } = require('@/store/onboarding');
             useOnboardingStore.getState().reset();
             useOnboardingStore.getState().setIsEditing(true);
-            router.push('/(onboarding)/interests');
+            router.push('/(onboarding)');
           }} />
         </View>
 

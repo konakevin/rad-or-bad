@@ -27,6 +27,7 @@ export const colors = {
   textPrimary: '#FFFFFF',
   textSecondary: '#8E8E9E',
   textTertiary: '#3E3E4E',
+  textMuted: '#6E6E7E',
 
   // Overlay
   overlay: 'rgba(0,0,0,0.6)',

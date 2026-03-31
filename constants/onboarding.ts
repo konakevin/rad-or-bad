@@ -115,7 +115,7 @@ export const PERSONALITY_TAGS: { key: PersonalityTag; label: string }[] = [
 export const LIMITS = {
   interests: { min: 3 },
   colorPalettes: { min: 1 },
-  personalityTags: { min: 2 },
+  personalityTags: { min: 1 },
   moods: { min: 1 },
   sceneAtmospheres: { min: 1 },
 } as const;

@@ -24,7 +24,6 @@ export const useAuthStore = create<AuthState>((set) => ({
     await supabase.auth.signOut();
     set({ session: null, user: null });
     // Clear all cached data from previous session
-    useFeedStore.getState().clearLocalStreaks();
     useFeedStore.getState().bumpReset();
     // Clear TanStack Query cache (imported lazily to avoid circular deps)
     const { queryClient } = require('@/app/_layout');

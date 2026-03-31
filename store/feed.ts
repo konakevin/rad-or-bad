@@ -1,6 +1,21 @@
 import { create } from 'zustand';
 
+export interface PinnedPost {
+  id: string;
+  user_id: string;
+  image_url: string;
+  caption: string | null;
+  username: string;
+  avatar_url: string | null;
+  is_ai_generated: boolean;
+  created_at: string;
+  comment_count: number;
+}
+
 interface FeedStore {
+  // Pinned post — shows as first card on home feed (e.g. first dream after onboarding)
+  pinnedPost: PinnedPost | null;
+  setPinnedPost: (post: PinnedPost | null) => void;
   // Feed refresh tokens
   resetToken: number;
   bumpReset: () => void;
@@ -21,6 +36,8 @@ interface FeedStore {
 }
 
 export const useFeedStore = create<FeedStore>((set) => ({
+  pinnedPost: null,
+  setPinnedPost: (post) => set({ pinnedPost: post }),
   resetToken: 0,
   bumpReset: () => set((s) => ({ resetToken: s.resetToken + 1 })),
   refreshToken: 0,

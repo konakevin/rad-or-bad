@@ -7,6 +7,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import { getPostAuthRoute } from '@/lib/postAuthRoute';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '@/lib/supabase';
 import { signInWithGoogle } from '@/lib/googleAuth';
@@ -32,7 +33,8 @@ export default function LoginScreen() {
       showAlert('Sign in failed', 'Invalid email or password.');
     } else {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      router.replace('/(tabs)');
+      const dest = await getPostAuthRoute();
+      router.replace(dest);
     }
   }
 
@@ -112,7 +114,7 @@ export default function LoginScreen() {
                     setLoading(true);
                     await signInWithApple();
                     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                    router.replace('/(tabs)');
+                    router.replace('/');
                   } catch (err: unknown) {
                     const msg = (err as Error).message;
                     if (!msg.includes('canceled') && !msg.includes('cancelled') && !msg.includes('ERR_CANCELED')) {
@@ -138,7 +140,7 @@ export default function LoginScreen() {
                   setLoading(true);
                   await signInWithGoogle();
                   Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                  router.replace('/(tabs)');
+                  router.replace('/');
                 } catch (err: unknown) {
                   const msg = (err as Error).message;
                   if (!msg.includes('canceled') && !msg.includes('cancelled')) {
@@ -163,7 +165,7 @@ export default function LoginScreen() {
                   setLoading(true);
                   await signInWithFacebook();
                   Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                  router.replace('/(tabs)');
+                  router.replace('/');
                 } catch (err: unknown) {
                   const msg = (err as Error).message;
                   if (!msg.includes('canceled') && !msg.includes('cancelled')) {

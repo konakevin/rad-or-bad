@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { useAuthStore } from '@/store/auth';
+import { useFeedStore } from '@/store/feed';
 import { colors } from '@/constants/theme';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
@@ -135,12 +136,21 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState<FeedTab>('forYou');
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useDreamFeed(activeTab);
-  const posts = data?.pages.flat() ?? [];
+  const pinnedPost = useFeedStore((s) => s.pinnedPost);
+  const setPinnedPost = useFeedStore((s) => s.setPinnedPost);
+  const feedPosts = data?.pages.flat() ?? [];
   const listRef = useRef<FlatList>(null);
+
+  // Prepend pinned post (e.g. first dream from onboarding) then clear it
+  const posts = pinnedPost && activeTab === 'forYou'
+    ? [pinnedPost as unknown as DreamPostItem, ...feedPosts]
+    : feedPosts;
 
   function handleTabChange(tab: FeedTab) {
     setActiveTab(tab);
     listRef.current?.scrollToOffset({ offset: 0, animated: false });
+    // Clear pinned post when switching tabs
+    if (pinnedPost) setPinnedPost(null);
   }
 
   return (

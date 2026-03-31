@@ -254,10 +254,10 @@ async function findOrCreateHouseAccount() {
 // ── Image Generation ─────────────────────────────────────────────────────────
 
 async function generateImage(fal, prompt) {
-  const result = await fal.subscribe('fal-ai/flux-pro/v1.1', {
+  const result = await fal.subscribe('fal-ai/flux/dev', {
     input: {
       prompt,
-      image_size: { width: 768, height: 1344 },
+      image_size: { width: 768, height: 1664 },
       num_images: 1,
       output_format: 'jpeg',
       safety_tolerance: '2',

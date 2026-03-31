@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { getPostAuthRoute } from '@/lib/postAuthRoute';
 import MaskedView from '@react-native-masked-view/masked-view';
 import { LinearGradient } from 'expo-linear-gradient';
 import { signInWithGoogle } from '@/lib/googleAuth';
@@ -74,7 +75,8 @@ export default function WelcomeScreen() {
         await signInWithFacebook();
       }
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      router.replace('/(tabs)');
+      const dest = await getPostAuthRoute();
+      router.replace(dest);
     } catch (err: unknown) {
       const msg = (err as Error).message;
       if (!msg.includes('canceled') && !msg.includes('cancelled') && !msg.includes('ERR_CANCELED')) {

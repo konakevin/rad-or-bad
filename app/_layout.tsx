@@ -14,6 +14,7 @@ import { useAuthStore } from '@/store/auth';
 import { supabase } from '@/lib/supabase';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { AlertProvider } from '@/components/CustomAlert';
+import { ToastHost } from '@/components/Toast';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -131,6 +132,7 @@ export default function RootLayout() {
           <Stack.Screen name="discoverVibers" options={{ presentation: 'card', gestureEnabled: true }} />
         </Stack>
         <StatusBar style="light" />
+        <ToastHost />
         </AlertProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>

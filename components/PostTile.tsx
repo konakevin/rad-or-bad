@@ -1,11 +1,9 @@
-import { useState } from 'react';
 import { TouchableOpacity, Text, StyleSheet, Dimensions, View } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { useDeletePost } from '@/hooks/useDeletePost';
-import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { handleImageLongPress } from '@/lib/imageLongPress';
 import { useAlbumStore } from '@/store/album';
 import type { PostItem } from '@/hooks/useUserPosts';
 import { colors } from '@/constants/theme';
@@ -22,7 +20,6 @@ interface PostTileProps {
 
 export function PostTile({ item, isOwn = false, albumIds, isHighlighted = false }: PostTileProps) {
   const { mutate: deletePost } = useDeletePost();
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   function handlePress() {
     if (albumIds?.length) {
@@ -34,16 +31,18 @@ export function PostTile({ item, isOwn = false, albumIds, isHighlighted = false 
   }
 
   function handleLongPress() {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setShowDeleteDialog(true);
+    handleImageLongPress({
+      id: item.id,
+      imageUrl: item.image_url,
+      onDelete: isOwn ? () => deletePost(item.id) : undefined,
+    });
   }
 
   return (
-    <>
     <TouchableOpacity
       style={styles.tile}
       onPress={handlePress}
-      onLongPress={isOwn ? handleLongPress : undefined}
+      onLongPress={handleLongPress}
       delayLongPress={400}
       activeOpacity={0.9}
     >
@@ -67,17 +66,6 @@ export function PostTile({ item, isOwn = false, albumIds, isHighlighted = false 
         </View>
       )}
     </TouchableOpacity>
-    <ConfirmDialog
-      visible={showDeleteDialog}
-      title="Delete post"
-      message="This will permanently remove your post and all its votes."
-      onConfirm={() => {
-        setShowDeleteDialog(false);
-        deletePost(item.id);
-      }}
-      onCancel={() => setShowDeleteDialog(false)}
-    />
-    </>
   );
 }
 

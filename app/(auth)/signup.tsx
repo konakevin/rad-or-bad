@@ -7,6 +7,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import { getPostAuthRoute } from '@/lib/postAuthRoute';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '@/lib/supabase';
 
@@ -41,7 +42,8 @@ export default function SignupScreen() {
     } else if (data.session) {
       // Email confirmation is off — logged in immediately
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      router.replace('/(tabs)');
+      const dest = await getPostAuthRoute();
+      router.replace(dest);
     } else {
       // Email confirmation is on — show check-your-email UI
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
