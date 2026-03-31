@@ -50,7 +50,7 @@ function SearchRow({ user }: { user: SearchUser }) {
       <View style={styles.actions}>
         {!isFriend && friendshipStatus === 'none' && (
           <TouchableOpacity
-            style={styles.vibeButton}
+            style={styles.dreamButton}
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               sendRequest(user.id);
@@ -58,7 +58,7 @@ function SearchRow({ user }: { user: SearchUser }) {
             activeOpacity={0.7}
             hitSlop={8}
           >
-            <Text style={styles.vibeButtonText}>Vibe</Text>
+            <Text style={styles.dreamButtonText}>Dream</Text>
           </TouchableOpacity>
         )}
         {friendshipStatus === 'pending_sent' && (
@@ -205,13 +205,13 @@ const styles = StyleSheet.create({
   username: { color: colors.textPrimary, fontSize: 15, fontWeight: '600' },
   rank: { color: colors.textSecondary, fontSize: 12 },
   actions: { flexDirection: 'row', gap: 8, alignItems: 'center' },
-  vibeButton: {
+  dreamButton: {
     backgroundColor: '#FFD700',
     borderRadius: 14,
     paddingHorizontal: 12,
     paddingVertical: 5,
   },
-  vibeButtonText: { color: '#000000', fontSize: 12, fontWeight: '800' },
+  dreamButtonText: { color: '#000000', fontSize: 12, fontWeight: '800' },
   followButton: {
     borderWidth: 1,
     borderColor: colors.flame,

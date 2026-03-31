@@ -37,9 +37,9 @@ function getNotificationText(item: NotificationItem): { action: string; preview:
     case 'comment_mention':
       return { action: 'mentioned you', preview: item.body };
     case 'friend_request':
-      return { action: 'wants to vibe with you', preview: null };
+      return { action: 'wants to dream with you', preview: null };
     case 'friend_accepted':
-      return { action: 'accepted your vibe request', preview: null };
+      return { action: 'accepted your dream request', preview: null };
     case 'post_milestone':
       return { action: 'Your post hit ' + (item.body ?? 'a milestone!'), preview: null };
     default:
@@ -57,11 +57,11 @@ function getNotificationIcon(type: NotificationItem['type']): string {
   }
 }
 
-function NotificationRow({ item, onPress, onDelete, selectMode, isSelected, onToggleSelect, onAcceptVibe, onDeclineVibe, vibeAccepted }: {
+function NotificationRow({ item, onPress, onDelete, selectMode, isSelected, onToggleSelect, onAcceptDream, onDeclineDream, dreamAccepted }: {
   item: NotificationItem; onPress: () => void; onDelete: () => void;
   selectMode: boolean; isSelected: boolean; onToggleSelect: () => void;
-  onAcceptVibe?: () => void; onDeclineVibe?: () => void;
-  vibeAccepted?: boolean;
+  onAcceptDream?: () => void; onDeclineDream?: () => void;
+  dreamAccepted?: boolean;
 }) {
   const { action, preview } = getNotificationText(item);
 
@@ -108,17 +108,17 @@ function NotificationRow({ item, onPress, onDelete, selectMode, isSelected, onTo
 
       {/* Accept/Decline for friend requests */}
       {item.type === 'friend_request' && !selectMode && (
-        vibeAccepted ? (
-          <View style={styles.vibersBadge}>
+        dreamAccepted ? (
+          <View style={styles.dreamersBadge}>
             <Ionicons name="checkmark-circle" size={14} color="#4CAA64" />
-            <Text style={styles.vibersBadgeText}>Vibers</Text>
+            <Text style={styles.dreamersBadgeText}>Dreamers</Text>
           </View>
-        ) : onAcceptVibe ? (
-          <View style={styles.vibeActions}>
-            <TouchableOpacity style={styles.acceptVibeButton} onPress={onAcceptVibe} activeOpacity={0.7} hitSlop={4}>
+        ) : onAcceptDream ? (
+          <View style={styles.dreamActions}>
+            <TouchableOpacity style={styles.acceptDreamButton} onPress={onAcceptDream} activeOpacity={0.7} hitSlop={4}>
               <Ionicons name="checkmark" size={16} color="#FFFFFF" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.declineVibeButton} onPress={onDeclineVibe} activeOpacity={0.7} hitSlop={4}>
+            <TouchableOpacity style={styles.declineDreamButton} onPress={onDeclineDream} activeOpacity={0.7} hitSlop={4}>
               <Ionicons name="close" size={14} color={colors.textSecondary} />
             </TouchableOpacity>
           </View>
@@ -155,7 +155,7 @@ export default function InboxScreen() {
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [allSelectedGlobal, setAllSelectedGlobal] = useState(false);
-  const [acceptedVibeIds, setAcceptedVibeIds] = useState<Set<string>>(new Set());
+  const [acceptedDreamIds, setAcceptedDreamIds] = useState<Set<string>>(new Set());
 
   const inbox = useMemo(() => data?.pages.flat() ?? [], [data]);
   const hasUnread = inbox.some((item) => !item.isSeen);
@@ -291,13 +291,13 @@ export default function InboxScreen() {
             selectMode={selectMode}
             isSelected={selected.has(item.id)}
             onToggleSelect={() => toggleSelect(item.id)}
-            vibeAccepted={acceptedVibeIds.has(item.id)}
-            onAcceptVibe={item.type === 'friend_request' ? () => {
+            dreamAccepted={acceptedDreamIds.has(item.id)}
+            onAcceptDream={item.type === 'friend_request' ? () => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               respondRequest({ requesterId: item.actorId, accept: true });
-              setAcceptedVibeIds((prev) => new Set(prev).add(item.id));
+              setAcceptedDreamIds((prev) => new Set(prev).add(item.id));
             } : undefined}
-            onDeclineVibe={item.type === 'friend_request' ? () => {
+            onDeclineDream={item.type === 'friend_request' ? () => {
               respondRequest({ requesterId: item.actorId, accept: false });
               deleteNotification(item.id);
             } : undefined}
@@ -455,11 +455,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-  vibeActions: {
+  dreamActions: {
     flexDirection: 'row',
     gap: 6,
   },
-  acceptVibeButton: {
+  acceptDreamButton: {
     backgroundColor: '#4CAF50',
     borderRadius: 14,
     width: 28,
@@ -467,7 +467,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  declineVibeButton: {
+  declineDreamButton: {
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 14,
@@ -476,7 +476,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  vibersBadge: {
+  dreamersBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
@@ -487,7 +487,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
   },
-  vibersBadgeText: {
+  dreamersBadgeText: {
     color: colors.textSecondary,
     fontSize: 12,
     fontWeight: '600',

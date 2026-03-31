@@ -128,7 +128,7 @@ export default function SharePostScreen() {
           <Ionicons name="search" size={16} color={colors.textSecondary} style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search vibers"
+            placeholder="Search dreamers"
             placeholderTextColor={colors.textSecondary}
             value={search}
             onChangeText={setSearch}
@@ -164,7 +164,7 @@ export default function SharePostScreen() {
               ) : (
                 <>
                   <Ionicons name="people-outline" size={36} color="rgba(255,255,255,0.2)" />
-                  <Text style={styles.emptyText}>No vibers to share with yet</Text>
+                  <Text style={styles.emptyText}>No dreamers to share with yet</Text>
                 </>
               )}
             </View>
