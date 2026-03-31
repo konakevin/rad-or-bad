@@ -1,284 +1,306 @@
+import { useState } from 'react';
 import {
-  View, Text, ScrollView, ActivityIndicator,
-  TouchableOpacity, StyleSheet, type NativeSyntheticEvent, type NativeScrollEvent,
+  View, Text, TouchableOpacity, StyleSheet,
+  ActivityIndicator, Dimensions, FlatList,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams } from 'expo-router';
-import { useState, useEffect, useMemo, useRef } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
-import MaskedView from '@react-native-masked-view/masked-view';
-import { useCategoryPosts, type CategorySort } from '@/hooks/useCategoryPosts';
-import type { Category } from '@/types/database';
-import { RankCard } from '@/components/RankCard';
-import { colors, gradients } from '@/constants/theme';
-import { CATEGORIES } from '@/constants/categories';
+import { router } from 'expo-router';
+import * as Haptics from 'expo-haptics';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabase';
+import { useAuthStore } from '@/store/auth';
+import { DREAM_CATEGORIES, type DreamCategory } from '@/constants/dreamCategories';
+import { colors } from '@/constants/theme';
 
-export default function TopScreen() {
-  const params = useLocalSearchParams<{ category?: string }>();
-  const [selected, setSelected] = useState<Category>(
-    (params.category as Category | undefined) ?? CATEGORIES[0].key
-  );
-  const [sort, setSort] = useState<CategorySort>('top');
-  const [showChipFade, setShowChipFade] = useState(true);
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const GRID_GAP = 3;
+const TILE_SIZE = (SCREEN_WIDTH - GRID_GAP) / 2;
 
-  function handleChipScroll(e: NativeSyntheticEvent<NativeScrollEvent>) {
-    const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent;
-    const atEnd = contentOffset.x + layoutMeasurement.width >= contentSize.width - 10;
-    setShowChipFade(!atEnd);
+interface DreamPost {
+  id: string;
+  user_id: string;
+  image_url: string;
+  caption: string | null;
+  ai_prompt: string | null;
+  username: string;
+}
+
+function useCategoryDreams(category: DreamCategory | null) {
+  const user = useAuthStore((s) => s.user);
+
+  return useQuery({
+    queryKey: ['categoryDreams', category?.key],
+    queryFn: async (): Promise<DreamPost[]> => {
+      if (!category) return [];
+
+      const { data, error } = await supabase
+        .from('uploads')
+        .select('id, user_id, image_url, caption, ai_prompt, users!inner(username)')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+
+      const keywords = category.keywords;
+      return (data ?? [])
+        .map((row: Record<string, unknown>) => {
+          const u = row.users as Record<string, unknown>;
+          return {
+            id: row.id as string,
+            user_id: row.user_id as string,
+            image_url: row.image_url as string,
+            caption: row.caption as string | null,
+            ai_prompt: row.ai_prompt as string | null,
+            username: u.username as string,
+          };
+        })
+        .filter((post) => {
+          const text = `${post.ai_prompt ?? ''} ${post.caption ?? ''}`.toLowerCase();
+          return keywords.some((kw) => text.includes(kw));
+        });
+    },
+    enabled: !!user && !!category,
+    staleTime: 60_000,
+  });
+}
+
+// Fetch one preview image per category for the grid tiles
+function useCategoryPreviews() {
+  const user = useAuthStore((s) => s.user);
+
+  return useQuery({
+    queryKey: ['categoryPreviews'],
+    queryFn: async (): Promise<Record<string, string>> => {
+      const { data, error } = await supabase
+        .from('uploads')
+        .select('image_url, ai_prompt, caption')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (error) throw error;
+
+      const previews: Record<string, string> = {};
+      for (const cat of DREAM_CATEGORIES) {
+        const match = (data ?? []).find((row: Record<string, unknown>) => {
+          const text = `${row.ai_prompt ?? ''} ${row.caption ?? ''}`.toString().toLowerCase();
+          return cat.keywords.some((kw) => text.includes(kw));
+        });
+        if (match) previews[cat.key] = match.image_url as string;
+      }
+      return previews;
+    },
+    enabled: !!user,
+    staleTime: 300_000,
+  });
+}
+
+export default function ExploreScreen() {
+  const insets = useSafeAreaInsets();
+  const [selected, setSelected] = useState<DreamCategory | null>(null);
+  const { data: posts = [], isLoading } = useCategoryDreams(selected);
+  const { data: previews = {} } = useCategoryPreviews();
+
+  function selectCategory(cat: DreamCategory) {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setSelected(cat);
   }
 
-  useEffect(() => {
-    if (params.category) setSelected(params.category as Category);
-  }, [params.category]);
+  // ── Category Grid ─────────────────────────────────────────────────────────
 
-  const chipScrollRef = useRef<ScrollView>(null);
-  const scrollRef = useRef<ScrollView>(null);
-
-  // Scroll the selected category pill into view (left-aligned)
-  useEffect(() => {
-    const idx = CATEGORIES.findIndex((c) => c.key === selected);
-    if (idx >= 0 && chipScrollRef.current) {
-      // Estimate pill width (~90px per pill + 8px gap)
-      const offset = Math.max(0, idx * 98 - 8);
-      chipScrollRef.current.scrollTo({ x: offset, animated: true });
-    }
-  }, [selected]);
-
-  const { data, isLoading, refetch } = useCategoryPosts(selected, 9, sort);
-  const posts = data?.posts ?? [];
-  const albumIds = useMemo(() => posts.map((p) => p.id), [posts]);
-  const activeCategory = CATEGORIES.find((c) => c.key === selected);
-
-  // Preserve the last known windowLabel so the header height doesn't change
-  // while a new category is loading (which causes a visible layout jump).
-  const stableWindowLabel = useRef('');
-  if (data?.windowLabel) stableWindowLabel.current = data.windowLabel;
-
-  function selectCategory(key: Category) {
-    setSelected(key);
-    refetch();
-    scrollRef.current?.scrollTo({ y: 0, animated: true });
+  if (!selected) {
+    return (
+      <View style={s.root}>
+        <FlatList
+          data={DREAM_CATEGORIES}
+          keyExtractor={(item) => item.key}
+          numColumns={2}
+          columnWrapperStyle={s.catRow}
+          contentContainerStyle={[s.catGrid, { paddingTop: insets.top + 50 }]}
+          ListHeaderComponent={
+            <View style={s.catHeader}>
+              <Text style={s.catTitle}>Explore Dreams</Text>
+              <Text style={s.catSub}>Browse by style</Text>
+            </View>
+          }
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={s.catTile}
+              onPress={() => selectCategory(item)}
+              activeOpacity={0.8}
+            >
+              {previews[item.key] ? (
+                <Image source={{ uri: previews[item.key] }} style={s.catTileImage} contentFit="cover" />
+              ) : (
+                <View style={[s.catTileImage, { backgroundColor: `${item.color}20` }]} />
+              )}
+              <LinearGradient
+                colors={['transparent', 'rgba(0,0,0,0.8)']}
+                style={s.catTileGradient}
+              />
+              <View style={s.catTileLabel}>
+                <Ionicons name={item.icon as keyof typeof Ionicons.glyphMap} size={16} color={item.color} />
+                <Text style={s.catTileLabelText}>{item.label}</Text>
+              </View>
+            </TouchableOpacity>
+          )}
+        />
+      </View>
+    );
   }
+
+  // ── Category Detail ───────────────────────────────────────────────────────
 
   return (
-    <SafeAreaView style={styles.root}>
-
-      {/* Header — big category name + sort toggle */}
-      <View style={styles.header}>
-        <View style={styles.headerRow}>
-          <View>
-            <Text style={styles.categoryHero}>
-              {activeCategory?.label ?? selected}
-            </Text>
-            <Text style={[styles.metaLabel, !stableWindowLabel.current && styles.invisible]}>
-              {sort === 'top' ? 'Top' : 'Bottom'} Posts · {stableWindowLabel.current}
-            </Text>
-          </View>
-          <View style={styles.sortToggle}>
-            <TouchableOpacity onPress={() => setSort('top')} activeOpacity={0.75} style={styles.sortButton}>
-              <MaskedView maskElement={<Text style={styles.sortButtonText}>RAD</Text>}>
-                <LinearGradient colors={gradients.rad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-                  <Text style={[styles.sortButtonText, styles.invisible]}>RAD</Text>
-                </LinearGradient>
-              </MaskedView>
-              {sort === 'top' && (
-                <LinearGradient colors={gradients.rad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.sortUnderline} />
-              )}
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setSort('bottom')} activeOpacity={0.75} style={styles.sortButton}>
-              <MaskedView maskElement={<Text style={styles.sortButtonText}>BAD</Text>}>
-                <LinearGradient colors={gradients.bad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-                  <Text style={[styles.sortButtonText, styles.invisible]}>BAD</Text>
-                </LinearGradient>
-              </MaskedView>
-              {sort === 'bottom' && (
-                <LinearGradient colors={gradients.bad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.sortUnderline} />
-              )}
-            </TouchableOpacity>
-          </View>
+    <View style={s.root}>
+      {/* Header */}
+      <View style={[s.detailHeader, { paddingTop: insets.top + 8 }]}>
+        <TouchableOpacity onPress={() => setSelected(null)} hitSlop={12}>
+          <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
+        </TouchableOpacity>
+        <View style={s.detailHeaderCenter}>
+          <Ionicons name={selected.icon as keyof typeof Ionicons.glyphMap} size={18} color={selected.color} />
+          <Text style={s.detailHeaderTitle}>{selected.label}</Text>
         </View>
+        <View style={{ width: 28 }} />
       </View>
 
-      {/* Category chips — horizontal scroll with right fade */}
-      <View style={styles.chipWrapper}>
-        <ScrollView
-          ref={chipScrollRef}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.chipRow}
-          onScroll={handleChipScroll}
-          scrollEventThrottle={16}
-        >
-          {CATEGORIES.map((cat) => {
-            const isActive = selected === cat.key;
-            return (
-              <TouchableOpacity
-                key={cat.key}
-                onPress={() => selectCategory(cat.key)}
-                activeOpacity={0.75}
-                style={[
-                  styles.chip,
-                  isActive
-                    ? styles.chipActive
-                    : styles.chipInactive,
-                ]}
-              >
-                <Ionicons name={cat.icon as keyof typeof Ionicons.glyphMap} size={13} color={isActive ? '#FFFFFF' : colors.textSecondary} />
-                <Text style={[styles.chipText, isActive && styles.chipTextActive]}>
-                  {cat.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-        {/* Fade to signal more chips off-screen — hides when scrolled to end */}
-        {showChipFade && (
-          <LinearGradient
-            colors={['transparent', '#000000']}
-            start={{ x: 0, y: 0.5 }}
-            end={{ x: 1, y: 0.5 }}
-            style={styles.chipFade}
-            pointerEvents="none"
-          />
-        )}
-      </View>
-
-      {/* Rank list */}
       {isLoading ? (
-        <View style={styles.center}>
-          <ActivityIndicator color="#71767B" size="large" />
+        <View style={s.center}>
+          <ActivityIndicator size="large" color="#FF4500" />
         </View>
       ) : posts.length === 0 ? (
-        <View style={styles.center}>
-          <Text style={styles.emptyText}>Nothing here yet</Text>
-          <Text style={styles.emptySubtext}>Be the first to post in {activeCategory?.label}</Text>
+        <View style={s.center}>
+          <Ionicons name="moon-outline" size={40} color={colors.textSecondary} />
+          <Text style={s.emptyText}>No {selected.label.toLowerCase()} dreams yet</Text>
         </View>
       ) : (
-        <ScrollView
-          ref={scrollRef}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-        >
-          {/* #1 — full-width hero */}
-          {posts[0] && (
-            <RankCard
-              key={posts[0].id}
-              post={posts[0]}
-              rank={1}
-              albumIds={albumIds}
-              accentColor={activeCategory?.color}
-              featured
-            />
+        <FlatList
+          data={posts}
+          keyExtractor={(item) => item.id}
+          numColumns={2}
+          columnWrapperStyle={s.postRow}
+          contentContainerStyle={[s.postGrid, { paddingTop: insets.top + 56 }]}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={s.postTile}
+              onPress={() => router.push(`/photo/${item.id}`)}
+              activeOpacity={0.8}
+            >
+              <Image source={{ uri: item.image_url }} style={s.postImage} contentFit="cover" transition={200} />
+              <LinearGradient colors={['transparent', 'rgba(0,0,0,0.5)']} style={s.postGradient} />
+              <Text style={s.postUsername} numberOfLines={1}>@{item.username}</Text>
+            </TouchableOpacity>
           )}
-
-          {/* #2–9 — 2-column grid */}
-          <View style={styles.grid}>
-            {posts.slice(1).map((post, i) => (
-              <RankCard
-                key={post.id}
-                post={post}
-                rank={i + 2}
-                albumIds={albumIds}
-                accentColor={activeCategory?.color}
-                grid
-              />
-            ))}
-          </View>
-        </ScrollView>
+        />
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.background },
-  header: {
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 8,
+const s = StyleSheet.create({
+  root: { flex: 1, backgroundColor: '#000000' },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
+  emptyText: { color: colors.textSecondary, fontSize: 16 },
+
+  // Category grid
+  catGrid: { paddingHorizontal: 2, paddingBottom: 100 },
+  catRow: { gap: GRID_GAP },
+  catHeader: { paddingHorizontal: 16, paddingBottom: 16 },
+  catTitle: { color: '#FFFFFF', fontSize: 28, fontWeight: '800' },
+  catSub: { color: colors.textSecondary, fontSize: 15, marginTop: 4 },
+  catTile: {
+    width: TILE_SIZE,
+    height: TILE_SIZE * 1.2,
+    marginBottom: GRID_GAP,
+    overflow: 'hidden',
   },
-  headerRow: {
+  catTileImage: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  catTileGradient: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: '50%',
+  },
+  catTileLabel: {
+    position: 'absolute',
+    bottom: 12,
+    left: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  catTileLabelText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '800',
+    textShadowColor: 'rgba(0,0,0,0.5)',
+    textShadowRadius: 4,
+    textShadowOffset: { width: 0, height: 1 },
+  },
+
+  // Detail header (absolute over content)
+  detailHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    paddingHorizontal: 12,
+    paddingBottom: 8,
   },
-  sortToggle: {
-    flexDirection: 'row',
-    gap: 16,
-  },
-  sortButton: {
-    alignItems: 'center',
-    paddingBottom: 4,
-    gap: 4,
-  },
-  sortUnderline: {
-    height: 3,
-    borderRadius: 2,
-    width: '100%',
-  },
-  sortButtonText: {
-    color: colors.textPrimary,
-    fontSize: 17,
-    fontWeight: '700',
-    letterSpacing: 1,
-  },
-  invisible: { opacity: 0 },
-  categoryHero: {
-    color: '#FFFFFF',
-    fontSize: 32,
-    fontWeight: '900',
-    letterSpacing: -1,
-    lineHeight: 44,
-  },
-  headerMeta: {
+  detailHeaderCenter: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 2,
-  },
-  metaLabel: {
-    color: colors.textSecondary,
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  chipWrapper: {
-    height: 44,
-    marginBottom: 4,
-  },
-  chipRow: {
-    paddingHorizontal: 20,
     gap: 8,
-    alignItems: 'center',
   },
-  chip: {
-    flexDirection: 'row',
-    gap: 5,
-    borderWidth: 1,
-    borderRadius: 16,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
+  detailHeaderTitle: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: '800',
+    textShadowColor: 'rgba(0,0,0,0.5)',
+    textShadowRadius: 4,
+    textShadowOffset: { width: 0, height: 1 },
   },
-  chipActive: { backgroundColor: 'rgba(255,255,255,0.12)', borderColor: 'rgba(255,255,255,0.4)' },
-  chipInactive: { borderColor: 'rgba(255,255,255,0.25)' },
-  chipText: { color: colors.textSecondary, fontSize: 13, fontWeight: '600' },
-  chipTextActive: { color: '#FFFFFF' },
-  chipFade: {
+
+  // Post grid
+  postGrid: { paddingBottom: 100 },
+  postRow: { gap: GRID_GAP },
+  postTile: {
+    width: TILE_SIZE,
+    height: TILE_SIZE * 1.4,
+    marginBottom: GRID_GAP,
+    overflow: 'hidden',
+  },
+  postImage: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  postGradient: {
     position: 'absolute',
-    right: 0,
-    top: 0,
     bottom: 0,
-    width: 48,
+    left: 0,
+    right: 0,
+    height: 40,
   },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8 },
-  emptyText: { color: colors.textPrimary, fontSize: 17, fontWeight: '700' },
-  emptySubtext: { color: colors.textSecondary, fontSize: 14 },
-  scrollContent: { paddingTop: 12, paddingBottom: 32 },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 4,
-    marginTop: 4,
+  postUsername: {
+    position: 'absolute',
+    bottom: 6,
+    left: 8,
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
+    textShadowColor: 'rgba(0,0,0,0.5)',
+    textShadowRadius: 3,
+    textShadowOffset: { width: 0, height: 1 },
   },
 });

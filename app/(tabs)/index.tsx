@@ -88,7 +88,7 @@ function useDreamFeed(tab: FeedTab) {
 function FeedTabs({ active, onChange }: { active: FeedTab; onChange: (tab: FeedTab) => void }) {
   const tabs: { key: FeedTab; label: string }[] = [
     { key: 'following', label: 'Following' },
-    { key: 'forYou', label: 'For You' },
+    { key: 'forYou', label: 'Explore' },
     { key: 'dreamers', label: 'Dreamers' },
   ];
 
