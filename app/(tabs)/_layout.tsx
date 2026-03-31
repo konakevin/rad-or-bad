@@ -38,7 +38,7 @@ export default function TabLayout() {
         name="top"
         options={{
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="compass-outline" size={size} color={color} />
+            <Ionicons name="search" size={size} color={color} />
           ),
         }}
       />

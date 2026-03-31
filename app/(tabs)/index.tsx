@@ -30,10 +30,32 @@ const PAGE_SIZE = 10;
 
 function useDreamFeed(tab: FeedTab) {
   const user = useAuthStore((s) => s.user);
+  const [seed] = useState(() => Math.random());
 
   return useInfiniteQuery({
-    queryKey: ['dreamFeed', tab, user?.id],
+    queryKey: ['dreamFeed', tab, user?.id, seed],
     queryFn: async ({ pageParam = 0 }): Promise<DreamPost[]> => {
+      if (tab === 'forYou') {
+        // Smart feed: Wilson score + time decay + follow boost + randomized seed
+        const { data, error } = await supabase.rpc('get_feed', {
+          p_user_id: user!.id,
+          p_limit: PAGE_SIZE,
+          p_seed: seed,
+        });
+        if (error) throw error;
+        return (data ?? []).map((row: Record<string, unknown>) => ({
+          id: row.id as string,
+          user_id: row.user_id as string,
+          image_url: row.image_url as string,
+          caption: row.caption as string | null,
+          username: row.username as string,
+          avatar_url: row.avatar_url as string | null,
+          is_ai_generated: true,
+          created_at: row.created_at as string,
+        }));
+      }
+
+      // Following and Dreamers tabs — filtered queries
       let query = supabase
         .from('uploads')
         .select('id, user_id, image_url, caption, created_at, is_ai_generated, users!inner(username, avatar_url)')
@@ -42,7 +64,6 @@ function useDreamFeed(tab: FeedTab) {
         .range(pageParam, pageParam + PAGE_SIZE - 1);
 
       if (tab === 'following') {
-        // Get IDs the user follows
         const { data: followData } = await supabase
           .from('follows')
           .select('following_id')
@@ -51,7 +72,6 @@ function useDreamFeed(tab: FeedTab) {
         if (followIds.length === 0) return [];
         query = query.in('user_id', followIds);
       } else if (tab === 'dreamers') {
-        // Get friend IDs (accepted friendships)
         const { data: friendData } = await supabase.rpc('get_friend_ids', { p_user_id: user!.id });
         const friendIds = (friendData ?? []).map((f: Record<string, string>) => f.friend_id);
         if (friendIds.length === 0) return [];

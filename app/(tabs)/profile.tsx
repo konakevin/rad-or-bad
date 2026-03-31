@@ -21,9 +21,7 @@ import { GradientUsername } from '@/components/GradientUsername';
 import { colors } from '@/constants/theme';
 import { ProfileStatsRow, type StatsTab } from '@/components/ProfileStatsRow';
 import { FollowUserRow } from '@/components/FollowUserRow';
-import { StreakRow, StreakEmptyState, VoteWithFriendsButton } from '@/components/StreakRow';
 import { FriendRequestRow } from '@/components/FriendRequestRow';
-import { useTopStreaks } from '@/hooks/useTopStreaks';
 import { useFriendsList, type FriendUser } from '@/hooks/useFriendsList';
 import { usePendingRequests } from '@/hooks/usePendingRequests';
 import { useRespondFriendRequest } from '@/hooks/useRespondFriendRequest';
@@ -31,7 +29,6 @@ import { useRemoveFriend } from '@/hooks/useRemoveFriend';
 
 import { FlatList } from 'react-native';
 import type { FollowUser } from '@/hooks/useFollowersList';
-import type { VibeSyncStreak } from '@/hooks/useTopStreaks';
 
 type Tab = 'posts' | 'saved' | 'friends' | 'followers' | 'following' | 'streaks';
 
@@ -70,7 +67,6 @@ export default function ProfileScreen() {
   const { data: following = [], isLoading: loadingFollowing } = useFollowingList(user?.id ?? '');
   const { data: followingIds = new Set<string>() } = useFollowingIds();
   const { mutate: toggleFollow } = useToggleFollow();
-  const { data: streaks = [], isLoading: loadingStreaks } = useTopStreaks(user?.id ?? '');
   const { data: friends = [], isLoading: loadingFriends } = useFriendsList(user?.id ?? '');
   const { data: pendingRequests = [] } = usePendingRequests();
   const { mutate: respondRequest } = useRespondFriendRequest();
