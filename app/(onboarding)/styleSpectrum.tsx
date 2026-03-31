@@ -7,7 +7,7 @@ import * as Haptics from 'expo-haptics';
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { useOnboardingStore } from '@/store/onboarding';
 import { colors } from '@/constants/theme';
-import { TOTAL_STEPS } from '@/constants/onboarding';
+import { OnboardingHeader } from '@/components/OnboardingHeader';
 
 const SLIDER_WIDTH = 280;
 const THUMB_SIZE = 28;
@@ -60,16 +60,7 @@ export default function StyleSpectrumScreen() {
 
   return (
     <SafeAreaView style={styles.root}>
-      <View style={styles.header}>
-        <View style={styles.progressBar}>
-          {Array.from({ length: TOTAL_STEPS }, (_, i) => (
-            <View key={i} style={[styles.progressDot, i < 3 && styles.progressDotActive]} />
-          ))}
-        </View>
-        <TouchableOpacity onPress={() => router.back()} hitSlop={12}>
-          <Ionicons name="chevron-back" size={24} color={colors.textSecondary} />
-        </TouchableOpacity>
-      </View>
+      <OnboardingHeader stepNumber={3} onBack={() => router.back()} />
 
       <View style={styles.content}>
         <Text style={styles.title}>Shape your style</Text>

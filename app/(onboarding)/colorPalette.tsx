@@ -7,6 +7,7 @@ import * as Haptics from 'expo-haptics';
 import { useOnboardingStore } from '@/store/onboarding';
 import { COLOR_PALETTES, LIMITS, TOTAL_STEPS } from '@/constants/onboarding';
 import { colors } from '@/constants/theme';
+import { OnboardingHeader } from '@/components/OnboardingHeader';
 import type { ColorPalette } from '@/types/recipe';
 
 export default function ColorPaletteScreen() {
@@ -16,16 +17,7 @@ export default function ColorPaletteScreen() {
 
   return (
     <SafeAreaView style={styles.root}>
-      <View style={styles.header}>
-        <View style={styles.progressBar}>
-          {Array.from({ length: TOTAL_STEPS }, (_, i) => (
-            <View key={i} style={[styles.progressDot, i < 7 && styles.progressDotActive]} />
-          ))}
-        </View>
-        <TouchableOpacity onPress={() => router.back()} hitSlop={12}>
-          <Ionicons name="chevron-back" size={24} color={colors.textSecondary} />
-        </TouchableOpacity>
-      </View>
+      <OnboardingHeader stepNumber={7} onBack={() => router.back()} />
 
       <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.content}>
         <Text style={styles.title}>Pick your palette</Text>

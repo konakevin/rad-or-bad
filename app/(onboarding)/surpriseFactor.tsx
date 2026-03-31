@@ -7,6 +7,7 @@ import * as Haptics from 'expo-haptics';
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { useOnboardingStore } from '@/store/onboarding';
 import { colors } from '@/constants/theme';
+import { OnboardingHeader } from '@/components/OnboardingHeader';
 
 const SLIDER_WIDTH = 280;
 const THUMB_SIZE = 28;
@@ -52,16 +53,7 @@ export default function SurpriseFactorScreen() {
 
   return (
     <SafeAreaView style={styles.root}>
-      <View style={styles.header}>
-        <View style={styles.progressBar}>
-          {Array.from({ length: 11 }, (_, i) => (
-            <View key={i} style={[styles.progressDot, i < 9 && styles.progressDotActive]} />
-          ))}
-        </View>
-        <TouchableOpacity onPress={handleBack} hitSlop={12}>
-          <Ionicons name="chevron-back" size={24} color={colors.textSecondary} />
-        </TouchableOpacity>
-      </View>
+      <OnboardingHeader stepNumber={9} onBack={handleBack} />
 
       <View style={styles.content}>
         <Text style={styles.title}>How adventurous?</Text>

@@ -30,30 +30,30 @@ export default function WelcomeScreen() {
           </View>
         </View>
 
-        <Text style={styles.title}>Your AI artist awaits</Text>
+        <Text style={styles.title}>Meet your Dream Bot</Text>
 
         <Text style={styles.body}>
-          You're about to create your own little dream machine — it learns your taste, dreams up magical creations while you're away, and shares them with the world. Come back each day to see what it dreamed up for you.
+          You're about to create your own little Dream Bot — a personal AI that learns your taste and creates stunning art just for you, every single day.
         </Text>
 
         <View style={styles.steps}>
           <StepRow
             icon="color-palette"
             color={colors.accent}
-            title="Teach it your taste"
-            subtitle="Pick your interests, style, and personality"
+            title="Teach it your style"
+            subtitle="Pick your interests, mood, and personality"
           />
           <StepRow
             icon="moon"
             color={colors.accent}
-            title="It dreams for you"
-            subtitle="A new creation appears on your profile every day"
+            title="It dreams while you sleep"
+            subtitle="Wake up to a new creation on your profile every day"
           />
           <StepRow
-            icon="people"
-            color="#BB88EE"
-            title="Dream with others"
-            subtitle="Discover people who dream up the same kind of stuff"
+            icon="globe-outline"
+            color={colors.accent}
+            title="Share your dreams"
+            subtitle="See what others are dreaming and find kindred spirits"
           />
         </View>
 

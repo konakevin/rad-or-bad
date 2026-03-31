@@ -11,6 +11,7 @@ import { useAuthStore } from '@/store/auth';
 import { supabase } from '@/lib/supabase';
 import { buildPromptInput, buildRawPrompt } from '@/lib/recipeEngine';
 import { colors } from '@/constants/theme';
+import { OnboardingHeader } from '@/components/OnboardingHeader';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const IMAGE_WIDTH = SCREEN_WIDTH - 48;
@@ -191,13 +192,7 @@ export default function RevealScreen() {
 
   return (
     <SafeAreaView style={styles.root}>
-      <View style={styles.header}>
-        <View style={styles.progressBar}>
-          {[1, 2, 3, 4, 5, 6, 7].map((dot) => (
-            <View key={dot} style={[styles.progressDot, styles.progressDotActive]} />
-          ))}
-        </View>
-      </View>
+      <OnboardingHeader stepNumber={10} onBack={() => router.back()} />
 
       <View style={styles.content}>
         {error ? (

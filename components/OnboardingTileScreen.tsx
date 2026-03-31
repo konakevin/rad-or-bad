@@ -9,6 +9,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useOnboardingStore } from '@/store/onboarding';
+import { OnboardingHeader } from '@/components/OnboardingHeader';
 import { colors } from '@/constants/theme';
 import { TOTAL_STEPS } from '@/constants/onboarding';
 
@@ -54,24 +55,7 @@ export function OnboardingTileScreen({
 
   return (
     <SafeAreaView style={styles.root}>
-      {onBack && (
-        <TouchableOpacity onPress={onBack} hitSlop={12} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color={colors.textSecondary} />
-        </TouchableOpacity>
-      )}
-      <View style={styles.header}>
-        <View style={styles.progressBar}>
-          {Array.from({ length: TOTAL_STEPS }, (_, i) => (
-            <View
-              key={i}
-              style={[
-                styles.progressDot,
-                i < stepNumber && [styles.progressDotActive, { backgroundColor: colors.accent }],
-              ]}
-            />
-          ))}
-        </View>
-      </View>
+      <OnboardingHeader stepNumber={stepNumber} onBack={onBack ?? (isEditing ? () => router.replace('/(tabs)') : undefined)} />
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
         <Text style={styles.title}>{title}</Text>

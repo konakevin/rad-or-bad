@@ -19,16 +19,7 @@ export default function WorldBuilderScreen() {
 
   return (
     <SafeAreaView style={styles.root}>
-      <View style={styles.header}>
-        <View style={styles.progressBar}>
-          {Array.from({ length: TOTAL_STEPS }, (_, i) => (
-            <View key={i} style={[styles.progressDot, i < 4 && styles.progressDotActive]} />
-          ))}
-        </View>
-        <TouchableOpacity onPress={() => router.back()} hitSlop={12}>
-          <Ionicons name="chevron-back" size={24} color={colors.textSecondary} />
-        </TouchableOpacity>
-      </View>
+      <OnboardingHeader stepNumber={4} onBack={() => router.back()} />
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
         <Text style={styles.title}>Where do your dreams live?</Text>
