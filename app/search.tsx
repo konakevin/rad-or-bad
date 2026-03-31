@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
   rank: { color: colors.textSecondary, fontSize: 12 },
   actions: { flexDirection: 'row', gap: 8, alignItems: 'center' },
   dreamButton: {
-    backgroundColor: '#FFD700',
+    backgroundColor: colors.accent,
     borderRadius: 14,
     paddingHorizontal: 12,
     paddingVertical: 5,
@@ -214,12 +214,12 @@ const styles = StyleSheet.create({
   dreamButtonText: { color: '#000000', fontSize: 12, fontWeight: '800' },
   followButton: {
     borderWidth: 1,
-    borderColor: colors.flame,
+    borderColor: colors.accent,
     borderRadius: 14,
     paddingHorizontal: 12,
     paddingVertical: 5,
   },
-  followButtonText: { color: colors.flame, fontSize: 12, fontWeight: '600' },
+  followButtonText: { color: colors.accent, fontSize: 12, fontWeight: '600' },
   sentPill: {
     borderWidth: 1,
     borderColor: colors.border,

@@ -104,19 +104,27 @@ export function DreamCard({ item, bottomPadding, isLiked, onLike, onToggleLike, 
 
   async function handleLongPress() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-    const { status } = await MediaLibrary.requestPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission needed', 'Allow access to save images.');
-      return;
-    }
-    try {
-      const file = new File(Paths.cache, `${item.id}.jpg`);
-      await (file as unknown as { downloadAsync: (url: string) => Promise<void> }).downloadAsync(item.image_url);
-      await MediaLibrary.saveToLibraryAsync(file.uri);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-    }
+    Alert.alert('Save Image', 'Save this dream to your photos?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Save',
+        onPress: async () => {
+          const { status } = await MediaLibrary.requestPermissionsAsync();
+          if (status !== 'granted') {
+            Alert.alert('Permission needed', 'Allow access to save images.');
+            return;
+          }
+          try {
+            const file = new File(Paths.cache, `${item.id}.jpg`);
+            await (file as unknown as { downloadAsync: (url: string) => Promise<void> }).downloadAsync(item.image_url);
+            await MediaLibrary.saveToLibraryAsync(file.uri);
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          } catch {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+          }
+        },
+      },
+    ]);
   }
 
   // Gestures

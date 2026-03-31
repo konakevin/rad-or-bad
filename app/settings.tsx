@@ -24,7 +24,7 @@ function SettingsRow({ icon, label, onPress, destructive, trailing }: {
 }) {
   return (
     <TouchableOpacity style={styles.row} onPress={onPress} activeOpacity={0.7}>
-      <Ionicons name={icon as keyof typeof Ionicons.glyphMap} size={20} color={destructive ? '#F4212E' : colors.textSecondary} />
+      <Ionicons name={icon as keyof typeof Ionicons.glyphMap} size={20} color={destructive ? colors.error : colors.textSecondary} />
       <Text style={[styles.rowLabel, destructive && styles.destructiveText]}>{label}</Text>
       {trailing ?? (
         <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   avatarLargeText: { color: colors.textPrimary, fontSize: 32, fontWeight: '700' },
-  changePhotoLabel: { color: colors.flame, fontSize: 14, fontWeight: '600' },
+  changePhotoLabel: { color: colors.accent, fontSize: 14, fontWeight: '600' },
   sectionHeader: {
     color: colors.textSecondary,
     fontSize: 11,
@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '500',
   },
-  destructiveText: { color: '#F4212E' },
+  destructiveText: { color: colors.error },
   rowTrailing: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface,
     borderRadius: 16, borderWidth: 1.5, borderColor: colors.border, padding: 14, gap: 14,
   },
-  cardSelected: { borderColor: '#FFD700', backgroundColor: 'rgba(255, 215, 0, 0.08)' },
+  cardSelected: { borderColor: colors.accent, backgroundColor: 'rgba(255, 215, 0, 0.08)' },
   gradient: { width: 48, height: 48, borderRadius: 12 },
   cardLabel: { flex: 1, color: colors.textSecondary, fontSize: 16, fontWeight: '600' },
   cardLabelSelected: { color: colors.textPrimary },

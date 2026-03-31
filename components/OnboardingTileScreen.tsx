@@ -34,7 +34,7 @@ interface Props {
 
 export function OnboardingTileScreen({
   stepNumber, title, subtitle, tiles, selected, onToggle,
-  onNext, onBack, minRequired = 1, singleSelect, accentColor = '#FFD700',
+  onNext, onBack, minRequired = 1, singleSelect, accentColor = colors.accent,
 }: Props) {
   const canProceed = selected.length >= minRequired;
 

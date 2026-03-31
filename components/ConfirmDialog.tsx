@@ -28,7 +28,7 @@ export function ConfirmDialog({
 
           <TouchableOpacity style={styles.confirmButton} onPress={onConfirm} activeOpacity={0.85}>
             <LinearGradient
-              colors={[colors.flame, '#CC2200']}
+              colors={[colors.accent, '#CC2200']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={StyleSheet.absoluteFill}

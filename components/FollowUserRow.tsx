@@ -67,12 +67,12 @@ const styles = StyleSheet.create({
   username: { flex: 1, color: colors.textPrimary, fontSize: 15, fontWeight: '600' },
   pill: {
     borderWidth: 1,
-    borderColor: colors.flame,
+    borderColor: colors.accent,
     borderRadius: 16,
     paddingHorizontal: 16,
     paddingVertical: 6,
   },
   followingPill: { borderColor: colors.border, backgroundColor: colors.card },
-  pillText: { color: colors.flame, fontSize: 13, fontWeight: '600' },
+  pillText: { color: colors.accent, fontSize: 13, fontWeight: '600' },
   followingPillText: { color: colors.textSecondary },
 });

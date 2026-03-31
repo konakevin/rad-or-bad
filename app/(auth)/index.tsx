@@ -11,7 +11,7 @@ import { signInWithGoogle } from '@/lib/googleAuth';
 import { signInWithApple } from '@/lib/appleAuth';
 import { signInWithFacebook } from '@/lib/facebookAuth';
 
-const HOT_GRADIENT: [string, string, ...string[]] = ['#FFD700', '#FF8C00', '#FF4500'];
+const HOT_GRADIENT: [string, string, ...string[]] = ['#FFD700', '#FF8C00', colors.accent];
 const COLD_GRADIENT: [string, string, ...string[]] = ['#44DDCC', '#6699EE', '#BB88EE'];
 
 function Tagline() {

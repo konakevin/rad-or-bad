@@ -9,7 +9,7 @@ import type { VibeSuggestion } from '@/hooks/useVibeSuggestions';
 
 function getVibeColor(score: number): string {
   if (score >= 80) return '#4CAA64';
-  if (score >= 60) return '#FFD700';
+  if (score >= 60) return colors.accent;
   if (score >= 40) return '#FF8C00';
   return '#CC6666';
 }

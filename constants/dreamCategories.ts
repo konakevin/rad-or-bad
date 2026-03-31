@@ -52,7 +52,7 @@ export const DREAM_CATEGORIES: DreamCategory[] = [
     key: 'cozy',
     label: 'Cozy',
     icon: 'cafe',
-    color: '#FFD700',
+    color: colors.accent,
     keywords: [
       'cozy', 'warm', 'candle', 'fireplace', 'library', 'cottage', 'cabin',
       'blanket', 'tea', 'coffee', 'book', 'window', 'rain', 'lamp', 'indoor',

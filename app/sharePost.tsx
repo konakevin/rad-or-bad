@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   sendButton: {
-    backgroundColor: '#FFD700',
+    backgroundColor: colors.accent,
     borderRadius: 18,
     paddingHorizontal: 20,
     paddingVertical: 9,
@@ -336,7 +336,7 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   avatarSelected: {
-    borderColor: '#FFD700',
+    borderColor: colors.accent,
   },
   avatarInitial: {
     color: colors.textPrimary,
@@ -350,7 +350,7 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: '#FFD700',
+    backgroundColor: colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,

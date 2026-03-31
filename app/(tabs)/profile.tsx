@@ -32,7 +32,7 @@ import type { FollowUser } from '@/hooks/useFollowersList';
 
 type Tab = 'posts' | 'saved' | 'friends' | 'followers' | 'following' | 'streaks';
 
-const HOT_FLAME: [string, string, ...string[]] = ['#FFD700', '#FF8C00', colors.accent];
+const HOT_FLAME: [string, string, ...string[]] = [colors.accent, '#FF8C00', colors.accent];
 const COLD_FLAME: [string, string, ...string[]] = ['#44DDCC', '#6699EE', '#BB88EE'];
 
 function GradientFlame({ colors, size }: { colors: [string, string, ...string[]]; size: number }) {
@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     borderBottomColor: 'transparent',
   },
-  tabActive: { borderBottomColor: colors.flame },
+  tabActive: { borderBottomColor: colors.accent },
   tabText: { color: colors.textSecondary, fontSize: 14, fontWeight: '600' },
   tabTextActive: { color: colors.textPrimary },
   center: { alignItems: 'center', justifyContent: 'center', paddingTop: 60 },
@@ -417,7 +417,7 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   goVibeText: {
-    color: '#FFD700',
+    color: colors.accent,
     fontSize: 17,
     fontWeight: '800',
   },

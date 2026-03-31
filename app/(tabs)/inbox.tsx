@@ -354,7 +354,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   markAllRead: {
-    color: '#FFD700',
+    color: colors.accent,
     fontSize: 14,
     fontWeight: '700',
   },
@@ -425,7 +425,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#FFD700',
+    backgroundColor: colors.accent,
   },
   checkbox: {
     width: 22,
@@ -437,8 +437,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   checkboxSelected: {
-    backgroundColor: '#FFD700',
-    borderColor: '#FFD700',
+    backgroundColor: colors.accent,
+    borderColor: colors.accent,
   },
   headerCancel: {
     color: colors.textSecondary,
@@ -446,7 +446,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   selectAllText: {
-    color: '#FFD700',
+    color: colors.accent,
     fontSize: 13,
     fontWeight: '600',
   },
