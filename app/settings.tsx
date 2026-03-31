@@ -24,7 +24,7 @@ function SettingsRow({ icon, label, onPress, destructive, trailing }: {
 }) {
   return (
     <TouchableOpacity style={styles.row} onPress={onPress} activeOpacity={0.7}>
-      <Ionicons name={icon as keyof typeof Ionicons.glyphMap} size={20} color={destructive ? colors.accent : colors.textSecondary} />
+      <Ionicons name={icon as keyof typeof Ionicons.glyphMap} size={20} color={colors.accent} />
       <Text style={[styles.rowLabel, destructive && styles.destructiveText]}>{label}</Text>
       {trailing ?? (
         <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
@@ -281,6 +281,7 @@ export default function SettingsScreen() {
           <SettingsRow icon="sparkles" label="Edit My Character" onPress={() => {
             const { useOnboardingStore } = require('@/store/onboarding');
             useOnboardingStore.getState().reset();
+            useOnboardingStore.getState().setIsEditing(true);
             router.push('/(onboarding)/interests');
           }} />
         </View>

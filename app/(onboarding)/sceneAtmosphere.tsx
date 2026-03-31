@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { useOnboardingStore } from '@/store/onboarding';
 import { SCENE_ATMOSPHERE_TILES, LIMITS } from '@/constants/onboarding';
+  const isEditing = useOnboardingStore((s) => s.isEditing);
 import { OnboardingTileScreen } from '@/components/OnboardingTileScreen';
 import type { SceneAtmosphere } from '@/types/recipe';
 
@@ -9,7 +10,7 @@ export default function SceneAtmosphereScreen() {
   const toggle = useOnboardingStore((s) => s.toggleSceneAtmosphere);
 
   return (
-    <OnboardingTileScreen
+    <OnboardingTileScreen canDismiss={isEditing}
       stepNumber={6}
       title="Set the scene"
       subtitle="Pick the weather and time your dreams take place"

@@ -6,6 +6,7 @@
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { colors } from '@/constants/theme';
 import { TOTAL_STEPS } from '@/constants/onboarding';
@@ -30,11 +31,13 @@ interface Props {
   singleSelect?: boolean;
   /** Accent color for selected tiles */
   accentColor?: string;
+  /** Show X button to dismiss (only when editing, not first-time signup) */
+  canDismiss?: boolean;
 }
 
 export function OnboardingTileScreen({
   stepNumber, title, subtitle, tiles, selected, onToggle,
-  onNext, onBack, minRequired = 1, singleSelect, accentColor = colors.accent,
+  onNext, onBack, minRequired = 1, singleSelect, accentColor = colors.accent, canDismiss,
 }: Props) {
   const canProceed = selected.length >= minRequired;
 
@@ -51,6 +54,16 @@ export function OnboardingTileScreen({
 
   return (
     <SafeAreaView style={styles.root}>
+      {onBack && (
+        <TouchableOpacity onPress={onBack} hitSlop={12} style={styles.backButton}>
+          <Ionicons name="chevron-back" size={24} color={colors.textSecondary} />
+        </TouchableOpacity>
+      )}
+      {canDismiss && (
+        <TouchableOpacity onPress={() => router.back()} hitSlop={12} style={styles.closeButton}>
+          <Ionicons name="close" size={24} color={colors.textSecondary} />
+        </TouchableOpacity>
+      )}
       <View style={styles.header}>
         <View style={styles.progressBar}>
           {Array.from({ length: TOTAL_STEPS }, (_, i) => (
@@ -63,11 +76,6 @@ export function OnboardingTileScreen({
             />
           ))}
         </View>
-        {onBack ? (
-          <TouchableOpacity onPress={onBack} hitSlop={12}>
-            <Ionicons name="chevron-back" size={24} color={colors.textSecondary} />
-          </TouchableOpacity>
-        ) : <View style={{ width: 24 }} />}
       </View>
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
@@ -122,13 +130,21 @@ export function OnboardingTileScreen({
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },
-  header: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingHorizontal: 20, paddingTop: 8, paddingBottom: 8,
+  backButton: {
+    position: 'absolute', top: 16, left: 16, zIndex: 1,
+    width: 36, height: 36, alignItems: 'center', justifyContent: 'center',
   },
-  progressBar: { flexDirection: 'row', gap: 4 },
-  progressDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.border },
-  progressDotActive: { width: 16, borderRadius: 3 },
+  closeButton: {
+    position: 'absolute', top: 16, right: 16, zIndex: 1,
+    width: 36, height: 36, alignItems: 'center', justifyContent: 'center',
+  },
+  header: {
+    alignItems: 'center',
+    paddingTop: 16, paddingBottom: 20,
+  },
+  progressBar: { flexDirection: 'row', gap: 5 },
+  progressDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.border },
+  progressDotActive: { width: 20, borderRadius: 4 },
   scroll: { flex: 1 },
   scrollContent: { paddingHorizontal: 20, paddingBottom: 20 },
   title: { color: colors.textPrimary, fontSize: 28, fontWeight: '800', marginBottom: 8 },
@@ -142,6 +158,7 @@ const styles = StyleSheet.create({
     width: '30%',
     aspectRatio: 1,
     backgroundColor: colors.surface,
+    paddingVertical: 12,
     borderRadius: 16,
     borderWidth: 1.5,
     borderColor: colors.border,

@@ -7,10 +7,12 @@ import type { Interest } from '@/types/recipe';
 export default function InterestsScreen() {
   const interests = useOnboardingStore((s) => s.recipe.interests);
   const toggleInterest = useOnboardingStore((s) => s.toggleInterest);
+  const isEditing = useOnboardingStore((s) => s.isEditing);
 
   return (
     <OnboardingTileScreen
       stepNumber={1}
+      canDismiss={isEditing}
       title="What do you love?"
       subtitle="Pick at least 3 things that interest you"
       tiles={INTEREST_TILES}

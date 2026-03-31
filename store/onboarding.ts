@@ -8,6 +8,9 @@ import { DEFAULT_RECIPE } from '@/types/recipe';
 interface OnboardingStore {
   step: number;
   setStep: (step: number) => void;
+  /** True when editing from settings (shows X to dismiss) */
+  isEditing: boolean;
+  setIsEditing: (v: boolean) => void;
 
   recipe: Recipe;
 
@@ -130,5 +133,7 @@ export const useOnboardingStore = create<OnboardingStore>((set) => ({
       },
     })),
 
-  reset: () => set({ step: 1, recipe: { ...DEFAULT_RECIPE } }),
+  isEditing: false,
+  setIsEditing: (v) => set({ isEditing: v }),
+  reset: () => set({ step: 1, isEditing: false, recipe: { ...DEFAULT_RECIPE } }),
 }));

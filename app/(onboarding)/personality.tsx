@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { useOnboardingStore } from '@/store/onboarding';
 import { PERSONALITY_TAGS, LIMITS } from '@/constants/onboarding';
+  const isEditing = useOnboardingStore((s) => s.isEditing);
 import { OnboardingTileScreen } from '@/components/OnboardingTileScreen';
 import type { PersonalityTag } from '@/types/recipe';
 
@@ -9,7 +10,7 @@ export default function PersonalityScreen() {
   const toggleTag = useOnboardingStore((s) => s.togglePersonalityTag);
 
   return (
-    <OnboardingTileScreen
+    <OnboardingTileScreen canDismiss={isEditing}
       stepNumber={8}
       title="Describe yourself"
       subtitle="Pick traits that feel like you"

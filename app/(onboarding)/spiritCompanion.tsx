@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { useOnboardingStore } from '@/store/onboarding';
 import { SPIRIT_COMPANIONS } from '@/constants/onboarding';
+  const isEditing = useOnboardingStore((s) => s.isEditing);
 import { OnboardingTileScreen } from '@/components/OnboardingTileScreen';
 import type { SpiritCompanion } from '@/types/recipe';
 
@@ -9,7 +10,7 @@ export default function SpiritCompanionScreen() {
   const setCompanion = useOnboardingStore((s) => s.setSpiritCompanion);
 
   return (
-    <OnboardingTileScreen
+    <OnboardingTileScreen canDismiss={isEditing}
       stepNumber={2}
       title="Pick your dream companion"
       subtitle="This little friend may appear in your dreams"
