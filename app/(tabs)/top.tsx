@@ -5,7 +5,6 @@ import {
   type NativeSyntheticEvent, type NativeScrollEvent,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -13,21 +12,19 @@ import * as Haptics from 'expo-haptics';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/auth';
+import { useFavoriteIds } from '@/hooks/useFavoriteIds';
+import { useToggleFavorite } from '@/hooks/useToggleFavorite';
+import { DreamCard } from '@/components/DreamCard';
 import { DREAM_CATEGORIES, type DreamCategory } from '@/constants/dreamCategories';
 import { colors } from '@/constants/theme';
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const SCREEN_HEIGHT = Dimensions.get('window').height;
 const PAGE_SIZE = 10;
 
-interface DreamPost {
-  id: string;
-  user_id: string;
-  image_url: string;
-  caption: string | null;
+import type { DreamPostItem } from '@/components/DreamCard';
+
+interface DreamPost extends DreamPostItem {
   ai_prompt: string | null;
-  username: string;
-  avatar_url: string | null;
-  is_ai_generated: boolean;
 }
 
 function useCategoryDreams(category: DreamCategory) {
@@ -85,6 +82,8 @@ export default function ExploreScreen() {
 
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useCategoryDreams(selected);
   const posts = data?.pages.flat() ?? [];
+  const { data: favoriteIds = new Set<string>() } = useFavoriteIds();
+  const { mutate: toggleFavorite } = useToggleFavorite();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const onViewableItemsChanged = useCallback(({ viewableItems }: { viewableItems: Array<{ index: number | null }> }) => {
@@ -134,27 +133,12 @@ export default function ExploreScreen() {
           onEndReached={() => { if (hasNextPage && !isFetchingNextPage) fetchNextPage(); }}
           onEndReachedThreshold={2}
           renderItem={({ item }) => (
-            <View style={s.card}>
-              <Image source={{ uri: item.image_url }} style={s.fullImage} contentFit="cover" transition={200} />
-              <View style={[s.postInfo, { paddingBottom: 90 + insets.bottom }]}>
-                <TouchableOpacity
-                  style={s.usernameRow}
-                  onPress={() => router.push(`/user/${item.user_id}`)}
-                  activeOpacity={0.7}
-                >
-                  {item.avatar_url ? (
-                    <Image source={{ uri: item.avatar_url }} style={s.avatar} />
-                  ) : (
-                    <View style={s.avatarFallback}>
-                      <Text style={s.avatarText}>{item.username[0].toUpperCase()}</Text>
-                    </View>
-                  )}
-                  <Text style={s.username}>{item.username}</Text>
-                  {item.is_ai_generated && <Ionicons name="sparkles" size={14} color="#FFD700" />}
-                </TouchableOpacity>
-                {item.caption && <Text style={s.caption} numberOfLines={2}>{item.caption}</Text>}
-              </View>
-            </View>
+            <DreamCard
+              item={item}
+              bottomPadding={90 + insets.bottom}
+              isLiked={favoriteIds.has(item.id)}
+              onLike={() => toggleFavorite({ uploadId: item.id, currentlyFavorited: false })}
+            />
           )}
         />
       )}
@@ -218,18 +202,6 @@ const s = StyleSheet.create({
   emptyTitle: { color: colors.textPrimary, fontSize: 20, fontWeight: '700' },
   emptySub: { color: colors.textSecondary, fontSize: 15, textAlign: 'center' },
 
-  card: { width: SCREEN_WIDTH, height: SCREEN_HEIGHT },
-  fullImage: { ...StyleSheet.absoluteFillObject },
-  postInfo: {
-    position: 'absolute', bottom: 0, left: 0, right: 70,
-    paddingHorizontal: 16, gap: 8,
-  },
-  usernameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  avatar: { width: 32, height: 32, borderRadius: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)' },
-  avatarFallback: { width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
-  avatarText: { color: '#FFFFFF', fontSize: 14, fontWeight: '700' },
-  username: { color: '#FFFFFF', fontSize: 15, fontWeight: '700', textShadowColor: 'rgba(0,0,0,0.5)', textShadowRadius: 4, textShadowOffset: { width: 0, height: 1 } },
-  caption: { color: 'rgba(255,255,255,0.85)', fontSize: 14, lineHeight: 20, textShadowColor: 'rgba(0,0,0,0.5)', textShadowRadius: 4, textShadowOffset: { width: 0, height: 1 } },
 
   topOverlay: {
     position: 'absolute', top: 0, left: 0, right: 0,

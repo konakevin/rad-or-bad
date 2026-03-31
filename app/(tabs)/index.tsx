@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions, FlatList, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, Pressable, StyleSheet, Dimensions, FlatList, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,6 +7,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useAuthStore } from '@/store/auth';
+import { useFavoriteIds } from '@/hooks/useFavoriteIds';
+import { useToggleFavorite } from '@/hooks/useToggleFavorite';
+import { DreamCard } from '@/components/DreamCard';
+import type { DreamPostItem } from '@/components/DreamCard';
 import { colors } from '@/constants/theme';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
@@ -132,45 +136,6 @@ function FeedTabs({ active, onChange }: { active: FeedTab; onChange: (tab: FeedT
   );
 }
 
-// ── Dream Card ──────────────────────────────────────────────────────────────
-
-function DreamCard({ item, insets }: { item: DreamPost; insets: { bottom: number } }) {
-  return (
-    <View style={s.card}>
-      <Image
-        source={{ uri: item.image_url }}
-        style={s.fullImage}
-        contentFit="cover"
-        transition={200}
-      />
-
-      {/* Post info overlay — bottom */}
-      <View style={[s.postInfo, { paddingBottom: 90 + insets.bottom }]}>
-        <TouchableOpacity
-          style={s.usernameRow}
-          onPress={() => router.push(`/user/${item.user_id}`)}
-          activeOpacity={0.7}
-        >
-          {item.avatar_url ? (
-            <Image source={{ uri: item.avatar_url }} style={s.avatar} />
-          ) : (
-            <View style={s.avatarFallback}>
-              <Text style={s.avatarText}>{item.username[0].toUpperCase()}</Text>
-            </View>
-          )}
-          <Text style={s.username}>{item.username}</Text>
-          {item.is_ai_generated && (
-            <Ionicons name="sparkles" size={14} color="#FFD700" />
-          )}
-        </TouchableOpacity>
-        {item.caption && (
-          <Text style={s.caption} numberOfLines={2}>{item.caption}</Text>
-        )}
-      </View>
-    </View>
-  );
-}
-
 // ── Empty State ─────────────────────────────────────────────────────────────
 
 function EmptyFeed({ tab }: { tab: FeedTab }) {
@@ -196,6 +161,8 @@ export default function HomeScreen() {
   const [activeTab, setActiveTab] = useState<FeedTab>('forYou');
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useDreamFeed(activeTab);
   const posts = data?.pages.flat() ?? [];
+  const { data: favoriteIds = new Set<string>() } = useFavoriteIds();
+  const { mutate: toggleFavorite } = useToggleFavorite();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
@@ -238,7 +205,14 @@ export default function HomeScreen() {
           viewabilityConfig={viewabilityConfig}
           onEndReached={() => { if (hasNextPage && !isFetchingNextPage) fetchNextPage(); }}
           onEndReachedThreshold={2}
-          renderItem={({ item }) => <DreamCard item={item} insets={insets} />}
+          renderItem={({ item }) => (
+            <DreamCard
+              item={item}
+              bottomPadding={90 + insets.bottom}
+              isLiked={favoriteIds.has(item.id)}
+              onLike={() => toggleFavorite({ uploadId: item.id, currentlyFavorited: false })}
+            />
+          )}
         />
       )}
 
@@ -254,8 +228,19 @@ export default function HomeScreen() {
       {/* Right side action buttons */}
       {currentPost && (
         <View style={[s.sideActions, { bottom: 100 + insets.bottom }]}>
-          <TouchableOpacity style={s.sideButton} onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)} activeOpacity={0.7}>
-            <Ionicons name="heart-outline" size={28} color="#FFFFFF" />
+          <TouchableOpacity
+            style={s.sideButton}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              toggleFavorite({ uploadId: currentPost.id, currentlyFavorited: favoriteIds.has(currentPost.id) });
+            }}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name={favoriteIds.has(currentPost.id) ? 'heart' : 'heart-outline'}
+              size={28}
+              color={favoriteIds.has(currentPost.id) ? '#F4212E' : '#FFFFFF'}
+            />
           </TouchableOpacity>
           <TouchableOpacity style={s.sideButton} onPress={() => router.push(`/comments?uploadId=${currentPost.id}`)} activeOpacity={0.7}>
             <Ionicons name="chatbubble-outline" size={26} color="#FFFFFF" />
@@ -302,6 +287,13 @@ const s = StyleSheet.create({
   },
   fullImage: {
     ...StyleSheet.absoluteFillObject,
+  },
+  heartBurst: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginTop: -40,
+    marginLeft: -40,
   },
   postInfo: {
     position: 'absolute',
