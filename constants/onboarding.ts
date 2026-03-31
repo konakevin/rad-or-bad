@@ -15,6 +15,13 @@ export const INTEREST_TILES: { key: Interest; label: string; icon: string }[] = 
   { key: 'ocean',        label: 'Ocean',        icon: 'water' },
   { key: 'space',        label: 'Space',        icon: 'rocket' },
   { key: 'whimsical',    label: 'Whimsical',    icon: 'balloon' },
+  { key: 'gaming',       label: 'Gaming',       icon: 'game-controller' },
+  { key: 'movies',       label: 'Movies',       icon: 'film' },
+  { key: 'music',        label: 'Music',        icon: 'musical-notes' },
+  { key: 'geek',         label: 'Geek',         icon: 'hardware-chip' },
+  { key: 'sports',       label: 'Sports',       icon: 'football' },
+  { key: 'travel',       label: 'Travel',       icon: 'airplane' },
+  { key: 'pride',        label: 'Pride',        icon: 'rainbow' },
 ];
 
 /** Step 2: Spirit companion tiles */
@@ -86,6 +93,10 @@ export const COLOR_PALETTES: { key: ColorPalette; label: string; colors: string[
   { key: 'earthy_natural', label: 'Earthy Natural', colors: ['#4CAA64', '#8B7355', '#556B2F'] },
   { key: 'soft_pastel',    label: 'Soft Pastel',    colors: ['#FFB6C1', '#DDA0DD', '#F0F8FF'] },
   { key: 'dark_bold',      label: 'Dark & Bold',    colors: ['#1A1A2E', '#E63946', '#FFD700'] },
+  { key: 'monochrome',     label: 'Black & White',  colors: ['#FFFFFF', '#888888', '#000000'] },
+  { key: 'sepia',          label: 'Sepia Vintage',  colors: ['#D4A76A', '#C19A6B', '#8B6914'] },
+  { key: 'neon',           label: 'Neon Electric',  colors: ['#FF00FF', '#00FFFF', '#39FF14'] },
+  { key: 'candy',          label: 'Candy Pop',      colors: ['#FF69B4', '#FF6EC7', '#FFD700'] },
   { key: 'everything',     label: 'Surprise Me',    colors: ['#FF4500', '#FFD700', '#4CAA64', '#6699EE', '#BB88EE'] },
 ];
 

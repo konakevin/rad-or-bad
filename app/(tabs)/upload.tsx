@@ -6,9 +6,12 @@ import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, withSequence } from 'react-native-reanimated';
+import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/auth';
+import { useFeedStore } from '@/store/feed';
 import { buildPromptInput } from '@/lib/recipeEngine';
+import { Toast } from '@/components/Toast';
 import { DEFAULT_RECIPE } from '@/types/recipe';
 import type { Recipe } from '@/types/recipe';
 import { colors } from '@/constants/theme';
@@ -33,6 +36,7 @@ export default function DreamScreen() {
   const [photoBase64, setPhotoBase64] = useState<string | null>(null);
   const [prompt, setPrompt] = useState('');
   const [userHint, setUserHint] = useState('');
+  const [letBotDream, setLetBotDream] = useState(true);
   const [strength, setStrength] = useState(0.65);
   const [error, setError] = useState<string | null>(null);
   const busy = useRef(false);
@@ -71,6 +75,8 @@ export default function DreamScreen() {
       setPhotoUri(media.path);
       setPhase('preview');
       setDreamUrl(null);
+      setLetBotDream(true);
+      setUserHint('');
       imgOpacity.value = 0;
       imgScale.value = 0.85;
     } catch { /* cancelled */ }
@@ -91,16 +97,21 @@ export default function DreamScreen() {
       if (!photoBase64) throw new Error('No photo data');
       const refUrl = `data:image/jpeg;base64,${photoBase64}`;
 
-      // Build recipe attributes
-      const recipe = await loadRecipe();
-      const input = buildPromptInput(recipe);
-      const scene = [input.eraKeywords, input.settingKeywords, input.sceneAtmosphere].filter(Boolean).join(', ');
-      const style = [input.mood, input.lighting, input.colorKeywords, input.weirdnessModifier].filter(Boolean).join(', ');
-      const tags = input.personalityTags.join(', ');
-      const hint = userHint.trim();
+      let p: string;
 
-      // Haiku enhances the prompt using recipe + user hint
-      const haikuRequest = `Write a 30-word max image restyling prompt.
+      if (!letBotDream && userHint.trim()) {
+        // User wrote their own prompt — use it directly
+        p = userHint.trim();
+      } else {
+        // Let Dream Bot handle it via recipe + Haiku enhancement
+        const recipe = await loadRecipe();
+        const input = buildPromptInput(recipe);
+        const scene = [input.eraKeywords, input.settingKeywords, input.sceneAtmosphere].filter(Boolean).join(', ');
+        const style = [input.mood, input.lighting, input.colorKeywords, input.weirdnessModifier].filter(Boolean).join(', ');
+        const tags = input.personalityTags.join(', ');
+        const hint = userHint.trim();
+
+        const haikuRequest = `Write a 30-word max image restyling prompt.
 
 RECIPE DEFAULTS (use these unless the user's hint overrides a specific part):
 - Medium/Style: ${input.medium}
@@ -120,27 +131,27 @@ For example if the recipe says "oil painting, cozy mood, warm colors, forest sce
 FORMAT: "Restyle as [medium]. [scene]. [mood + lighting + colors]. Keep the subject recognizable."
 NO poetry. NO abstract words. Output ONLY the prompt.`;
 
-      let p: string;
-      try {
-        const haikuRes = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': ANTHROPIC_KEY,
-            'anthropic-version': '2023-06-01',
-            'anthropic-dangerous-direct-browser-access': 'true',
-          },
-          body: JSON.stringify({
-            model: 'claude-haiku-4-5-20251001',
-            max_tokens: 100,
-            messages: [{ role: 'user', content: haikuRequest }],
-          }),
-        });
-        if (!haikuRes.ok) throw new Error('Haiku error');
-        const haikuData = await haikuRes.json();
-        p = haikuData.content?.[0]?.text?.trim() ?? '';
-      } catch {
-        p = `Restyle this image as ${input.medium}, ${style}. ${hint ? `Theme: ${hint}.` : ''} Keep the subject recognizable.`;
+        try {
+          const haikuRes = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-api-key': ANTHROPIC_KEY,
+              'anthropic-version': '2023-06-01',
+              'anthropic-dangerous-direct-browser-access': 'true',
+            },
+            body: JSON.stringify({
+              model: 'claude-haiku-4-5-20251001',
+              max_tokens: 100,
+              messages: [{ role: 'user', content: haikuRequest }],
+            }),
+          });
+          if (!haikuRes.ok) throw new Error('Haiku error');
+          const haikuData = await haikuRes.json();
+          p = haikuData.content?.[0]?.text?.trim() ?? '';
+        } catch {
+          p = `Restyle this image as ${input.medium}, ${style}. ${hint ? `Theme: ${hint}.` : ''} Keep the subject recognizable.`;
+        }
       }
 
       setPrompt(p);
@@ -211,7 +222,7 @@ NO poetry. NO abstract words. Output ONLY the prompt.`;
 
       const { data: urlData } = supabase.storage.from('uploads').getPublicUrl(fileName);
 
-      await supabase.from('uploads').insert({
+      const { data: insertedRow } = await supabase.from('uploads').insert({
         user_id: user.id,
         image_url: urlData.publicUrl,
         media_type: 'image',
@@ -224,10 +235,25 @@ NO poetry. NO abstract words. Output ONLY the prompt.`;
         ai_prompt: prompt,
         total_votes: 0, rad_votes: 0, bad_votes: 0,
         width: 768, height: 1664,
+      }).select('id').single();
+
+      // Pin to feed so it shows as top card
+      useFeedStore.getState().setPinnedPost({
+        id: insertedRow?.id ?? `temp-${Date.now()}`,
+        user_id: user.id,
+        image_url: urlData.publicUrl,
+        caption: prompt.length > 200 ? prompt.slice(0, 197) + '...' : prompt,
+        username: user.user_metadata?.username ?? '',
+        avatar_url: user.user_metadata?.avatar_url ?? null,
+        is_ai_generated: true,
+        created_at: new Date().toISOString(),
+        comment_count: 0,
       });
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Toast.show('Dream posted!', 'checkmark-circle');
       reset();
+      router.navigate('/(tabs)');
     } catch {
       setPhase('reveal');
     }
@@ -253,7 +279,7 @@ NO poetry. NO abstract words. Output ONLY the prompt.`;
         <View style={s.center}>
           <Image source={{ uri: mascotUrl }} style={s.mascot} contentFit="cover" />
           <Text style={s.title}>Dream a photo</Text>
-          <Text style={s.sub}>Pick a photo and your dream machine will transform it</Text>
+          <Text style={s.sub}>Pick a photo and let your Dream Bot dream it</Text>
           <TouchableOpacity style={s.cta} onPress={pickPhoto} activeOpacity={0.7}>
             <Ionicons name="images" size={20} color="#FFF" />
             <Text style={s.ctaText}>Choose a Photo</Text>
@@ -275,20 +301,49 @@ NO poetry. NO abstract words. Output ONLY the prompt.`;
         </View>
         <View style={s.previewWrap}>
           <Image source={{ uri: photoUri! }} style={s.previewImg} contentFit="cover" />
-          <TextInput
-            style={s.hintInput}
-            placeholder="Add a dream hint... (optional)"
-            placeholderTextColor={colors.textSecondary}
-            value={userHint}
-            onChangeText={setUserHint}
-            maxLength={80}
-          />
+
+          {/* Toggle: let bot dream vs write your own */}
+          <TouchableOpacity
+            style={s.toggleRow}
+            onPress={() => { setLetBotDream(!letBotDream); if (!letBotDream) setUserHint(''); }}
+            activeOpacity={0.7}
+          >
+            <View style={[s.checkbox, letBotDream && s.checkboxActive]}>
+              {letBotDream && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}
+            </View>
+            <Text style={s.toggleLabel}>Let Dream Bot dream this</Text>
+          </TouchableOpacity>
+
+          {!letBotDream && (
+            <View style={s.promptWrap}>
+              <Text style={s.promptHint}>Describe your own dream — your words become the vision</Text>
+              <TextInput
+                style={s.promptInput}
+                placeholder="A cozy cabin in the woods during a snowstorm, painted in watercolors..."
+                placeholderTextColor={colors.textMuted}
+                value={userHint}
+                onChangeText={setUserHint}
+                maxLength={500}
+                multiline
+                textAlignVertical="top"
+              />
+            </View>
+          )}
+
+          {letBotDream && (
+            <Text style={s.botNote}>Your Dream Bot will dream this photo for you</Text>
+          )}
         </View>
         {error && <Text style={s.errorText}>{error}</Text>}
         <View style={s.footer}>
-          <TouchableOpacity style={s.cta} onPress={() => { setError(null); dream(); }} activeOpacity={0.7}>
-            <Ionicons name="sparkles" size={20} color="#FFF" />
-            <Text style={s.ctaText}>Dream It</Text>
+          <TouchableOpacity
+            style={[s.cta, !letBotDream && !userHint.trim() && s.ctaDisabled]}
+            onPress={() => { setError(null); dream(); }}
+            disabled={!letBotDream && !userHint.trim()}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="sparkles" size={20} color={!letBotDream && !userHint.trim() ? colors.textSecondary : '#FFF'} />
+            <Text style={[s.ctaText, !letBotDream && !userHint.trim() && s.ctaTextDisabled]}>Dream It</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -303,7 +358,7 @@ NO poetry. NO abstract words. Output ONLY the prompt.`;
         <View style={s.center}>
           <Image source={{ uri: loadingMascot }} style={s.loadingMascot} contentFit="cover" />
           <Text style={s.title}>Dreaming...</Text>
-          <Text style={s.sub}>Your Dream Bot is transforming your photo</Text>
+          <Text style={s.sub}>Your Dream Bot is dreaming your photo</Text>
           <ActivityIndicator size="small" color={colors.accent} />
         </View>
       </SafeAreaView>
@@ -370,13 +425,39 @@ const s = StyleSheet.create({
   sub: { color: colors.textSecondary, fontSize: 15, textAlign: 'center', lineHeight: 22 },
   cta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: colors.accent, borderRadius: 14, paddingVertical: 16, paddingHorizontal: 24, width: '100%' },
   ctaText: { color: '#FFF', fontSize: 17, fontWeight: '700' },
+  ctaDisabled: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+  ctaTextDisabled: { color: colors.textSecondary },
   footer: { paddingHorizontal: 20, paddingBottom: 80, gap: 12 },
   previewWrap: { flex: 1, paddingHorizontal: 24, alignItems: 'center', gap: 20 },
   previewImg: { width: PREVIEW_WIDTH, height: PREVIEW_WIDTH * 1.2, borderRadius: 16 },
-  hintInput: {
-    width: '100%', backgroundColor: colors.surface, borderRadius: 12,
-    borderWidth: 1, borderColor: colors.border, paddingHorizontal: 14,
-    paddingVertical: 12, color: colors.textPrimary, fontSize: 15,
+  toggleRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 10, alignSelf: 'flex-start',
+  },
+  checkbox: {
+    width: 24, height: 24, borderRadius: 6, borderWidth: 1.5,
+    borderColor: colors.border, alignItems: 'center', justifyContent: 'center',
+  },
+  checkboxActive: {
+    backgroundColor: colors.accent, borderColor: colors.accent,
+  },
+  toggleLabel: {
+    color: colors.textPrimary, fontSize: 15, fontWeight: '600',
+  },
+  botNote: {
+    color: colors.textSecondary, fontSize: 13, textAlign: 'center', lineHeight: 18,
+    paddingHorizontal: 8,
+  },
+  promptWrap: {
+    width: '100%', gap: 8,
+  },
+  promptHint: {
+    color: colors.textSecondary, fontSize: 13, lineHeight: 18,
+  },
+  promptInput: {
+    width: '100%', minHeight: 100, backgroundColor: colors.surface, borderRadius: 14,
+    borderWidth: 1, borderColor: colors.border, paddingHorizontal: 16,
+    paddingTop: 14, paddingBottom: 14, color: colors.textPrimary, fontSize: 15,
+    lineHeight: 21,
   },
   errorText: { color: colors.error, fontSize: 13, textAlign: 'center', paddingHorizontal: 20 },
   revealWrap: { flex: 1, paddingHorizontal: 24, alignItems: 'center' },

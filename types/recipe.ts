@@ -25,13 +25,18 @@ export type ColorPalette =
   | 'earthy_natural'  // 🌿🍃💚
   | 'soft_pastel'     // 🌸💗🤍
   | 'dark_bold'       // ⚫🔴🟡
+  | 'monochrome'      // ⬛⬜
+  | 'sepia'           // 📜
+  | 'neon'            // 💡
+  | 'candy'           // 🍬
   | 'everything';     // 🌈 random
 
 /** Interest categories the user selected */
 export type Interest =
   | 'animals' | 'nature' | 'fantasy' | 'sci_fi'
   | 'architecture' | 'fashion' | 'food' | 'abstract'
-  | 'dark' | 'cute' | 'ocean' | 'space' | 'whimsical';
+  | 'dark' | 'cute' | 'ocean' | 'space' | 'whimsical'
+  | 'gaming' | 'movies' | 'music' | 'geek' | 'sports' | 'travel' | 'pride';
 
 /** Personality trait tags — injected as adjectives into prompts */
 export type PersonalityTag =
