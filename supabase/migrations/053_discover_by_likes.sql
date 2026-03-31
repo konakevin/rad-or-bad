@@ -1,5 +1,4 @@
 -- Migration 053: Discover dreamers by shared likes (replaces vote-based suggestions)
--- New users with no likes get popular accounts as fallback.
 
 DROP FUNCTION IF EXISTS public.get_vibe_suggestions(uuid, integer);
 
@@ -12,42 +11,48 @@ RETURNS TABLE(
   vibe_score    integer,
   shared_count  integer
 )
-LANGUAGE sql
+LANGUAGE plpgsql
 STABLE
 SECURITY DEFINER
 AS $$
-  WITH my_likes AS (
-    SELECT upload_id FROM favorites WHERE user_id = p_user_id
-  ),
-  my_like_count AS (
-    SELECT COUNT(*) AS cnt FROM my_likes
-  ),
-  -- Users who liked the same posts as me
-  overlap AS (
+DECLARE
+  like_count integer;
+BEGIN
+  SELECT COUNT(*) INTO like_count FROM favorites WHERE favorites.user_id = p_user_id;
+
+  IF like_count >= 3 THEN
+    -- Find users who liked the same posts
+    RETURN QUERY
     SELECT
-      f.user_id AS other_id,
-      COUNT(*)::integer AS shared,
-      SUM(CASE WHEN f.upload_id IN (SELECT upload_id FROM my_likes) THEN 1 ELSE 0 END)::integer AS agreed
+      u.id AS user_id,
+      u.username,
+      u.avatar_url,
+      NULL::text AS user_rank,
+      (COUNT(*)::integer * 100 / GREATEST(like_count, 1))::integer AS vibe_score,
+      COUNT(*)::integer AS shared_count
     FROM favorites f
-    WHERE f.user_id != p_user_id
-      AND f.upload_id IN (SELECT upload_id FROM my_likes)
+    JOIN users u ON u.id = f.user_id
+    WHERE f.upload_id IN (SELECT fav.upload_id FROM favorites fav WHERE fav.user_id = p_user_id)
+      AND f.user_id != p_user_id
       AND NOT EXISTS (
         SELECT 1 FROM friendships fr
         WHERE fr.user_a = LEAST(p_user_id, f.user_id)
           AND fr.user_b = GREATEST(p_user_id, f.user_id)
       )
-    GROUP BY f.user_id
+    GROUP BY u.id, u.username, u.avatar_url
     HAVING COUNT(*) >= 2
-  ),
-  -- Fallback: popular accounts (most posts) for new users with few likes
-  popular AS (
+    ORDER BY COUNT(*) DESC
+    LIMIT p_limit;
+  ELSE
+    -- Fallback: popular accounts for new users
+    RETURN QUERY
     SELECT
-      u.id AS other_id,
+      u.id AS user_id,
       u.username,
       u.avatar_url,
       NULL::text AS user_rank,
-      0 AS vibe_score,
-      0 AS shared_count
+      0::integer AS vibe_score,
+      0::integer AS shared_count
     FROM users u
     WHERE u.id != p_user_id
       AND NOT EXISTS (
@@ -55,29 +60,11 @@ AS $$
         WHERE fr.user_a = LEAST(p_user_id, u.id)
           AND fr.user_b = GREATEST(p_user_id, u.id)
       )
-    ORDER BY (SELECT COUNT(*) FROM uploads WHERE user_id = u.id AND is_active = true) DESC
-    LIMIT p_limit
-  )
-  -- If user has enough likes, use overlap; otherwise fall back to popular
-  SELECT
-    u.id AS user_id,
-    u.username,
-    u.avatar_url,
-    NULL::text AS user_rank,
-    (o.agreed * 100 / o.shared)::integer AS vibe_score,
-    o.shared AS shared_count
-  FROM overlap o
-  JOIN users u ON u.id = o.other_id
-  WHERE (SELECT cnt FROM my_like_count) >= 3
-  ORDER BY (o.agreed::float / o.shared) DESC, o.shared DESC
-  LIMIT p_limit
-
-  UNION ALL
-
-  SELECT user_id, username, avatar_url, user_rank, vibe_score, shared_count
-  FROM popular
-  WHERE (SELECT cnt FROM my_like_count) < 3
-  LIMIT p_limit;
+      AND EXISTS (SELECT 1 FROM uploads WHERE uploads.user_id = u.id AND is_active = true)
+    ORDER BY (SELECT COUNT(*) FROM uploads WHERE uploads.user_id = u.id AND is_active = true) DESC
+    LIMIT p_limit;
+  END IF;
+END;
 $$;
 
 GRANT EXECUTE ON FUNCTION public.get_vibe_suggestions(uuid, integer) TO authenticated;

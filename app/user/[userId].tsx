@@ -132,7 +132,7 @@ export default function PublicProfileScreen() {
   const header = (
     <View style={styles.header}>
         <View style={styles.headerTop}>
-          <GradientUsername username={profile.username} rank={profile.user_rank} hideRank style={styles.username} avatarUrl={profile.avatar_url} showAvatar avatarSize={32} />
+          <GradientUsername username={profile.username} rank={null} hideRank style={styles.username} avatarUrl={profile.avatar_url} showAvatar avatarSize={32} />
           {!isOwnProfile && (
             <View style={styles.headerButtons}>
               {friendshipStatus !== 'friends' && (

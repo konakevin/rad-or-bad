@@ -164,12 +164,11 @@ export default function ExploreScreen() {
                   key={cat.key}
                   onPress={() => selectCategory(cat)}
                   activeOpacity={0.7}
-                  style={s.chip}
+                  style={[s.chip, active && s.chipActive]}
                 >
                   <Text style={[s.chipText, active && s.chipTextActive]}>
                     {cat.label}
                   </Text>
-                  {active && <View style={s.chipLine} />}
                 </TouchableOpacity>
               );
             })}
@@ -195,26 +194,22 @@ const s = StyleSheet.create({
   chipWrapper: {},
   chipRow: { gap: 20, paddingHorizontal: 16 },
   chip: {
-    alignItems: 'center',
+    paddingHorizontal: 16,
     paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.12)',
   },
-  chipLine: {
-    width: 20,
-    height: 3,
-    borderRadius: 1.5,
-    backgroundColor: '#FFFFFF',
-    marginTop: 4,
+  chipActive: {
+    backgroundColor: 'rgba(255,255,255,0.25)',
   },
   chipText: {
-    color: 'rgba(255,255,255,0.5)',
-    fontSize: 15,
+    color: 'rgba(255,255,255,0.75)',
+    fontSize: 14,
     fontWeight: '600',
-    textShadowColor: 'rgba(0,0,0,0.5)',
-    textShadowRadius: 4,
-    textShadowOffset: { width: 0, height: 1 },
   },
   chipTextActive: {
     color: '#FFFFFF',
+    fontWeight: '800',
     fontWeight: '800',
   },
 

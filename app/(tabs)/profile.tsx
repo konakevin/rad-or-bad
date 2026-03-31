@@ -93,7 +93,7 @@ export default function ProfileScreen() {
           <View>
             <GradientUsername
               username={user?.user_metadata?.username ?? 'you'}
-              rank={profile?.user_rank}
+              rank={null}
               style={styles.username}
               avatarUrl={profile?.avatar_url}
               showAvatar
