@@ -94,11 +94,11 @@ const styles = StyleSheet.create({
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: 'rgba(255, 215, 0, 0.1)',
+    backgroundColor: colors.accentBg,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 215, 0, 0.2)',
+    borderColor: colors.accentBorder,
   },
   title: {
     color: colors.textPrimary,

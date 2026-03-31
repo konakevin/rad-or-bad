@@ -8,6 +8,7 @@ export default function OnboardingLayout() {
         contentStyle: { backgroundColor: '#0F0F1A' },
         gestureEnabled: true,
         animation: 'slide_from_right',
+        fullScreenGestureEnabled: true,
       }}
     />
   );
