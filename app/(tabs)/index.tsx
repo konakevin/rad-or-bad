@@ -1,37 +1,19 @@
-import { useState, useCallback, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions, FlatList, ActivityIndicator } from 'react-native';
+import { useState, useRef } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Dimensions, FlatList } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useAuthStore } from '@/store/auth';
-import { useFavoriteIds } from '@/hooks/useFavoriteIds';
-import { useToggleFavorite } from '@/hooks/useToggleFavorite';
-import { DreamCard } from '@/components/DreamCard';
-import type { DreamPostItem } from '@/components/DreamCard';
-import { Image as ExpoImage } from 'expo-image';
 import { colors } from '@/constants/theme';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { FullScreenFeed } from '@/components/FullScreenFeed';
+import type { DreamPostItem } from '@/components/DreamCard';
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 type FeedTab = 'forYou' | 'following' | 'dreamers';
-
-interface DreamPost {
-  id: string;
-  user_id: string;
-  image_url: string;
-  caption: string | null;
-  username: string;
-  avatar_url: string | null;
-  is_ai_generated: boolean;
-  created_at: string;
-}
-
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 20;
 
 function useDreamFeed(tab: FeedTab) {
   const user = useAuthStore((s) => s.user);
@@ -39,9 +21,8 @@ function useDreamFeed(tab: FeedTab) {
 
   return useInfiniteQuery({
     queryKey: ['dreamFeed', tab, user?.id, seed],
-    queryFn: async ({ pageParam = 0 }): Promise<DreamPost[]> => {
+    queryFn: async ({ pageParam = 0 }): Promise<DreamPostItem[]> => {
       if (tab === 'forYou') {
-        // Smart feed: time decay + follow boost + engagement + randomized seed + pagination
         const { data, error } = await supabase.rpc('get_feed', {
           p_user_id: user!.id,
           p_limit: PAGE_SIZE,
@@ -62,7 +43,6 @@ function useDreamFeed(tab: FeedTab) {
         }));
       }
 
-      // Following and Dreamers — paginated chronological
       let query = supabase
         .from('uploads')
         .select('id, user_id, image_url, caption, created_at, is_ai_generated, comment_count, users!inner(username, avatar_url)')
@@ -71,18 +51,15 @@ function useDreamFeed(tab: FeedTab) {
         .range(pageParam, pageParam + PAGE_SIZE - 1);
 
       if (tab === 'following') {
-        const { data: followData } = await supabase
-          .from('follows')
-          .select('following_id')
-          .eq('follower_id', user!.id);
-        const followIds = (followData ?? []).map((f: Record<string, string>) => f.following_id);
-        if (followIds.length === 0) return [];
-        query = query.in('user_id', followIds);
+        const { data: followData } = await supabase.from('follows').select('following_id').eq('follower_id', user!.id);
+        const ids = (followData ?? []).map((f: Record<string, string>) => f.following_id);
+        if (ids.length === 0) return [];
+        query = query.in('user_id', ids);
       } else if (tab === 'dreamers') {
         const { data: friendData } = await supabase.rpc('get_friend_ids', { p_user_id: user!.id });
-        const friendIds = (friendData ?? []).map((f: Record<string, string>) => f.friend_id);
-        if (friendIds.length === 0) return [];
-        query = query.in('user_id', friendIds);
+        const ids = (friendData ?? []).map((f: Record<string, string>) => f.friend_id);
+        if (ids.length === 0) return [];
+        query = query.in('user_id', ids);
       }
 
       const { data, error } = await query;
@@ -108,11 +85,9 @@ function useDreamFeed(tab: FeedTab) {
       if (lastPage.length < PAGE_SIZE) return undefined;
       return allPages.reduce((total, page) => total + page.length, 0);
     },
-    enabled: !!user,
+    enabled: !!useAuthStore.getState().user,
   });
 }
-
-// ── Feed Tab Selector ───────────────────────────────────────────────────────
 
 function FeedTabs({ active, onChange }: { active: FeedTab; onChange: (tab: FeedTab) => void }) {
   const tabs: { key: FeedTab; label: string }[] = [
@@ -140,175 +115,64 @@ function FeedTabs({ active, onChange }: { active: FeedTab; onChange: (tab: FeedT
   );
 }
 
-// ── Empty State ─────────────────────────────────────────────────────────────
-
 function EmptyFeed({ tab }: { tab: FeedTab }) {
-  const messages: Record<FeedTab, { icon: string; title: string; sub: string }> = {
-    forYou: { icon: 'moon-outline', title: 'No dreams yet', sub: 'Dreams will appear here as they\'re created' },
-    following: { icon: 'people-outline', title: 'No dreams from people you follow', sub: 'Follow dreamers to see their creations here' },
-    dreamers: { icon: 'heart-outline', title: 'No dreams from your dreamers', sub: 'Connect with dreamers to see their art here' },
+  const msgs: Record<FeedTab, { icon: string; title: string; sub: string }> = {
+    forYou: { icon: 'moon-outline', title: 'No dreams yet', sub: 'Dreams will appear here' },
+    following: { icon: 'people-outline', title: 'No dreams from people you follow', sub: 'Follow dreamers to see their creations' },
+    dreamers: { icon: 'heart-outline', title: 'No dreams from your dreamers', sub: 'Connect with dreamers to see their art' },
   };
-  const msg = messages[tab];
+  const m = msgs[tab];
   return (
     <View style={s.emptyWrap}>
-      <Ionicons name={msg.icon as keyof typeof Ionicons.glyphMap} size={48} color={colors.textSecondary} />
-      <Text style={s.emptyTitle}>{msg.title}</Text>
-      <Text style={s.emptySub}>{msg.sub}</Text>
+      <Ionicons name={m.icon as keyof typeof Ionicons.glyphMap} size={48} color={colors.textSecondary} />
+      <Text style={s.emptyTitle}>{m.title}</Text>
+      <Text style={s.emptySub}>{m.sub}</Text>
     </View>
   );
 }
-
-// ── Home Screen ─────────────────────────────────────────────────────────────
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState<FeedTab>('forYou');
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useDreamFeed(activeTab);
   const posts = data?.pages.flat() ?? [];
-  const { data: favoriteIds = new Set<string>() } = useFavoriteIds();
-  const { mutate: toggleFavorite } = useToggleFavorite();
-
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const flatListRef = useRef<FlatList>(null);
-
-  const onViewableItemsChanged = useCallback(({ viewableItems }: { viewableItems: Array<{ index: number | null }> }) => {
-    if (viewableItems.length > 0 && viewableItems[0].index !== null) {
-      const idx = viewableItems[0].index;
-      setCurrentIndex(idx);
-      // Prefetch the next 3 images
-      const upcoming = posts.slice(idx + 1, idx + 4);
-      if (upcoming.length > 0) {
-        ExpoImage.prefetch(upcoming.map((p) => p.image_url));
-      }
-    }
-  }, [posts]);
-
-  const viewabilityConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
-
-  const currentPost = posts[currentIndex];
+  const listRef = useRef<FlatList>(null);
 
   function handleTabChange(tab: FeedTab) {
     setActiveTab(tab);
-    setCurrentIndex(0);
-    flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
+    listRef.current?.scrollToOffset({ offset: 0, animated: false });
   }
 
   return (
     <View style={s.root}>
-      {/* Full-screen vertical feed */}
-      {isLoading ? (
-        <View style={s.loadingCenter}>
-          <ActivityIndicator size="large" color="#FF4500" />
-        </View>
-      ) : posts.length === 0 ? (
-        <EmptyFeed tab={activeTab} />
-      ) : (
-        <FlatList
-          ref={flatListRef}
-          data={posts}
-          keyExtractor={(item) => item.id}
-          pagingEnabled
-          showsVerticalScrollIndicator={false}
-          decelerationRate="fast"
-          windowSize={7}
-          maxToRenderPerBatch={5}
-          initialNumToRender={3}
-          removeClippedSubviews={false}
-          getItemLayout={(_, index) => ({ length: SCREEN_HEIGHT, offset: SCREEN_HEIGHT * index, index })}
-          onViewableItemsChanged={onViewableItemsChanged}
-          viewabilityConfig={viewabilityConfig}
-          onEndReached={() => { if (hasNextPage && !isFetchingNextPage) fetchNextPage(); }}
-          onEndReachedThreshold={2}
-          renderItem={({ item }) => (
-            <DreamCard
-              item={item}
-              bottomPadding={90 + insets.bottom}
-              isLiked={favoriteIds.has(item.id)}
-              onLike={() => toggleFavorite({ uploadId: item.id, currentlyFavorited: false })}
-              onToggleLike={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                toggleFavorite({ uploadId: item.id, currentlyFavorited: favoriteIds.has(item.id) });
-              }}
-              onComment={() => router.push(`/comments?uploadId=${item.id}`)}
-            />
-          )}
-        />
-      )}
+      <FullScreenFeed
+        posts={posts}
+        isLoading={isLoading}
+        listRef={listRef}
+        onEndReached={() => { if (hasNextPage && !isFetchingNextPage) fetchNextPage(); }}
+        ListEmptyComponent={<EmptyFeed tab={activeTab} />}
+      />
 
-      {/* Top overlay with gradient backdrop for readability */}
       <LinearGradient
-        colors={['rgba(0,0,0,0.7)', 'rgba(0,0,0,0.3)', 'transparent']}
+        colors={['rgba(0,0,0,0.6)', 'rgba(0,0,0,0.2)', 'transparent']}
         style={[s.topOverlay, { paddingTop: insets.top }]}
         pointerEvents="box-none"
       >
         <FeedTabs active={activeTab} onChange={handleTabChange} />
       </LinearGradient>
-
     </View>
   );
 }
 
 const s = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: '#000000',
-  },
-  loadingCenter: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emptyWrap: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
-    paddingHorizontal: 40,
-  },
-  emptyTitle: {
-    color: colors.textPrimary,
-    fontSize: 20,
-    fontWeight: '700',
-  },
-  emptySub: {
-    color: colors.textSecondary,
-    fontSize: 15,
-    textAlign: 'center',
-  },
-  topOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-    paddingBottom: 20,
-  },
-  feedTabs: {
-    flexDirection: 'row',
-    gap: 24,
-  },
-  feedTab: {
-    alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 4,
-  },
-  feedTabText: {
-    color: 'rgba(255,255,255,0.5)',
-    fontSize: 16,
-    fontWeight: '600',
-    textShadowColor: 'rgba(0,0,0,0.5)',
-    textShadowRadius: 4,
-    textShadowOffset: { width: 0, height: 1 },
-  },
-  feedTabTextActive: {
-    color: '#FFFFFF',
-    fontWeight: '800',
-  },
-  feedTabLine: {
-    width: 24,
-    height: 3,
-    borderRadius: 1.5,
-    backgroundColor: '#FFFFFF',
-    marginTop: 4,
-  },
+  root: { flex: 1, backgroundColor: '#000' },
+  emptyWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, paddingHorizontal: 40 },
+  emptyTitle: { color: colors.textPrimary, fontSize: 20, fontWeight: '700' },
+  emptySub: { color: colors.textSecondary, fontSize: 15, textAlign: 'center' },
+  topOverlay: { position: 'absolute', top: 0, left: 0, right: 0, alignItems: 'center', paddingBottom: 20 },
+  feedTabs: { flexDirection: 'row', gap: 24 },
+  feedTab: { alignItems: 'center', paddingVertical: 8, paddingHorizontal: 4 },
+  feedTabText: { color: 'rgba(255,255,255,0.5)', fontSize: 16, fontWeight: '600', ...StyleSheet.flatten({ textShadowColor: 'rgba(0,0,0,0.5)', textShadowRadius: 4, textShadowOffset: { width: 0, height: 1 } }) },
+  feedTabTextActive: { color: '#FFFFFF', fontWeight: '800' },
+  feedTabLine: { width: 24, height: 3, borderRadius: 1.5, backgroundColor: '#FFFFFF', marginTop: 4 },
 });

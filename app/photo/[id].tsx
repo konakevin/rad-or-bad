@@ -1,547 +1,99 @@
-import { showAlert } from '@/components/CustomAlert';
-import { View, Text, TouchableOpacity, Pressable, StyleSheet, ActivityIndicator, Share, Dimensions, Alert } from 'react-native';
-import * as MediaLibrary from 'expo-media-library';
-import { File, Paths } from 'expo-file-system/next';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useState, useRef, useMemo } from 'react';
+import { View, FlatList, StyleSheet, Animated } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import React, { useState, useEffect } from 'react';
 import { useLocalSearchParams, router } from 'expo-router';
-import { Image } from 'expo-image';
-import { VideoView, useVideoPlayer } from 'expo-video';
-import { Ionicons } from '@expo/vector-icons';
-import MaskedView from '@react-native-masked-view/masked-view';
-import { LinearGradient } from 'expo-linear-gradient';
-import { GestureDetector, Gesture } from 'react-native-gesture-handler';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  runOnJS,
-} from 'react-native-reanimated';
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-import { SWIPE } from '@/constants/theme';
-const SWIPE_THRESHOLD = SWIPE.DISMISS_THRESHOLD;
-import * as Haptics from 'expo-haptics';
-import { usePost } from '@/hooks/usePost';
-import { useDeletePost } from '@/hooks/useDeletePost';
-import { useQueryClient } from '@tanstack/react-query';
-import { useAuthStore } from '@/store/auth';
 import { useAlbumStore } from '@/store/album';
-import { fetchPost } from '@/hooks/usePost';
-import { VoteCount } from '@/components/VoteCount';
-import { reportPost } from '@/lib/reportPost';
-import { ConfirmDialog } from '@/components/ConfirmDialog';
-import { GradientUsername } from '@/components/GradientUsername';
+import { useSwipeBack } from '@/hooks/useSwipeBack';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabase';
+import { FullScreenFeed } from '@/components/FullScreenFeed';
+import type { DreamPostItem } from '@/components/DreamCard';
 import { colors } from '@/constants/theme';
-import { CATEGORY_LABELS } from '@/constants/categories';
-import { useFavoriteIds } from '@/hooks/useFavoriteIds';
-import { useToggleFavorite } from '@/hooks/useToggleFavorite';
 
-function VideoPlayer({ uri, muted, contentFit = 'cover' }: { uri: string; muted: boolean; contentFit?: 'cover' | 'contain' }) {
-  const player = useVideoPlayer(uri, (p) => {
-    p.loop = true;
-    p.muted = muted;
-    p.play();
+/** Fetch a single post + user info */
+function useAlbumPosts(albumIds: string[], currentId: string) {
+  return useQuery({
+    queryKey: ['albumPosts', albumIds.join(',')],
+    queryFn: async (): Promise<DreamPostItem[]> => {
+      if (albumIds.length === 0) {
+        // Single post — no album
+        const { data, error } = await supabase
+          .from('uploads')
+          .select('id, user_id, image_url, caption, created_at, is_ai_generated, comment_count, users!inner(username, avatar_url)')
+          .eq('id', currentId)
+          .single();
+        if (error) throw error;
+        const u = data.users as Record<string, unknown>;
+        return [{
+          id: data.id,
+          user_id: data.user_id,
+          image_url: data.image_url,
+          caption: data.caption,
+          username: u.username as string,
+          avatar_url: u.avatar_url as string | null,
+          is_ai_generated: data.is_ai_generated ?? false,
+          created_at: data.created_at,
+          comment_count: data.comment_count ?? 0,
+        }];
+      }
+
+      // Album — fetch all posts in order
+      const { data, error } = await supabase
+        .from('uploads')
+        .select('id, user_id, image_url, caption, created_at, is_ai_generated, comment_count, users!inner(username, avatar_url)')
+        .in('id', albumIds)
+        .eq('is_active', true);
+      if (error) throw error;
+
+      // Sort by album order
+      const orderMap = new Map(albumIds.map((id, i) => [id, i]));
+      return (data ?? [])
+        .map((row: Record<string, unknown>) => {
+          const u = row.users as Record<string, unknown>;
+          return {
+            id: row.id as string,
+            user_id: row.user_id as string,
+            image_url: row.image_url as string,
+            caption: row.caption as string | null,
+            username: u.username as string,
+            avatar_url: u.avatar_url as string | null,
+            is_ai_generated: (row.is_ai_generated as boolean) ?? false,
+            created_at: row.created_at as string,
+            comment_count: (row.comment_count as number) ?? 0,
+          };
+        })
+        .sort((a, b) => (orderMap.get(a.id) ?? 0) - (orderMap.get(b.id) ?? 0));
+    },
+    enabled: true,
+    staleTime: 60_000,
   });
-  useEffect(() => { player.muted = muted; }, [muted]);
-  return <VideoView player={player} style={StyleSheet.absoluteFill} contentFit={contentFit} nativeControls={false} />;
 }
-
 
 export default function PhotoDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [currentId, setCurrentId] = useState(id);
-  const [captionExpanded, setCaptionExpanded] = useState(false);
-  const [muted, setMuted] = useState(true);
-
-  const queryClient = useQueryClient();
-  const currentUser = useAuthStore((s) => s.user);
-  const { data: post, isLoading } = usePost(currentId);
-  const { mutate: deletePost } = useDeletePost();
-  const { data: favoriteIds = new Set<string>() } = useFavoriteIds();
-  const { mutate: toggleFavorite } = useToggleFavorite();
-  const isFavorited = favoriteIds.has(currentId);
-
-
-  // Album navigation — swaps photo in-place, no navigation
   const albumIds = useAlbumStore((s) => s.ids);
-  const currentIndex = albumIds.indexOf(currentId);
-  const isInAlbum = albumIds.length > 0 && currentIndex !== -1;
-  const prevId = isInAlbum && currentIndex > 0 ? albumIds[currentIndex - 1] : null;
-  const nextId = isInAlbum && currentIndex < albumIds.length - 1 ? albumIds[currentIndex + 1] : null;
+  const { translateX, panHandlers } = useSwipeBack();
 
-  // Prefetch adjacent album photos so swipes are instant
-  useEffect(() => {
-    if (nextId) queryClient.prefetchQuery({ queryKey: ['post', nextId], queryFn: () => fetchPost(nextId) });
-    if (prevId) queryClient.prefetchQuery({ queryKey: ['post', prevId], queryFn: () => fetchPost(prevId) });
-  }, [currentId, nextId, prevId]);
+  const { data: posts = [], isLoading } = useAlbumPosts(albumIds, id);
 
-  const slideY = useSharedValue(0);
-
-  // Called on JS thread after the slide-out animation completes
-  function swapToId(targetId: string, enterFrom: number) {
-    setCurrentId(targetId);
-    setCaptionExpanded(false);
-    // Jump to off-screen on the opposite side, then spring in
-    slideY.value = enterFrom;
-    slideY.value = withTiming(0, { duration: 220 });
-  }
-
-  const albumGesture = Gesture.Pan()
-    .activeOffsetY([-15, 15])
-    .onUpdate((e) => {
-      const canGoUp = nextId !== null;
-      const canGoDown = prevId !== null;
-      if ((e.translationY < 0 && canGoUp) || (e.translationY > 0 && canGoDown) || (e.translationY > 0 && !isInAlbum)) {
-        slideY.value = e.translationY;
-      } else {
-        slideY.value = e.translationY * 0.1;
-      }
-    })
-    .onEnd((e) => {
-      if (e.translationY < -SWIPE_THRESHOLD && nextId) {
-        // Swipe up → next photo
-        slideY.value = withTiming(-SCREEN_HEIGHT, { duration: 220 }, () => {
-          runOnJS(swapToId)(nextId, SCREEN_HEIGHT);
-        });
-      } else if (e.translationY > SWIPE_THRESHOLD && prevId) {
-        // Swipe down → prev photo
-        slideY.value = withTiming(SCREEN_HEIGHT, { duration: 220 }, () => {
-          runOnJS(swapToId)(prevId, -SCREEN_HEIGHT);
-        });
-      } else if (e.translationY > SWIPE_THRESHOLD && !prevId) {
-        // Swipe down with no prev → dismiss modal
-        slideY.value = withTiming(SCREEN_HEIGHT, { duration: 220 }, () => {
-          runOnJS(router.back)();
-        });
-      } else {
-        slideY.value = withTiming(0, { duration: 220 });
-      }
-    });
-
-
-  const slideStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: slideY.value }],
-  }));
-
-  const isVideo = post?.media_type === 'video';
-
-  if (isLoading || !post) {
-    return (
-      <>
-        <StatusBar hidden />
-        <View style={styles.loadingRoot}>
-          <SafeAreaView style={styles.loadingBackWrap}>
-            <TouchableOpacity style={styles.backButton} onPress={() => router.back()} hitSlop={12}>
-              <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
-            </TouchableOpacity>
-          </SafeAreaView>
-          <ActivityIndicator color="#71767B" style={styles.loadingSpinner} />
-        </View>
-      </>
-    );
-  }
-
-  const p = post;
-  const isOwnPost = currentUser?.id === p.user_id;
-  const blurBg = p.width && p.height ? (p.width / p.height) > (SCREEN_WIDTH / SCREEN_HEIGHT) : false;
-
-
-  function handleDelete() {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    deletePost(p.id, { onSuccess: () => router.back() });
-  }
-
-  async function handleSaveImage() {
-    if (saving) return;
-    setSaving(true);
-    try {
-      const { status } = await MediaLibrary.requestPermissionsAsync();
-      if (status !== 'granted') {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-        return;
-      }
-      const file = new File(Paths.cache, `${p.id}.jpg`);
-      await (file as unknown as { downloadAsync: (url: string) => Promise<void> }).downloadAsync(p.image_url);
-      await MediaLibrary.saveToLibraryAsync(file.uri);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  function handleFavorite() {
-    toggleFavorite({ uploadId: currentId, currentlyFavorited: isFavorited });
-  }
-
-  function handleShare() {
-    // TODO: replace with a real URL once deep linking or a web domain is set up
-    Share.share({
-      message: `Check out this post on Rad or Bad! https://radorbad.app/photo/${p.id}`,
-    });
-  }
+  // Find initial index for the tapped post
+  const initialIndex = useMemo(() => {
+    const idx = posts.findIndex((p) => p.id === id);
+    return idx >= 0 ? idx : 0;
+  }, [posts, id]);
 
   return (
-    <>
-    <StatusBar hidden />
-    <GestureDetector gesture={albumGesture}>
-    <Animated.View style={[styles.root, slideStyle]}>
-    <Pressable style={StyleSheet.absoluteFill} onLongPress={handleSaveImage} delayLongPress={600}>
-      {isVideo ? (
-        <VideoPlayer uri={p.image_url} muted={muted} contentFit={blurBg ? 'contain' : 'cover'} />
-      ) : (
-        <Image
-          source={{ uri: p.image_url }}
-          style={StyleSheet.absoluteFill}
-          contentFit={blurBg ? 'contain' : 'cover'}
-          transition={200}
-        />
-      )}
-      {saving && (
-        <View style={styles.savingOverlay}>
-          <ActivityIndicator color="#FFFFFF" size="large" />
-        </View>
-      )}
-
-      {/* Top gradient — decorative only */}
-      <LinearGradient
-        colors={['rgba(0,0,0,0.5)', 'transparent']}
-        style={styles.topGradient}
-        pointerEvents="none"
+    <Animated.View {...panHandlers} style={[s.root, { transform: [{ translateX }] }]}>
+      <StatusBar hidden />
+      <FullScreenFeed
+        posts={posts}
+        isLoading={isLoading}
+        initialIndex={initialIndex}
       />
-
-      <DetailFooter
-        post={p}
-        isOwnPost={isOwnPost}
-        captionExpanded={captionExpanded}
-        setCaptionExpanded={setCaptionExpanded}
-        isFavorited={isFavorited}
-        onFavorite={handleFavorite}
-        onShare={handleShare}
-      />
-
-
-      <ConfirmDialog
-        visible={showDeleteDialog}
-        title="Delete post"
-        message="This will permanently remove your post and all its votes."
-        onConfirm={handleDelete}
-        onCancel={() => setShowDeleteDialog(false)}
-      />
-
-      {/* Safe area back + share + delete buttons */}
-      <SafeAreaView style={styles.safeTop} pointerEvents="box-none">
-        <View style={styles.topRow}>
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()} hitSlop={12}>
-            <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
-          </TouchableOpacity>
-          <View style={styles.topRightButtons}>
-            {isVideo && (
-              <TouchableOpacity
-                style={styles.topButton}
-                onPress={() => setMuted((m) => !m)}
-                hitSlop={12}
-              >
-                <Ionicons name={muted ? 'volume-mute' : 'volume-high'} size={20} color="#FFFFFF" />
-              </TouchableOpacity>
-            )}
-            {isOwnPost && (
-              <TouchableOpacity style={styles.topButton} onPress={() => setShowDeleteDialog(true)} hitSlop={12}>
-                <Ionicons name="trash-outline" size={22} color="#FF4500" />
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-      </SafeAreaView>
-    </Pressable>
     </Animated.View>
-    </GestureDetector>
-    </>
   );
 }
 
-// ── DetailFooter ─────────────────────────────────────────────────────────────
-// Always positioned at the bottom of the screen regardless of image aspect ratio.
-// Uses a strong enough gradient to read clearly over both images and black bars.
-interface DetailFooterProps {
-  post: PostDetail;
-  isOwnPost: boolean;
-  captionExpanded: boolean;
-  setCaptionExpanded: React.Dispatch<React.SetStateAction<boolean>>;
-  isFavorited: boolean;
-  onFavorite: () => void;
-  onShare: () => void;
-}
-
-function DetailFooter({ post: p, isOwnPost, captionExpanded, setCaptionExpanded, isFavorited, onFavorite, onShare }: DetailFooterProps) {
-  const [catsExpanded, setCatsExpanded] = useState(false);
-  const cats = p.categories ?? [];
-  const visibleCats = cats.slice(0, 2);
-  const hiddenCats = cats.slice(2);
-
-  return (
-    <LinearGradient
-      colors={['transparent', 'rgba(0,0,0,0.55)', 'rgba(0,0,0,0.88)']}
-      locations={[0, 0.4, 1]}
-      style={styles.bottomGradient}
-      pointerEvents="box-none"
-    >
-      <View style={styles.contentRow}>
-        {/* Left — username, caption, meta */}
-        <View style={styles.infoBlock}>
-          <TouchableOpacity onPress={() => router.push(`/user/${p.user_id}`)} hitSlop={8}>
-            <GradientUsername username={p.users?.username ?? ''} rank={null} style={styles.username} photoOverlay avatarUrl={p.users?.avatar_url} showAvatar avatarSize={22} />
-          </TouchableOpacity>
-
-          {p.caption ? (
-            <TouchableOpacity onPress={() => setCaptionExpanded((v) => !v)} activeOpacity={0.8} hitSlop={8}>
-              <Text style={styles.caption} numberOfLines={captionExpanded ? undefined : 1}>
-                {p.caption}
-              </Text>
-            </TouchableOpacity>
-          ) : null}
-
-          <View>
-            <View style={styles.metaRow}>
-              {visibleCats.map((cat) => {
-                const color = '#FFFFFF';
-                return (
-                  <Pressable key={cat} onPress={() => router.push(`/categoryBrowse?category=${cat}`)} hitSlop={8}
-                    style={[styles.categoryPill, { backgroundColor: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.3)' }]}>
-                    <Text style={[styles.categoryPillText, { color }]}>{CATEGORY_LABELS[cat] ?? cat}</Text>
-                  </Pressable>
-                );
-              })}
-              {hiddenCats.length > 0 && (
-                <Pressable onPress={() => setCatsExpanded((v) => !v)} hitSlop={8} style={styles.plusNPill}>
-                  <Text style={styles.plusNText}>{catsExpanded ? '−' : `+${hiddenCats.length}`}</Text>
-                </Pressable>
-              )}
-              {p.total_votes > 0 && (
-                <>
-                  <Text style={styles.metaDot}>·</Text>
-                  <VoteCount count={p.total_votes} />
-                </>
-              )}
-              <TouchableOpacity onPress={() => router.push(`/comments?uploadId=${p.id}&postOwnerId=${p.user_id}`)} hitSlop={12} style={styles.commentButton}>
-                <Ionicons name="chatbubble-outline" size={16} color="rgba(255,255,255,0.6)" />
-                {(p.comment_count ?? 0) > 0 && (
-                  <Text style={styles.commentCountText}>{p.comment_count}</Text>
-                )}
-              </TouchableOpacity>
-              <TouchableOpacity onPress={onShare} hitSlop={12} style={styles.shareButton}>
-                <Ionicons name="paper-plane-outline" size={17} color="rgba(255,255,255,0.6)" />
-              </TouchableOpacity>
-              {!isOwnPost && (
-                <TouchableOpacity onPress={onFavorite} hitSlop={12} style={styles.shareButton}>
-                  <Ionicons
-                    name={isFavorited ? 'bookmark' : 'bookmark-outline'}
-                    size={18}
-                    color={isFavorited ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.6)'}
-                  />
-                </TouchableOpacity>
-              )}
-              {!isOwnPost && (
-                <ReportButton uploadId={p.id} />
-              )}
-            </View>
-            {catsExpanded && hiddenCats.length > 0 && (
-              <View style={styles.expandedCats}>
-                {hiddenCats.map((cat) => {
-                  const color = '#FFFFFF';
-                  return (
-                    <Pressable key={cat} onPress={() => router.push(`/categoryBrowse?category=${cat}`)} hitSlop={8}
-                      style={[styles.categoryPill, { backgroundColor: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.3)' }]}>
-                      <Text style={[styles.categoryPillText, { color }]}>{CATEGORY_LABELS[cat] ?? cat}</Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            )}
-          </View>
-        </View>
-
-      </View>
-
-    </LinearGradient>
-  );
-}
-
-function ReportButton({ uploadId }: { uploadId: string }) {
-  const user = useAuthStore((s) => s.user);
-  if (!user) return null;
-  return (
-    <TouchableOpacity onPress={() => reportPost(uploadId, user.id, () => router.back())} hitSlop={12} style={{ padding: 4 }}>
-      <Ionicons name="flag-outline" size={16} color="rgba(255,255,255,0.35)" />
-    </TouchableOpacity>
-  );
-}
-
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.background, overflow: 'hidden' },
-  savingOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  loadingRoot: { flex: 1, backgroundColor: colors.background },
-  loadingBackWrap: { position: 'absolute', top: 0, left: 0, zIndex: 1, paddingHorizontal: 8, paddingVertical: 4 },
-  loadingSpinner: { position: 'absolute', top: '50%', alignSelf: 'center' },
-  backButton: {
-    width: 44,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  safeTop: { position: 'absolute', top: 0, left: 0, right: 0 },
-  topRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-  },
-  topRightButtons: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  topButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  topGradient: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 120,
-  },
-  bottomGradient: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingTop: 48,
-    paddingHorizontal: 20,
-    paddingBottom: 48,
-  },
-  scoreBadge: {
-    position: 'absolute',
-    top: 72,
-    right: 14,
-    backgroundColor: 'rgba(0,0,0,0.65)',
-    borderRadius: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    alignItems: 'center',
-  },
-  scoreBadgeText: {
-    fontSize: 40,
-    fontWeight: '900',
-    color: colors.textPrimary,
-    lineHeight: 44,
-  },
-  invisible: { opacity: 0 },
-  userRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  username: {
-    color: colors.textPrimary,
-    fontSize: 18,
-    fontWeight: '700',
-    letterSpacing: -0.2,
-    textShadowColor: 'rgba(0,0,0,0.6)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 6,
-  },
-  caption: {
-    color: 'rgba(255,255,255,0.9)',
-    fontSize: 15,
-    lineHeight: 22,
-    textShadowColor: 'rgba(0,0,0,0.6)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 6,
-  },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  plusNPill: {
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.3)',
-    borderRadius: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-  },
-  plusNText: {
-    color: 'rgba(255,255,255,0.7)',
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  expandedCats: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-    marginTop: 6,
-  },
-  commentButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    padding: 4,
-  },
-  commentCountText: {
-    color: 'rgba(255,255,255,0.6)',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  shareButton: {
-    padding: 4,
-  },
-  metaText: { color: 'rgba(255,255,255,0.6)', fontSize: 14, textShadowColor: 'rgba(0,0,0,0.5)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 4 },
-  metaDot: { color: 'rgba(255,255,255,0.3)', fontSize: 14 },
-  categoryPill: {
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    shadowColor: '#000',
-    shadowOpacity: 0.5,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 1 },
-    elevation: 4,
-  },
-  categoryPillText: { fontSize: 13, fontWeight: '600' },
-  contentRow: {
-    position: 'relative',
-  },
-  infoBlock: {
-    gap: 6,
-  },
-  voteButtonsCompact: {
-    position: 'absolute',
-    right: 16,
-    bottom: 48,
-    flexDirection: 'column',
-    gap: 10,
-    alignItems: 'flex-end',
-  },
-  infoBlockWithButtons: {
-    // Reserve space for the 68px buttons + 16px edge margin + 4px breathing room
-    paddingRight: 88,
-  },
+const s = StyleSheet.create({
+  root: { flex: 1, backgroundColor: '#000' },
 });
