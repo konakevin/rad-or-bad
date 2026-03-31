@@ -41,10 +41,11 @@ function useDreamFeed(tab: FeedTab) {
     queryKey: ['dreamFeed', tab, user?.id, seed],
     queryFn: async ({ pageParam = 0 }): Promise<DreamPost[]> => {
       if (tab === 'forYou') {
-        // Smart feed: Wilson score + time decay + follow boost + randomized seed
+        // Smart feed: time decay + follow boost + engagement + randomized seed + pagination
         const { data, error } = await supabase.rpc('get_feed', {
           p_user_id: user!.id,
           p_limit: PAGE_SIZE,
+          p_offset: pageParam,
           p_seed: seed,
         });
         if (error) throw error;
@@ -61,7 +62,7 @@ function useDreamFeed(tab: FeedTab) {
         }));
       }
 
-      // Following and Dreamers tabs — filtered queries
+      // Following and Dreamers — paginated chronological
       let query = supabase
         .from('uploads')
         .select('id, user_id, image_url, caption, created_at, is_ai_generated, comment_count, users!inner(username, avatar_url)')
