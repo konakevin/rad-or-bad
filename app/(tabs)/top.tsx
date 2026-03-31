@@ -29,45 +29,42 @@ interface DreamPost extends DreamPostItem {
 
 function useCategoryDreams(category: DreamCategory) {
   const user = useAuthStore((s) => s.user);
+  const [seed] = useState(() => Math.random());
 
   return useInfiniteQuery({
-    queryKey: ['categoryDreams', category.key],
-    queryFn: async ({ pageParam = 0 }): Promise<DreamPost[]> => {
-      const batchSize = PAGE_SIZE * 3;
-      const { data, error } = await supabase
-        .from('uploads')
-        .select('id, user_id, image_url, caption, ai_prompt, is_ai_generated, users!inner(username, avatar_url)')
-        .eq('is_active', true)
-        .order('created_at', { ascending: false })
-        .range(pageParam, pageParam + batchSize - 1);
+    queryKey: ['categoryDreams', category.key, seed],
+    queryFn: async (): Promise<DreamPost[]> => {
+      // Use the smart feed algorithm (Wilson score + time decay + follow boost + randomization)
+      // then filter by category keywords client-side
+      const { data, error } = await supabase.rpc('get_feed', {
+        p_user_id: user!.id,
+        p_limit: 100, // fetch more since we filter down
+        p_seed: seed,
+      });
 
       if (error) throw error;
 
       const keywords = category.keywords;
       return (data ?? [])
         .map((row: Record<string, unknown>) => {
-          const u = row.users as Record<string, unknown>;
-          const text = `${row.ai_prompt ?? ''} ${row.caption ?? ''}`.toString().toLowerCase();
+          const text = `${row.caption ?? ''}`.toString().toLowerCase();
           if (!keywords.some((kw) => text.includes(kw))) return null;
           return {
             id: row.id as string,
             user_id: row.user_id as string,
             image_url: row.image_url as string,
             caption: row.caption as string | null,
-            ai_prompt: row.ai_prompt as string | null,
-            username: u.username as string,
-            avatar_url: u.avatar_url as string | null,
-            is_ai_generated: (row.is_ai_generated as boolean) ?? false,
+            ai_prompt: null,
+            username: row.username as string,
+            avatar_url: row.avatar_url as string | null,
+            is_ai_generated: true,
+            created_at: row.created_at as string,
           };
         })
-        .filter(Boolean)
-        .slice(0, PAGE_SIZE) as DreamPost[];
+        .filter(Boolean) as DreamPost[];
     },
     initialPageParam: 0,
-    getNextPageParam: (lastPage, allPages) => {
-      if (lastPage.length < PAGE_SIZE) return undefined;
-      return allPages.reduce((total, page) => total + page.length, 0) * 3;
-    },
+    getNextPageParam: () => undefined, // single page since get_feed returns sorted results
     enabled: !!user,
     staleTime: 60_000,
   });
