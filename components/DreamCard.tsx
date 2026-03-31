@@ -40,9 +40,11 @@ interface Props {
   onToggleLike: () => void;
   onComment?: () => void;
   onShare?: () => void;
+  /** Disable swipe-left-to-profile (e.g. when already in album view) */
+  disableSwipeToProfile?: boolean;
 }
 
-export function DreamCard({ item, bottomPadding, isLiked, onLike, onToggleLike, onComment, onShare }: Props) {
+export function DreamCard({ item, bottomPadding, isLiked, onLike, onToggleLike, onComment, onShare, disableSwipeToProfile }: Props) {
   const lastTap = useRef(0);
 
   // Heart burst animation
@@ -85,12 +87,12 @@ export function DreamCard({ item, bottomPadding, isLiked, onLike, onToggleLike, 
     lastTap.current = now;
   }
 
-  // Horizontal pan — left swipe navigates to profile (no card animation)
+  // Horizontal pan — left swipe navigates to profile (disabled in album view)
   const panGesture = Gesture.Pan()
     .activeOffsetX([-12, 12])
     .failOffsetY([-20, 20])
+    .enabled(!disableSwipeToProfile)
     .onEnd((e) => {
-      // Easy flick — low threshold OR fast velocity
       if (e.translationX < -40 || e.velocityX < -300) {
         runOnJS(goToProfile)();
       }

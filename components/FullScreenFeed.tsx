@@ -32,11 +32,13 @@ interface Props {
   listRef?: React.RefObject<FlatList>;
   /** Content rendered above the feed (absolute positioned overlays go in parent) */
   ListEmptyComponent?: React.ReactElement;
+  /** Disable swipe-left-to-profile on cards (for album/detail views) */
+  disableSwipeToProfile?: boolean;
 }
 
 export function FullScreenFeed({
   posts, isLoading, onEndReached, initialIndex = 0,
-  onIndexChange, listRef, ListEmptyComponent,
+  onIndexChange, listRef, ListEmptyComponent, disableSwipeToProfile,
 }: Props) {
   const insets = useSafeAreaInsets();
   const internalRef = useRef<FlatList>(null);
@@ -100,6 +102,7 @@ export function FullScreenFeed({
             toggleFavorite({ uploadId: item.id, currentlyFavorited: favoriteIds.has(item.id) });
           }}
           onComment={() => router.push(`/comments?uploadId=${item.id}`)}
+          disableSwipeToProfile={disableSwipeToProfile}
         />
       )}
     />

@@ -89,6 +89,7 @@ export default function PhotoDetailScreen() {
         posts={posts}
         isLoading={isLoading}
         initialIndex={initialIndex}
+        disableSwipeToProfile
       />
     </Animated.View>
   );
