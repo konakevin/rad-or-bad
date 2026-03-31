@@ -9,6 +9,7 @@ export default function SceneAtmosphereScreen() {
   const toggle = useOnboardingStore((s) => s.toggleSceneAtmosphere);
 
   return (
+    <OnboardingTileScreen
       stepNumber={6}
       title="Set the scene"
       subtitle="Pick the weather and time your dreams take place"
@@ -16,7 +17,6 @@ export default function SceneAtmosphereScreen() {
       selected={atmospheres}
       onToggle={(key) => toggle(key as SceneAtmosphere)}
       minRequired={LIMITS.sceneAtmospheres.min}
-      accentColor="#FF8C00"
       onNext={() => router.push('/(onboarding)/colorPalette')}
       onBack={() => router.back()}
     />

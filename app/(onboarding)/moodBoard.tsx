@@ -24,6 +24,7 @@ export default function MoodBoardScreen() {
   }
 
   return (
+    <OnboardingTileScreen
       stepNumber={5}
       title="Set the mood"
       subtitle="Pick the moods you're drawn to"

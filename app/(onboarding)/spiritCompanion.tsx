@@ -9,6 +9,7 @@ export default function SpiritCompanionScreen() {
   const setCompanion = useOnboardingStore((s) => s.setSpiritCompanion);
 
   return (
+    <OnboardingTileScreen
       stepNumber={2}
       title="Pick your dream companion"
       subtitle="This little friend may appear in your dreams"
@@ -20,7 +21,6 @@ export default function SpiritCompanionScreen() {
       }}
       singleSelect
       minRequired={1}
-      accentColor="#BB88EE"
       onNext={() => router.push('/(onboarding)/styleSpectrum')}
       onBack={() => router.back()}
     />

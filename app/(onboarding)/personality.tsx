@@ -9,6 +9,7 @@ export default function PersonalityScreen() {
   const toggleTag = useOnboardingStore((s) => s.togglePersonalityTag);
 
   return (
+    <OnboardingTileScreen
       stepNumber={8}
       title="Describe yourself"
       subtitle="Pick traits that feel like you"
@@ -16,7 +17,6 @@ export default function PersonalityScreen() {
       selected={tags}
       onToggle={(key) => toggleTag(key as PersonalityTag)}
       minRequired={LIMITS.personalityTags.min}
-      accentColor="#FF4500"
       onNext={() => router.push('/(onboarding)/surpriseFactor')}
       onBack={() => router.back()}
     />
