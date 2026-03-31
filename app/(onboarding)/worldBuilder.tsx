@@ -5,7 +5,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useOnboardingStore } from '@/store/onboarding';
-import { ERA_TILES, SETTING_TILES, TOTAL_STEPS } from '@/constants/onboarding';
+import { ERA_TILES, SETTING_TILES } from '@/constants/onboarding';
+import { OnboardingHeader } from '@/components/OnboardingHeader';
 import { colors } from '@/constants/theme';
 import type { Era, Setting } from '@/types/recipe';
 
