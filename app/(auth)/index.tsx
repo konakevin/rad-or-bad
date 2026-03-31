@@ -11,33 +11,24 @@ import { signInWithGoogle } from '@/lib/googleAuth';
 import { signInWithApple } from '@/lib/appleAuth';
 import { signInWithFacebook } from '@/lib/facebookAuth';
 
-const HOT_GRADIENT: [string, string, ...string[]] = ['#FFD700', '#FF8C00', '#FF4500'];
-const COLD_GRADIENT: [string, string, ...string[]] = ['#44DDCC', '#6699EE', '#BB88EE'];
+const RAINBOW_GRADIENT: [string, string, ...string[]] = ['#FFD700', '#FF8C00', '#FF4500', '#BB88EE', '#6699EE', '#44DDCC'];
 
 function Tagline() {
   return (
     <View style={{ alignItems: 'center' }}>
-      <Text style={authStyles.tagline}>It's all vibes</Text>
+      <Text style={authStyles.tagline}>Share your dreams with the world</Text>
     </View>
-  );
-}
-
-function GradientWord({ text, colors }: { text: string; colors: [string, string, ...string[]] }) {
-  return (
-    <MaskedView maskElement={<Text style={authStyles.logoWord}>{text}</Text>}>
-      <LinearGradient colors={colors} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
-        <Text style={[authStyles.logoWord, { opacity: 0 }]}>{text}</Text>
-      </LinearGradient>
-    </MaskedView>
   );
 }
 
 function Logo() {
   return (
     <View style={authStyles.logoContainer}>
-      <GradientWord text="RAD" colors={HOT_GRADIENT} />
-      <Text style={authStyles.logoOr}>OR</Text>
-      <GradientWord text="BAD" colors={COLD_GRADIENT} />
+      <MaskedView maskElement={<Text style={authStyles.logoWord}>dreamcraft</Text>}>
+        <LinearGradient colors={RAINBOW_GRADIENT} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
+          <Text style={[authStyles.logoWord, { opacity: 0 }]}>dreamcraft</Text>
+        </LinearGradient>
+      </MaskedView>
     </View>
   );
 }
@@ -45,20 +36,15 @@ function Logo() {
 const authStyles = StyleSheet.create({
   logoContainer: {
     alignItems: 'center',
-    gap: -4,
     marginBottom: 12,
   },
   logoWord: {
-    fontSize: 44,
+    fontSize: 38,
     fontWeight: '900',
+    letterSpacing: -1,
     letterSpacing: 6,
   },
-  logoOr: {
-    color: 'rgba(255,255,255,0.8)',
-    fontSize: 14,
-    fontWeight: '800',
-    letterSpacing: 6,
-    marginVertical: 2,
+  _logoOrRemoved: {
   },
   tagline: {
     color: 'rgba(255,255,255,0.8)',
