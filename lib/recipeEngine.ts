@@ -325,11 +325,11 @@ const WEIRDNESS_MODIFIERS = [
 // ── TECHNIQUE: Scale modifiers ──────────────────────────────────────────────
 
 const SCALE_MODIFIERS = [
-  'extreme macro close-up, tiny details filling the frame', // 0-0.2
-  'intimate close-up, shallow depth of field', // 0.2-0.4
-  'medium shot, subject fills most of frame', // 0.4-0.6
-  'wide shot, subject in environment, context visible', // 0.6-0.8
-  'epic vast panoramic vista, tiny subject in enormous landscape', // 0.8-1.0
+  'zoomed in on tiny intricate details', // 0-0.2
+  'up close and personal', // 0.2-0.4
+  'balanced view showing subject and surroundings', // 0.4-0.6
+  'pulled back to show the full environment', // 0.6-0.8
+  'vast sweeping view, everything feels enormous', // 0.8-1.0
 ];
 
 // ── SUBJECT: Actions ────────────────────────────────────────────────────────
@@ -817,7 +817,7 @@ export function buildRawPrompt(input: PromptInput): string {
   }
 
   // Keep it dreamy
-  parts.push('No photorealistic human portraits. Vertical composition.');
+  parts.push('No photorealistic human portraits.');
 
   return parts.join(' ');
 }
