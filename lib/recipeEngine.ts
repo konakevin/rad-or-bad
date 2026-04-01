@@ -816,7 +816,28 @@ export function buildRawPrompt(input: PromptInput): string {
     parts.push(`Hidden somewhere: a small ${input.spiritCompanion.replace(/_/g, ' ')}.`);
   }
 
-  // Keep it dreamy
+  // Random composition — break the corridor perspective
+  const compositions = [
+    'Compose as if cropping into a detail of a much larger painting.',
+    'Bird\'s eye view looking straight down.',
+    'Extreme close-up on one interesting detail.',
+    'Viewed from below looking up.',
+    'Off-center composition, main subject to one side.',
+    'Seen through a window, doorway, or frame within the scene.',
+    'Fisheye lens distortion, everything curves.',
+    'Split composition, two contrasting halves.',
+    'Scattered elements floating in space, no horizon line.',
+    'Flat pattern filling the entire frame, no depth.',
+    'Isometric angle, like a video game map.',
+    'Extreme wide shot, everything is tiny.',
+    'Reflected in water, mirror image.',
+    '', // no directive — let AI choose freely
+    '', // no directive
+    '', // no directive
+  ];
+  const comp = pick(compositions);
+  if (comp) parts.push(comp);
+
   parts.push('No photorealistic human portraits.');
 
   return parts.join(' ');
