@@ -14,7 +14,6 @@ import { DEFAULT_RECIPE } from '@/types/recipe';
 import type { Recipe } from '@/types/recipe';
 import { colors } from '@/constants/theme';
 import { useSparkleBalance, useSpendSparkles } from '@/hooks/useSparkles';
-import { useDreamWish, useSetDreamWish } from '@/hooks/useDreamWish';
 import { showAlert } from '@/components/CustomAlert';
 import { registerRecipe } from '@/lib/recipeRegistry';
 import { MASCOT_URLS } from '@/constants/mascots';
@@ -36,8 +35,6 @@ export default function DreamScreen() {
 
   const { data: sparkleBalance = 0 } = useSparkleBalance();
   const { mutateAsync: spendSparkles } = useSpendSparkles();
-  const { wish } = useDreamWish();
-  const { mutate: clearWish } = useSetDreamWish();
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [photoBase64, setPhotoBase64] = useState<string | null>(null);
   const [dreamAlbum, setDreamAlbum] = useState<{ url: string; prompt: string; fromWish: string | null }[]>([]);
@@ -149,9 +146,6 @@ DREAM BOT PERSONALITY:
 - Personality: ${tags || 'expressive'}
 ${input.spiritAppears && input.spiritCompanion ? `- Companion: small ${input.spiritCompanion.replace(/_/g, ' ')} somewhere` : ''}
 
-${wish ? `DREAM WISH: "${wish}"
-
-The user made this wish. It is the HEART of the dream — the subject, scene, or theme they want. Use the Dream Bot personality above to STYLE it (medium, mood, lighting, colors), but the wish defines WHAT the dream is about. If the wish specifies its own mood or style elements, the wish wins over the personality traits.` : ''}
 ${hint ? `USER HINT: "${hint}"
 
 The user typed this hint. Figure out their INTENT and weave it into the dream.` : ''}
@@ -164,20 +158,18 @@ IMPORTANT RULES:
 FORMAT: "[medium]. [reimagined scene with fantastical elements]. [mood + lighting + colors]."
 NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`;
 
-        const fallback = `Reimagine this image as ${input.medium}. Transform into a fantastical dream scene, ${style}. ${wish ? `Dream wish: ${wish}.` : ''} ${hint ? `Theme: ${hint}.` : ''} No filters, full creative reimagining.`;
+        const fallback = `Reimagine this image as ${input.medium}. Transform into a fantastical dream scene, ${style}. ${hint ? `Theme: ${hint}.` : ''} No filters, full creative reimagining.`;
         p = await enhanceWithHaiku(haikuRequest, fallback, 100);
       }
 
       const url = await generateFluxKontext(p, refUrl);
 
-      const usedWish = wish;
       setDreamAlbum(prev => {
         const newIndex = prev.length;
         setActiveIndex(newIndex);
         setTimeout(() => albumRef.current?.scrollToIndex({ index: newIndex, animated: true }), 100);
-        return [...prev, { url, prompt: p, fromWish: usedWish }];
+        return [...prev, { url, prompt: p, fromWish: null }];
       });
-      if (usedWish) clearWish(null);
       setDreaming(false);
       setPhase('reveal');
       imgOpacity.value = withTiming(1, { duration: 600 });
@@ -270,20 +262,15 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
     try {
       const recipe = await loadRecipe();
       const input = buildPromptInput(recipe);
-      let p = buildRawPrompt(input);
-      if (wish) {
-        p = `${p}. DREAM WISH: "${wish}" — this is the heart of the dream, the subject and scene the user wants. The style traits above shape HOW it looks.`;
-      }
+      const p = buildRawPrompt(input);
 
       const url = await generateFluxDev(p);
-      const usedWish = wish;
       setDreamAlbum(prev => {
         const newIndex = prev.length;
         setActiveIndex(newIndex);
         setTimeout(() => albumRef.current?.scrollToIndex({ index: newIndex, animated: true }), 100);
-        return [...prev, { url, prompt: p, fromWish: usedWish }];
+        return [...prev, { url, prompt: p, fromWish: null }];
       });
-      if (usedWish) clearWish(null);
       setDreaming(false);
       setPhase('reveal');
       imgOpacity.value = withTiming(1, { duration: 600 });

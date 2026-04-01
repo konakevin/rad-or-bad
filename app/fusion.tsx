@@ -194,42 +194,35 @@ export default function FusionScreen() {
         <View style={{ width: 28 }} />
       </View>
 
-      {/* Parents */}
-      <View style={s.parentsRow}>
-        <View style={s.parentCard}>
-          <Image source={{ uri: fusionTarget.imageUrl }} style={s.parentThumb} contentFit="cover" />
-          <Text style={s.parentLabel} numberOfLines={1}>@{fusionTarget.username}</Text>
+      {/* Tug-of-war slider */}
+      <View style={s.tugWrap}>
+        <View style={s.tugParent}>
+          <Image source={{ uri: fusionTarget.imageUrl }} style={s.tugThumb} contentFit="cover" />
+          <Text style={s.tugLabel} numberOfLines={1}>@{fusionTarget.username}</Text>
         </View>
-        <Ionicons name="git-merge" size={24} color={colors.accent} />
-        <View style={s.parentCard}>
-          <View style={s.parentYou}>
-            <Ionicons name="sparkles" size={20} color={colors.accent} />
-          </View>
-          <Text style={s.parentLabel}>Your DNA</Text>
-        </View>
-      </View>
-
-      {/* Blend slider */}
-      <View style={s.sliderWrap}>
-        <Text style={s.sliderLabel}>Their DNA</Text>
-        <View style={s.sliderInner}>
+        <View style={s.tugSliderWrap}>
           <Slider
-            style={s.slider}
+            style={s.tugSlider}
             minimumValue={0}
             maximumValue={100}
             step={5}
             value={blend}
-            onValueChange={setBlend}
+            onValueChange={(v) => setBlend(Math.round(v))}
             minimumTrackTintColor={colors.accent}
-            maximumTrackTintColor={colors.border}
-            thumbTintColor={colors.accent}
+            maximumTrackTintColor={colors.accent}
+            thumbTintColor="#FFFFFF"
           />
-          <Text style={s.sliderValue}>{100 - blend}/{blend}</Text>
+          <Text style={s.tugPercent}>{100 - blend} / {blend}</Text>
         </View>
-        <Text style={s.sliderLabel}>Your DNA</Text>
+        <View style={s.tugParent}>
+          <View style={s.tugYou}>
+            <Ionicons name="sparkles" size={18} color={colors.accent} />
+          </View>
+          <Text style={s.tugLabel}>You</Text>
+        </View>
       </View>
 
-      {/* Results album or fuse button */}
+      {/* Results album or empty state */}
       <View style={s.resultArea}>
         {album.length > 0 ? (
           <>
@@ -274,12 +267,14 @@ export default function FusionScreen() {
         ) : generating ? (
           <View style={s.center}>
             <ActivityIndicator size="large" color={colors.accent} />
-            <Text style={s.generatingText}>Fusing DNA...</Text>
+            <Text style={s.loadingTitle}>Fusing DNA...</Text>
+            <Text style={s.loadingSub}>Merging two Dream Bots into one</Text>
           </View>
         ) : (
           <View style={s.center}>
-            <Ionicons name="git-merge" size={48} color={colors.border} />
-            <Text style={s.emptyText}>Adjust the slider and fuse</Text>
+            <Ionicons name="git-merge" size={40} color={colors.textTertiary} />
+            <Text style={s.emptyTitle}>Ready to fuse</Text>
+            <Text style={s.emptySub}>Pick your blend and tap Fuse below</Text>
           </View>
         )}
       </View>
@@ -316,46 +311,48 @@ export default function FusionScreen() {
 
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10, paddingHorizontal: 40 },
   header: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     paddingHorizontal: 16, paddingVertical: 12,
+    borderBottomWidth: 0.5, borderBottomColor: colors.border,
   },
   headerTitle: { color: colors.textPrimary, fontSize: 18, fontWeight: '700' },
 
-  // Parents
-  parentsRow: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 16, paddingVertical: 16, paddingHorizontal: 20,
+  // Tug-of-war slider
+  tugWrap: {
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: 16, paddingVertical: 20, gap: 12,
   },
-  parentCard: { alignItems: 'center', gap: 6 },
-  parentThumb: { width: 64, height: 80, borderRadius: 12, borderWidth: 1, borderColor: colors.border },
-  parentYou: {
-    width: 64, height: 80, borderRadius: 12, backgroundColor: colors.accentBg,
-    borderWidth: 1, borderColor: colors.accentBorder,
+  tugParent: { alignItems: 'center', gap: 6, width: 56 },
+  tugThumb: {
+    width: 48, height: 48, borderRadius: 24,
+    borderWidth: 2, borderColor: colors.border,
+  },
+  tugYou: {
+    width: 48, height: 48, borderRadius: 24,
+    backgroundColor: colors.accentBg, borderWidth: 2, borderColor: colors.accent,
     alignItems: 'center', justifyContent: 'center',
   },
-  parentLabel: { color: colors.textSecondary, fontSize: 12, fontWeight: '600', maxWidth: 80, textAlign: 'center' },
-
-  // Slider
-  sliderWrap: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingHorizontal: 20, paddingBottom: 12,
-  },
-  sliderInner: { flex: 1, alignItems: 'center' },
-  slider: { width: '100%', height: 40 },
-  sliderValue: { color: colors.textSecondary, fontSize: 12, fontWeight: '700', marginTop: -4 },
-  sliderLabel: { color: colors.textMuted, fontSize: 10, fontWeight: '600', width: 44, textAlign: 'center' },
+  tugLabel: { color: colors.textSecondary, fontSize: 11, fontWeight: '600', textAlign: 'center' },
+  tugSliderWrap: { flex: 1, alignItems: 'center' },
+  tugSlider: { width: '100%', height: 40 },
+  tugPercent: { color: colors.textMuted, fontSize: 12, fontWeight: '700', marginTop: -2 },
 
   // Results
   resultArea: { flex: 1, justifyContent: 'center' },
-  resultImg: { width: PREVIEW_WIDTH, height: Math.min(PREVIEW_WIDTH * 1.5, 380), borderRadius: 20 },
+  resultImg: {
+    width: PREVIEW_WIDTH, height: Math.min(PREVIEW_WIDTH * 1.5, 380), borderRadius: 20,
+    borderWidth: 1, borderColor: colors.border,
+  },
   generatingOverlay: {
     ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.5)',
     alignItems: 'center', justifyContent: 'center', gap: 10, borderRadius: 20,
   },
-  generatingText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
-  emptyText: { color: colors.textSecondary, fontSize: 15 },
+  loadingTitle: { color: '#FFFFFF', fontSize: 17, fontWeight: '700' },
+  loadingSub: { color: 'rgba(255,255,255,0.7)', fontSize: 14 },
+  emptyTitle: { color: colors.textPrimary, fontSize: 17, fontWeight: '700' },
+  emptySub: { color: colors.textSecondary, fontSize: 14, textAlign: 'center' },
   dotRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8, marginTop: 14 },
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.25)' },
   dotActive: { backgroundColor: '#FFFFFF' },
@@ -369,7 +366,7 @@ const s = StyleSheet.create({
   ctaText: { color: '#FFF', fontSize: 17, fontWeight: '700' },
   fuseButton: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border,
+    backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border,
     borderRadius: 14, paddingVertical: 14,
   },
   fuseButtonDisabled: { opacity: 0.5 },
