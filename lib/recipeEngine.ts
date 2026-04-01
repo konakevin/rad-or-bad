@@ -636,7 +636,12 @@ function getModifierByValue(modifiers: string[], value: number): string {
   return modifiers[index];
 }
 
-function filterPool(pool: TaggedOption[], rolledAxes: Record<string, 'high' | 'low'>): string {
+function filterPool(pool: TaggedOption[], rolledAxes: Record<string, 'high' | 'low'>, chaos: number = 0.5): string {
+  // 30% + chaos bonus chance of picking ANY random medium — keeps things surprising
+  if (Math.random() < 0.3 + chaos * 0.2) {
+    return pick(pool).text;
+  }
+  // Otherwise pick from top scorers
   const scored = pool.map((opt) => {
     let score = 0;
     if (opt.axes) {
@@ -648,8 +653,7 @@ function filterPool(pool: TaggedOption[], rolledAxes: Record<string, 'high' | 'l
     return { text: opt.text, score };
   });
   scored.sort((a, b) => b.score - a.score);
-  // Pick from top 8 to keep variety high — not just the top 3-4 matches
-  const top = scored.slice(0, 8);
+  const top = scored.slice(0, 12);
   return pick(top).text;
 }
 
@@ -700,7 +704,7 @@ export function buildPromptInput(recipe: Recipe): PromptInput {
   };
 
   // TECHNIQUE layer
-  const medium = filterPool(MEDIUM_POOL, rolled);
+  const medium = filterPool(MEDIUM_POOL, rolled, chaos);
   const paletteKey = colorPalettes.length > 0 ? pick(colorPalettes) : 'everything';
   const colorKeywordsStr = PALETTE_KEYWORDS[paletteKey] || '';
   const weirdnessModifier = getModifierByValue(WEIRDNESS_MODIFIERS, axes.weirdness);
@@ -754,8 +758,8 @@ export function buildPromptInput(recipe: Recipe): PromptInput {
   }
 
   // ATMOSPHERE layer
-  const mood = filterPool(MOOD_POOL, rolled);
-  const lighting = filterPool(LIGHTING_POOL, rolled);
+  const mood = filterPool(MOOD_POOL, rolled, chaos);
+  const lighting = filterPool(LIGHTING_POOL, rolled, chaos);
 
   const tagCount = Math.min(3, personalityTags.length);
   const shuffledTags = [...personalityTags].sort(() => Math.random() - 0.5);
