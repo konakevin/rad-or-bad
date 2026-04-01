@@ -594,6 +594,10 @@ const DREAM_SUBJECTS = [
   // Scale subjects
   'a miniature world inside a dewdrop', 'an enormous clock tower',
   'a tiny boat on a vast ocean', 'a single candle in infinite darkness',
+  // Stylized humanoid figures (not photorealistic)
+  'a tiny cloaked wanderer seen from far away', 'a silhouette standing at the edge of something vast',
+  'a small explorer with a glowing backpack', 'a masked spirit dancer',
+  'a robot child discovering something for the first time',
 ];
 
 // Interests that are too vague on their own — always expand to a specific flavor
@@ -810,8 +814,8 @@ export function buildRawPrompt(input: PromptInput): string {
     parts.push(`a small ${companion} visible somewhere in the scene`);
   }
 
-  // No humans — this is a dream art app
-  parts.push('no humans, no people, no faces');
+  // Avoid photorealistic humans — stylized/fantastical characters are ok
+  parts.push('no photorealistic humans or faces');
   parts.push('portrait orientation 9:16 ratio');
 
   return parts.join(', ');
