@@ -17,6 +17,11 @@ import type { Recipe } from '@/types/recipe';
 import { colors } from '@/constants/theme';
 import { randomMascot } from '@/constants/mascots';
 import { DreamWishBadge } from '@/components/DreamWishBadge';
+import { useFusionStore } from '@/store/fusion';
+import { useDreamFusion } from '@/hooks/useDreamFusion';
+import { useSparkleBalance, useSpendSparkles } from '@/hooks/useSparkles';
+import { showAlert } from '@/components/CustomAlert';
+import { MASCOT_URLS } from '@/constants/mascots';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const PREVIEW_WIDTH = SCREEN_WIDTH - 48;
@@ -27,11 +32,21 @@ const ANTHROPIC_KEY = '***REMOVED***';
 
 type Phase = 'pick' | 'preview' | 'dreaming' | 'reveal' | 'posting';
 
+const FUSE_COST = 3;
+const STYLE_COST = 2;
+
 export default function DreamScreen() {
   const user = useAuthStore((s) => s.user);
   const mascotUrl = useMemo(() => randomMascot(), []);
   const [phase, setPhase] = useState<Phase>('pick');
   const loadingMascot = useMemo(() => randomMascot(), []);
+
+  // Fusion context
+  const fusionTarget = useFusionStore((s) => s.target);
+  const clearFusion = useFusionStore((s) => s.clear);
+  const { mutateAsync: fuseAsync, isPending: isFusing } = useDreamFusion();
+  const { data: sparkleBalance = 0 } = useSparkleBalance();
+  const { mutateAsync: spendSparkles } = useSpendSparkles();
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [dreamUrl, setDreamUrl] = useState<string | null>(null);
   const [photoBase64, setPhotoBase64] = useState<string | null>(null);
@@ -260,6 +275,36 @@ NO poetry. NO abstract words. Output ONLY the prompt.`;
     }
   }
 
+  async function handleFusion(mode: 'fuse' | 'style') {
+    if (!fusionTarget || !user) return;
+    const cost = mode === 'fuse' ? FUSE_COST : STYLE_COST;
+    if (sparkleBalance < cost) {
+      showAlert('Not enough sparkles', `You need ${cost}✨ but have ${sparkleBalance}✨`);
+      return;
+    }
+    try {
+      await spendSparkles({ amount: cost, reason: `dream_${mode}`, referenceId: fusionTarget.postId });
+      setPhase('dreaming');
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      const result = await fuseAsync({ mode, sourcePostId: fusionTarget.postId, sourcePrompt: fusionTarget.prompt });
+      setDreamUrl(result.imageUrl);
+      setPrompt(result.prompt);
+      setPhase('reveal');
+      imgOpacity.value = withTiming(1, { duration: 600 });
+      imgScale.value = withSequence(withTiming(1.05, { duration: 400 }), withTiming(1, { duration: 200 }));
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      clearFusion();
+    } catch (err) {
+      setPhase('pick');
+      const msg = (err as Error).message;
+      if (msg === 'Not enough sparkles') {
+        showAlert('Not enough sparkles', `You need ${cost}✨ but have ${sparkleBalance}✨`);
+      } else {
+        Toast.show('Dream fusion failed', 'close-circle');
+      }
+    }
+  }
+
   function reset() {
     setPhase('pick');
     setPhotoUri(null);
@@ -275,6 +320,62 @@ NO poetry. NO abstract words. Output ONLY the prompt.`;
   // ── PICK ──────────────────────────────────────────────────────────────────
 
   if (phase === 'pick') {
+    // Fusion mode — user tapped merge on someone's dream
+    if (fusionTarget) {
+      return (
+        <SafeAreaView style={s.root}>
+          <View style={s.fusionHeader}>
+            <TouchableOpacity onPress={() => clearFusion()} hitSlop={12}>
+              <Ionicons name="close" size={28} color={colors.textSecondary} />
+            </TouchableOpacity>
+            <Text style={s.headerTitle}>Dream Fusion</Text>
+            <View style={s.sparkleRow}>
+              <Ionicons name="sparkles" size={14} color={colors.accent} />
+              <Text style={s.sparkleText}>{sparkleBalance}</Text>
+            </View>
+          </View>
+          <View style={s.fusionContent}>
+            <Image source={{ uri: fusionTarget.imageUrl }} style={s.fusionThumb} contentFit="cover" />
+            <Text style={s.fusionLabel}>@{fusionTarget.username}'s dream</Text>
+
+            <TouchableOpacity style={s.fusionOption} onPress={() => handleFusion('fuse')} activeOpacity={0.7}>
+              <View style={s.fusionOptionIcon}>
+                <Ionicons name="git-merge" size={22} color={colors.accent} />
+              </View>
+              <View style={s.fusionOptionText}>
+                <Text style={s.fusionOptionTitle}>Fuse Dreams</Text>
+                <Text style={s.fusionOptionSub}>Blend this dream with your Dream Bot's style</Text>
+              </View>
+              <View style={s.costBadge}><Text style={s.costText}>{FUSE_COST}✨</Text></View>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={s.fusionOption} onPress={() => handleFusion('style')} activeOpacity={0.7}>
+              <View style={s.fusionOptionIcon}>
+                <Ionicons name="color-wand" size={22} color={colors.accent} />
+              </View>
+              <View style={s.fusionOptionText}>
+                <Text style={s.fusionOptionTitle}>Dream in this style</Text>
+                <Text style={s.fusionOptionSub}>Your Dream Bot adopts this art style</Text>
+              </View>
+              <View style={s.costBadge}><Text style={s.costText}>{STYLE_COST}✨</Text></View>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={s.fusionOption} onPress={() => { pickPhoto(); }} activeOpacity={0.7}>
+              <View style={s.fusionOptionIcon}>
+                <Ionicons name="images" size={22} color={colors.accent} />
+              </View>
+              <View style={s.fusionOptionText}>
+                <Text style={s.fusionOptionTitle}>Dream a photo in this style</Text>
+                <Text style={s.fusionOptionSub}>Pick a photo and apply this dream's style</Text>
+              </View>
+              <View style={s.costBadge}><Text style={s.costText}>{STYLE_COST}✨</Text></View>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      );
+    }
+
+    // Normal mode
     return (
       <SafeAreaView style={s.root}>
         <View style={s.center}>
@@ -428,6 +529,33 @@ const s = StyleSheet.create({
   title: { color: colors.textPrimary, fontSize: 24, fontWeight: '800' },
   sub: { color: colors.textSecondary, fontSize: 15, textAlign: 'center', lineHeight: 22 },
   wishSection: { width: '100%', marginTop: 12 },
+  fusionHeader: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    paddingHorizontal: 16, paddingVertical: 12,
+  },
+  sparkleRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  sparkleText: { color: colors.accent, fontSize: 16, fontWeight: '700' },
+  fusionContent: { flex: 1, paddingHorizontal: 20, alignItems: 'center', gap: 14, paddingTop: 8 },
+  fusionThumb: {
+    width: 80, height: 110, borderRadius: 14, borderWidth: 1, borderColor: colors.border,
+  },
+  fusionLabel: { color: colors.textSecondary, fontSize: 14, fontWeight: '600' },
+  fusionOption: {
+    flexDirection: 'row', alignItems: 'center', width: '100%',
+    backgroundColor: colors.card, borderRadius: 14, borderWidth: 1, borderColor: colors.border,
+    padding: 16, gap: 14,
+  },
+  fusionOptionIcon: {
+    width: 44, height: 44, borderRadius: 12, backgroundColor: colors.accentBg,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  fusionOptionText: { flex: 1, gap: 2 },
+  fusionOptionTitle: { color: colors.textPrimary, fontSize: 16, fontWeight: '700' },
+  fusionOptionSub: { color: colors.textSecondary, fontSize: 13, lineHeight: 18 },
+  costBadge: {
+    backgroundColor: colors.accentBg, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 4,
+  },
+  costText: { color: colors.accent, fontSize: 14, fontWeight: '800' },
   cta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: colors.accent, borderRadius: 14, paddingVertical: 16, paddingHorizontal: 24, width: '100%' },
   ctaText: { color: '#FFF', fontSize: 17, fontWeight: '700' },
   ctaDisabled: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },

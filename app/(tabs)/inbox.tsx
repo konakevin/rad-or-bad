@@ -44,7 +44,7 @@ function getNotificationText(item: NotificationItem): { action: string; preview:
     case 'post_milestone':
       return { action: 'Your post hit ' + (item.body ?? 'a milestone!'), preview: null };
     case 'dream_generated':
-      return { action: 'A new dream has arrived ✨', preview: item.body };
+      return { action: 'A new dream has been conjured ✨', preview: item.body };
     default:
       return { action: '', preview: null };
   }

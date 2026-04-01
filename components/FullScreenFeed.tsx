@@ -20,6 +20,7 @@ import { useToggleFavorite } from '@/hooks/useToggleFavorite';
 import { useAuthStore } from '@/store/auth';
 import { supabase } from '@/lib/supabase';
 import { Toast } from '@/components/Toast';
+import { useFusionStore } from '@/store/fusion';
 import { colors } from '@/constants/theme';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -52,6 +53,7 @@ export function FullScreenFeed({
   const queryClient = useQueryClient();
   const { data: favoriteIds = new Set<string>() } = useFavoriteIds();
   const { mutate: toggleFavorite } = useToggleFavorite();
+  const setFusionTarget = useFusionStore((s) => s.setTarget);
 
   const handleDelete = useCallback(async (uploadId: string) => {
     const { error } = await supabase.from('uploads').delete().eq('id', uploadId);
@@ -95,6 +97,7 @@ export function FullScreenFeed({
   }
 
   return (
+    <>
     <FlatList
       ref={ref}
       data={posts}
@@ -125,9 +128,19 @@ export function FullScreenFeed({
           onComment={() => router.push(`/comments?uploadId=${item.id}`)}
           disableSwipeToProfile={disableSwipeToProfile}
           onDelete={item.user_id === user?.id ? () => handleDelete(item.id) : undefined}
+          onFuse={item.user_id !== user?.id && item.is_ai_generated ? () => {
+            setFusionTarget({
+              postId: item.id,
+              prompt: item.ai_prompt ?? item.caption ?? '',
+              imageUrl: item.image_url,
+              username: item.username,
+            });
+            router.navigate('/(tabs)/upload');
+          } : undefined}
         />
       )}
     />
+    </>
   );
 }
 

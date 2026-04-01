@@ -284,6 +284,13 @@ export default function SettingsScreen() {
             useOnboardingStore.getState().setIsEditing(true);
             router.push('/(onboarding)');
           }} />
+          <SettingsRow icon="trash-outline" label="Reset My Dream Bot" onPress={async () => {
+            await supabase.from('users').update({ has_ai_recipe: false }).eq('id', user!.id);
+            await supabase.from('user_recipes').delete().eq('user_id', user!.id);
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            const { Toast } = require('@/components/Toast');
+            Toast.show('Dream Bot reset — reload to set up again', 'checkmark-circle');
+          }} destructive trailing={null} />
         </View>
 
         {/* App section */}

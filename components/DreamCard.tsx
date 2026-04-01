@@ -30,6 +30,7 @@ export interface DreamPostItem {
   username: string;
   avatar_url: string | null;
   is_ai_generated: boolean;
+  ai_prompt?: string | null;
   created_at: string;
   comment_count?: number;
 }
@@ -44,9 +45,10 @@ interface Props {
   onShare?: () => void;
   disableSwipeToProfile?: boolean;
   onDelete?: () => void;
+  onFuse?: () => void;
 }
 
-export function DreamCard({ item, bottomPadding, isLiked, onLike, onToggleLike, onComment, onShare, disableSwipeToProfile, onDelete }: Props) {
+export function DreamCard({ item, bottomPadding, isLiked, onLike, onToggleLike, onComment, onShare, disableSwipeToProfile, onDelete, onFuse }: Props) {
   const lastTap = useRef(0);
   const swiped = useRef(false);
 
@@ -197,6 +199,11 @@ export function DreamCard({ item, bottomPadding, isLiked, onLike, onToggleLike, 
             <TouchableOpacity style={ui.sideButton} onPress={onShare ?? (() => router.push(`/sharePost?uploadId=${item.id}`))} activeOpacity={0.7}>
               <Ionicons name="paper-plane-outline" size={24} color="#FFFFFF" />
             </TouchableOpacity>
+            {onFuse && item.is_ai_generated && (
+              <TouchableOpacity style={ui.sideButton} onPress={onFuse} activeOpacity={0.7}>
+                <Ionicons name="git-merge-outline" size={24} color="#FFFFFF" />
+              </TouchableOpacity>
+            )}
           </View>
         </Pressable>
       </Animated.View>
