@@ -1,6 +1,7 @@
 import '../global.css';
 
 import { useEffect, useRef } from 'react';
+import { AppState } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -96,6 +97,22 @@ function DataPrefetcher() {
     activityLogged.current = true;
     supabase.from('users').update({ last_active_at: new Date().toISOString() }).eq('id', user.id);
   }, [user?.id]);
+
+  // Refresh all data when app returns from background after 5+ minutes
+  const backgroundedAt = useRef<number>(0);
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'background') {
+        backgroundedAt.current = Date.now();
+      } else if (state === 'active' && backgroundedAt.current > 0) {
+        const elapsed = Date.now() - backgroundedAt.current;
+        if (elapsed > 5 * 60 * 1000) {
+          queryClient.invalidateQueries();
+        }
+      }
+    });
+    return () => sub.remove();
+  }, []);
 
   useEffect(() => {
     if (!user) return;

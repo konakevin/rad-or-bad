@@ -1,5 +1,6 @@
 import { useState, useRef, useMemo } from 'react';
-import { View, FlatList, StyleSheet, Animated } from 'react-native';
+import { View, FlatList, StyleSheet, Animated, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useAlbumStore } from '@/store/album';
@@ -13,7 +14,7 @@ import { colors } from '@/constants/theme';
 /** Fetch a single post + user info */
 function useAlbumPosts(albumIds: string[], currentId: string) {
   return useQuery({
-    queryKey: ['albumPosts', albumIds.join(',')],
+    queryKey: ['albumPosts', albumIds.join(','), currentId],
     queryFn: async (): Promise<DreamPostItem[]> => {
       if (albumIds.length === 0) {
         // Single post — no album
@@ -93,6 +94,11 @@ export default function PhotoDetailScreen() {
   return (
     <Animated.View {...panHandlers} style={[s.root, { transform: [{ translateX }] }]}>
       <StatusBar hidden />
+      <TouchableOpacity style={s.backButton} onPress={() => router.back()} hitSlop={12}>
+        <View style={s.backCircle}>
+          <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
+        </View>
+      </TouchableOpacity>
       <FullScreenFeed
         posts={posts}
         isLoading={isLoading}
@@ -106,4 +112,9 @@ export default function PhotoDetailScreen() {
 
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#000' },
+  backButton: { position: 'absolute', top: 54, left: 16, zIndex: 10 },
+  backCircle: {
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center',
+  },
 });
