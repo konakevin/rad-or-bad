@@ -58,11 +58,11 @@ const MEDIUM_POOL: TaggedOption[] = [
   { text: 'cyberpunk neon cityscape style, rain-slicked surfaces, holographic ads', axes: { realism: 'high', brightness: 'low', energy: 'high' } },
   { text: 'gouache painting, thick opaque paint, matte finish, children\'s book illustration', axes: { realism: 'low', brightness: 'high', energy: 'low' } },
   { text: 'origami paper sculpture, crisp folds, white paper with colored accents', axes: { realism: 'low', complexity: 'low', brightness: 'high' } },
-  { text: 'art nouveau poster, flowing organic lines, floral borders, Alphonse Mucha style', axes: { realism: 'low', complexity: 'high', color_warmth: 'high' } },
+  { text: 'art nouveau style, flowing organic lines, Alphonse Mucha inspired', axes: { realism: 'low', complexity: 'high', color_warmth: 'high' } },
   { text: 'miniature tilt-shift photograph, toy-like depth of field, vivid saturated', axes: { realism: 'high', complexity: 'low', brightness: 'high' } },
   { text: 'woodcut print, bold carved lines, high contrast black and white with one accent color', axes: { complexity: 'low', brightness: 'low', energy: 'high' } },
   { text: 'Dreamworks animation style, expressive characters, cinematic lighting', axes: { realism: 'low', energy: 'high', complexity: 'high' } },
-  { text: 'polaroid instant photo, slightly overexposed, white border, nostalgic fade', axes: { realism: 'high', brightness: 'high', energy: 'low' } },
+  { text: 'faded vintage photograph, slightly overexposed, warm nostalgic tones', axes: { realism: 'high', brightness: 'high', energy: 'low' } },
   { text: 'shadow puppet theater, silhouettes against warm backlit screen', axes: { realism: 'low', brightness: 'low', complexity: 'low' } },
   // Anime & Japan inspired
   { text: 'shonen manga action scene, speed lines, dramatic angles, high energy', axes: { realism: 'low', energy: 'high', complexity: 'high' } },
