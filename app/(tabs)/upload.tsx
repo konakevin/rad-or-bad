@@ -7,16 +7,12 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, withSequence } from 'react-native-reanimated';
 import { router } from 'expo-router';
-import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/auth';
-import { useFeedStore } from '@/store/feed';
 import { buildPromptInput, buildRawPrompt } from '@/lib/recipeEngine';
 import { Toast } from '@/components/Toast';
 import { DEFAULT_RECIPE } from '@/types/recipe';
 import type { Recipe } from '@/types/recipe';
 import { colors } from '@/constants/theme';
-import { useFusionStore } from '@/store/fusion';
-import { useDreamFusion } from '@/hooks/useDreamFusion';
 import { useSparkleBalance, useSpendSparkles } from '@/hooks/useSparkles';
 import { useDreamWish, useSetDreamWish } from '@/hooks/useDreamWish';
 import { showAlert } from '@/components/CustomAlert';
@@ -26,14 +22,11 @@ import { MASCOT_URLS } from '@/constants/mascots';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const PREVIEW_WIDTH = SCREEN_WIDTH - 48;
 
-// TODO: move to edge function for production
-const REPLICATE_TOKEN = '***REMOVED***';
-const ANTHROPIC_KEY = '***REMOVED***';
+import { enhanceWithHaiku, generateFluxDev, generateFluxKontext, persistImage, ANTHROPIC_KEY } from '@/lib/dreamApi';
+import { postDream, pinToFeed } from '@/lib/dreamPost';
 
 type Phase = 'pick' | 'preview' | 'dreaming' | 'reveal' | 'posting';
 
-const FUSE_COST = 3;
-const STYLE_COST = 2;
 
 export default function DreamScreen() {
   const user = useAuthStore((s) => s.user);
@@ -41,10 +34,6 @@ export default function DreamScreen() {
   const [phase, setPhase] = useState<Phase>('pick');
   const loadingMascot = MASCOT_URLS[1]; // artist at easel
 
-  // Fusion context
-  const fusionTarget = useFusionStore((s) => s.target);
-  const clearFusion = useFusionStore((s) => s.clear);
-  const { mutateAsync: fuseAsync, isPending: isFusing } = useDreamFusion();
   const { data: sparkleBalance = 0 } = useSparkleBalance();
   const { mutateAsync: spendSparkles } = useSpendSparkles();
   const { wish } = useDreamWish();
@@ -175,64 +164,11 @@ IMPORTANT RULES:
 FORMAT: "[medium]. [reimagined scene with fantastical elements]. [mood + lighting + colors]."
 NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`;
 
-        try {
-          const haikuRes = await fetch('https://api.anthropic.com/v1/messages', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-api-key': ANTHROPIC_KEY,
-              'anthropic-version': '2023-06-01',
-              'anthropic-dangerous-direct-browser-access': 'true',
-            },
-            body: JSON.stringify({
-              model: 'claude-haiku-4-5-20251001',
-              max_tokens: 100,
-              messages: [{ role: 'user', content: haikuRequest }],
-            }),
-          });
-          if (!haikuRes.ok) throw new Error('Haiku error');
-          const haikuData = await haikuRes.json();
-          p = haikuData.content?.[0]?.text?.trim() ?? '';
-        } catch {
-          p = `Reimagine this image as ${input.medium}. Transform into a fantastical dream scene, ${style}. ${wish ? `Dream wish: ${wish}.` : ''} ${hint ? `Theme: ${hint}.` : ''} No filters, full creative reimagining.`;
-        }
+        const fallback = `Reimagine this image as ${input.medium}. Transform into a fantastical dream scene, ${style}. ${wish ? `Dream wish: ${wish}.` : ''} ${hint ? `Theme: ${hint}.` : ''} No filters, full creative reimagining.`;
+        p = await enhanceWithHaiku(haikuRequest, fallback, 100);
       }
 
-      // Generate via Flux Kontext Pro on Replicate
-      const createRes = await fetch('https://api.replicate.com/v1/models/black-forest-labs/flux-kontext-pro/predictions', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${REPLICATE_TOKEN}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          input: {
-            prompt: p,
-            input_image: refUrl,
-            aspect_ratio: '9:16',
-            output_format: 'jpg',
-            output_quality: 90,
-          },
-        }),
-      });
-
-      const createData = await createRes.json();
-      if (!createData.id) throw new Error('Dream generation failed to start');
-
-      // Poll for result
-      let url: string | null = null;
-      for (let i = 0; i < 30; i++) {
-        await new Promise((r) => setTimeout(r, 2000));
-        const pollRes = await fetch(`https://api.replicate.com/v1/predictions/${createData.id}`, {
-          headers: { 'Authorization': `Bearer ${REPLICATE_TOKEN}` },
-        });
-        const pollData = await pollRes.json();
-
-        if (pollData.status === 'succeeded') {
-          url = typeof pollData.output === 'string' ? pollData.output : pollData.output?.[0];
-          break;
-        }
-        if (pollData.status === 'failed') throw new Error('Dream generation failed');
-      }
-
-      if (!url) throw new Error('Dream generation timed out');
+      const url = await generateFluxKontext(p, refUrl);
 
       const usedWish = wish;
       setDreamAlbum(prev => {
@@ -272,66 +208,28 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
     console.log('[Post] Starting post with URL:', postUrl.slice(0, 60));
 
     try {
-      let buf: ArrayBuffer;
-      try {
-        const resp = await fetch(postUrl);
-        if (!resp.ok) throw new Error(`Failed to download image: ${resp.status}`);
-        buf = await resp.arrayBuffer();
-      } catch (dlErr) {
-        Toast.show('Download failed — try again', 'close-circle');
-        throw dlErr;
-      }
+      const imageUrl = await persistImage(postUrl, user.id);
 
-      const fileName = `${user.id}/${Date.now()}.jpg`;
-
-      try {
-        const { error } = await supabase.storage
-          .from('uploads')
-          .upload(fileName, buf, { contentType: 'image/jpeg' });
-        if (error) throw error;
-      } catch (upErr) {
-        Toast.show('Upload failed — try again', 'close-circle');
-        throw upErr;
-      }
-
-      const { data: urlData } = supabase.storage.from('uploads').getPublicUrl(fileName);
-      const captionText = postPrompt.length > 200 ? postPrompt.slice(0, 197) + '...' : postPrompt;
-
-      // Register the recipe that generated this dream
       let recipeId: string | null = null;
       try {
         const recipe = cachedRecipe ?? (await loadRecipe());
         recipeId = await registerRecipe(user.id, recipe);
       } catch { /* non-critical */ }
 
-      const { data: insertedRow } = await supabase.from('uploads').insert({
-        user_id: user.id,
-        image_url: urlData.publicUrl,
-        media_type: 'image',
-        categories: ['art'],
-        caption: captionText,
-        is_active: true,
-        is_approved: true,
-        is_moderated: true,
-        is_ai_generated: true,
-        ai_prompt: postPrompt,
-        total_votes: 0, rad_votes: 0, bad_votes: 0,
-        width: 768, height: 1664,
-        from_wish: postWish,
-        recipe_id: recipeId,
-      }).select('id').single();
+      const uploadId = await postDream({
+        userId: user.id,
+        imageUrl,
+        prompt: postPrompt,
+        recipeId,
+        fromWish: postWish,
+      });
 
-      // Pin to feed so it shows as top card
-      useFeedStore.getState().setPinnedPost({
-        id: insertedRow?.id ?? `temp-${Date.now()}`,
-        user_id: user.id,
-        image_url: urlData.publicUrl,
-        caption: captionText,
+      pinToFeed({
+        id: uploadId,
+        userId: user.id,
+        imageUrl,
         username: user.user_metadata?.username ?? '',
-        avatar_url: user.user_metadata?.avatar_url ?? null,
-        is_ai_generated: true,
-        created_at: new Date().toISOString(),
-        comment_count: 0,
+        avatarUrl: user.user_metadata?.avatar_url ?? null,
       });
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -352,40 +250,6 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
       Toast.show('Failed to post dream', 'close-circle');
       setPosting(false);
       setPhase('reveal');
-    }
-  }
-
-  async function handleFusion(mode: 'fuse' | 'style') {
-    if (!fusionTarget || !user) return;
-    const cost = mode === 'fuse' ? FUSE_COST : STYLE_COST;
-    if (sparkleBalance < cost) {
-      showAlert('Not enough sparkles', `You need ${cost}✨ but have ${sparkleBalance}✨`);
-      return;
-    }
-    try {
-      await spendSparkles({ amount: cost, reason: `dream_${mode}`, referenceId: fusionTarget.postId });
-      setPhase('dreaming');
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      const result = await fuseAsync({ mode, sourcePostId: fusionTarget.postId, sourcePrompt: fusionTarget.prompt });
-      setDreamAlbum(prev => {
-        const newIndex = prev.length;
-        setActiveIndex(newIndex);
-        setTimeout(() => albumRef.current?.scrollToIndex({ index: newIndex, animated: true }), 100);
-        return [...prev, { url: result.imageUrl, prompt: result.prompt, fromWish: null }];
-      });
-      setPhase('reveal');
-      imgOpacity.value = withTiming(1, { duration: 600 });
-      imgScale.value = withSequence(withTiming(1.05, { duration: 400 }), withTiming(1, { duration: 200 }));
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      clearFusion();
-    } catch (err) {
-      setPhase('pick');
-      const msg = (err as Error).message;
-      if (msg === 'Not enough sparkles') {
-        showAlert('Not enough sparkles', `You need ${cost}✨ but have ${sparkleBalance}✨`);
-      } else {
-        Toast.show('Dream fusion failed', 'close-circle');
-      }
     }
   }
 
@@ -411,38 +275,7 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
         p = `${p}. DREAM WISH: "${wish}" — this is the heart of the dream, the subject and scene the user wants. The style traits above shape HOW it looks.`;
       }
 
-      // Generate via Replicate
-      const createRes = await fetch('https://api.replicate.com/v1/models/black-forest-labs/flux-dev/predictions', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${REPLICATE_TOKEN}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          input: { prompt: p, aspect_ratio: '9:16', num_outputs: 1, output_format: 'jpg' },
-        }),
-      });
-
-      if (createRes.status === 429) {
-        const body = await createRes.json();
-        await new Promise((r) => setTimeout(r, (body.retry_after ?? 6) * 1000));
-        busy.current = false;
-        return justDream();
-      }
-
-      if (!createRes.ok) throw new Error('Generation failed to start');
-      const createData = await createRes.json();
-      if (!createData.id) throw new Error('No prediction ID');
-
-      let url: string | null = null;
-      for (let i = 0; i < 60; i++) {
-        await new Promise((r) => setTimeout(r, 1500));
-        const pollRes = await fetch(`https://api.replicate.com/v1/predictions/${createData.id}`, {
-          headers: { 'Authorization': `Bearer ${REPLICATE_TOKEN}` },
-        });
-        const pollData = await pollRes.json();
-        if (pollData.status === 'succeeded') { url = pollData.output?.[0]; break; }
-        if (pollData.status === 'failed') throw new Error('Generation failed');
-      }
-
-      if (!url) throw new Error('Generation timed out');
+      const url = await generateFluxDev(p);
       const usedWish = wish;
       setDreamAlbum(prev => {
         const newIndex = prev.length;
@@ -477,7 +310,6 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
     setPosting(false);
     setDreaming(false);
     setLetBotDream(true);
-    clearFusion();
     imgOpacity.value = 0;
     imgScale.value = 0.85;
   }
@@ -485,62 +317,6 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
   // ── PICK ──────────────────────────────────────────────────────────────────
 
   if (phase === 'pick') {
-    // Fusion mode — user tapped merge on someone's dream
-    if (fusionTarget) {
-      return (
-        <SafeAreaView style={s.root}>
-          <View style={s.fusionHeader}>
-            <TouchableOpacity onPress={() => clearFusion()} hitSlop={12}>
-              <Ionicons name="close" size={28} color={colors.textSecondary} />
-            </TouchableOpacity>
-            <Text style={s.headerTitle}>Dream Fusion</Text>
-            <View style={s.sparkleRow}>
-              <Ionicons name="sparkles" size={14} color={colors.accent} />
-              <Text style={s.sparkleText}>{sparkleBalance}</Text>
-            </View>
-          </View>
-          <View style={s.fusionContent}>
-            <Image source={{ uri: fusionTarget.imageUrl }} style={s.fusionThumb} contentFit="cover" />
-            <Text style={s.fusionLabel}>@{fusionTarget.username}'s dream</Text>
-
-            <TouchableOpacity style={s.fusionOption} onPress={() => handleFusion('fuse')} activeOpacity={0.7}>
-              <View style={s.fusionOptionIcon}>
-                <Ionicons name="git-merge" size={22} color={colors.accent} />
-              </View>
-              <View style={s.fusionOptionText}>
-                <Text style={s.fusionOptionTitle}>Fuse Dreams</Text>
-                <Text style={s.fusionOptionSub}>Blend this dream with your Dream Bot's style</Text>
-              </View>
-              <View style={s.costBadge}><Text style={s.costText}>{FUSE_COST}✨</Text></View>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={s.fusionOption} onPress={() => handleFusion('style')} activeOpacity={0.7}>
-              <View style={s.fusionOptionIcon}>
-                <Ionicons name="brush" size={22} color={colors.accent} />
-              </View>
-              <View style={s.fusionOptionText}>
-                <Text style={s.fusionOptionTitle}>Dream in this style</Text>
-                <Text style={s.fusionOptionSub}>Your Dream Bot adopts this art style</Text>
-              </View>
-              <View style={s.costBadge}><Text style={s.costText}>{STYLE_COST}✨</Text></View>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={s.fusionOption} onPress={() => { pickPhoto(); }} activeOpacity={0.7}>
-              <View style={s.fusionOptionIcon}>
-                <Ionicons name="images" size={22} color={colors.accent} />
-              </View>
-              <View style={s.fusionOptionText}>
-                <Text style={s.fusionOptionTitle}>Dream a photo in this style</Text>
-                <Text style={s.fusionOptionSub}>Pick a photo and apply this dream's style</Text>
-              </View>
-              <View style={s.costBadge}><Text style={s.costText}>{STYLE_COST}✨</Text></View>
-            </TouchableOpacity>
-          </View>
-        </SafeAreaView>
-      );
-    }
-
-    // Normal mode
     return (
       <SafeAreaView style={s.root}>
         <View style={s.center}>
@@ -799,33 +575,6 @@ const s = StyleSheet.create({
   loadingMascot: { width: 140, height: 140, borderRadius: 28, marginBottom: 8 },
   title: { color: colors.textPrimary, fontSize: 24, fontWeight: '800' },
   sub: { color: colors.textSecondary, fontSize: 15, textAlign: 'center', lineHeight: 22 },
-  fusionHeader: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingHorizontal: 16, paddingVertical: 12,
-  },
-  sparkleRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  sparkleText: { color: colors.accent, fontSize: 16, fontWeight: '700' },
-  fusionContent: { flex: 1, paddingHorizontal: 20, alignItems: 'center', gap: 14, paddingTop: 8 },
-  fusionThumb: {
-    width: 80, height: 110, borderRadius: 14, borderWidth: 1, borderColor: colors.border,
-  },
-  fusionLabel: { color: colors.textSecondary, fontSize: 14, fontWeight: '600' },
-  fusionOption: {
-    flexDirection: 'row', alignItems: 'center', width: '100%',
-    backgroundColor: colors.card, borderRadius: 14, borderWidth: 1, borderColor: colors.border,
-    padding: 16, gap: 14,
-  },
-  fusionOptionIcon: {
-    width: 44, height: 44, borderRadius: 12, backgroundColor: colors.accentBg,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  fusionOptionText: { flex: 1, gap: 2 },
-  fusionOptionTitle: { color: colors.textPrimary, fontSize: 16, fontWeight: '700' },
-  fusionOptionSub: { color: colors.textSecondary, fontSize: 13, lineHeight: 18 },
-  costBadge: {
-    backgroundColor: colors.accentBg, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 4,
-  },
-  costText: { color: colors.accent, fontSize: 14, fontWeight: '800' },
   cta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: colors.accent, borderRadius: 14, paddingVertical: 16, paddingHorizontal: 24, width: '100%' },
   ctaText: { color: '#FFF', fontSize: 17, fontWeight: '700' },
   ctaSecondary: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, borderRadius: 14, paddingVertical: 16, paddingHorizontal: 24, width: '100%' },

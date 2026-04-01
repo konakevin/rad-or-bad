@@ -14,7 +14,6 @@ import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/auth';
 import { useFusionStore } from '@/store/fusion';
-import { useFeedStore } from '@/store/feed';
 import { useSparkleBalance, useSpendSparkles } from '@/hooks/useSparkles';
 import { showAlert } from '@/components/CustomAlert';
 import { Toast } from '@/components/Toast';
@@ -22,15 +21,14 @@ import { colors } from '@/constants/theme';
 import { fuseRecipes } from '@/lib/geneticMerge';
 import { registerRecipe, fetchRecipeById } from '@/lib/recipeRegistry';
 import { buildPromptInput, buildRawPrompt, buildHaikuPrompt } from '@/lib/recipeEngine';
+import { enhanceWithHaiku, generateFluxDev, persistImage } from '@/lib/dreamApi';
+import { postDream, pinToFeed } from '@/lib/dreamPost';
 import type { Recipe } from '@/types/recipe';
 import { DEFAULT_RECIPE } from '@/types/recipe';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const PREVIEW_WIDTH = SCREEN_WIDTH - 48;
 const FUSE_COST = 3;
-
-const REPLICATE_TOKEN = '***REMOVED***';
-const ANTHROPIC_KEY = '***REMOVED***';
 
 type FusionItem = { url: string; prompt: string; mergedRecipe: Recipe };
 
@@ -97,74 +95,21 @@ export default function FusionScreen() {
       const input = buildPromptInput(merged);
 
       // Build prompt via Haiku with epigenetic context
-      let prompt: string;
       const haikuBrief = buildHaikuPrompt(input) +
         `\n\nEPIGENETIC CONTEXT: This dream is a genetic fusion of two Dream Bots. ` +
         `The source dream that inspired this fusion was: "${fusionTarget.prompt}". ` +
         `Use this as creative context — the fusion should feel like it could be the child ` +
         `of that dream and the other parent's style. Don't copy it, evolve it.`;
 
-      try {
-        const res = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': ANTHROPIC_KEY,
-            'anthropic-version': '2023-06-01',
-            'anthropic-dangerous-direct-browser-access': 'true',
-          },
-          body: JSON.stringify({
-            model: 'claude-haiku-4-5-20251001',
-            max_tokens: 150,
-            messages: [{ role: 'user', content: haikuBrief }],
-          }),
-        });
-        if (!res.ok) throw new Error('Haiku error');
-        const data = await res.json();
-        const text = data.content?.[0]?.text?.trim() ?? '';
-        prompt = text.length >= 10 ? text : buildRawPrompt(input);
-      } catch {
-        prompt = buildRawPrompt(input);
-      }
-
-      // Generate via Replicate Flux Dev
-      const createRes = await fetch('https://api.replicate.com/v1/models/black-forest-labs/flux-dev/predictions', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${REPLICATE_TOKEN}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          input: { prompt, aspect_ratio: '9:16', num_outputs: 1, output_format: 'jpg' },
-        }),
-      });
-      if (!createRes.ok) throw new Error('Generation failed to start');
-      const createData = await createRes.json();
-      if (!createData.id) throw new Error('No prediction ID');
-
-      // Poll
-      let tempUrl: string | null = null;
-      for (let i = 0; i < 60; i++) {
-        await new Promise((r) => setTimeout(r, 1500));
-        const pollRes = await fetch(`https://api.replicate.com/v1/predictions/${createData.id}`, {
-          headers: { 'Authorization': `Bearer ${REPLICATE_TOKEN}` },
-        });
-        const pollData = await pollRes.json();
-        if (pollData.status === 'succeeded') { tempUrl = pollData.output?.[0]; break; }
-        if (pollData.status === 'failed') throw new Error('Generation failed');
-      }
-      if (!tempUrl) throw new Error('Generation timed out');
-
-      // Download and upload to Supabase Storage
-      const imgResp = await fetch(tempUrl);
-      const imgBuf = await imgResp.arrayBuffer();
-      const fileName = `${user.id}/${Date.now()}.jpg`;
-      const { error: storageErr } = await supabase.storage.from('uploads').upload(fileName, imgBuf, { contentType: 'image/jpeg' });
-      if (storageErr) throw new Error(`Storage upload failed: ${storageErr.message}`);
-      const { data: urlData } = supabase.storage.from('uploads').getPublicUrl(fileName);
+      const prompt = await enhanceWithHaiku(haikuBrief, buildRawPrompt(input));
+      const tempUrl = await generateFluxDev(prompt);
+      const imageUrl = await persistImage(tempUrl, user.id);
 
       setAlbum((prev) => {
         const newIndex = prev.length;
         setActiveIndex(newIndex);
         setTimeout(() => albumRef.current?.scrollToIndex({ index: newIndex, animated: true }), 100);
-        return [...prev, { url: urlData.publicUrl, prompt, mergedRecipe: merged }];
+        return [...prev, { url: imageUrl, prompt, mergedRecipe: merged }];
       });
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -187,35 +132,19 @@ export default function FusionScreen() {
     setPosting(true);
 
     try {
-      // Register the merged recipe
       const recipeId = await registerRecipe(user.id, current.mergedRecipe);
-
-      const { data: insertedRow } = await supabase.from('uploads').insert({
-        user_id: user.id,
-        image_url: current.url,
-        media_type: 'image',
-        categories: ['art'],
-        caption: null,
-        is_active: true,
-        is_approved: true,
-        is_moderated: true,
-        is_ai_generated: true,
-        ai_prompt: current.prompt,
-        total_votes: 0, rad_votes: 0, bad_votes: 0,
-        width: 768, height: 1664,
-        recipe_id: recipeId,
-      }).select('id').single();
-
-      useFeedStore.getState().setPinnedPost({
-        id: insertedRow?.id ?? `temp-${Date.now()}`,
-        user_id: user.id,
-        image_url: current.url,
-        caption: null,
+      const uploadId = await postDream({
+        userId: user.id,
+        imageUrl: current.url,
+        prompt: current.prompt,
+        recipeId,
+      });
+      pinToFeed({
+        id: uploadId,
+        userId: user.id,
+        imageUrl: current.url,
         username: user.user_metadata?.username ?? '',
-        avatar_url: user.user_metadata?.avatar_url ?? null,
-        is_ai_generated: true,
-        created_at: new Date().toISOString(),
-        comment_count: 0,
+        avatarUrl: user.user_metadata?.avatar_url ?? null,
       });
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
