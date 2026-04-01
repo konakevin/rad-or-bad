@@ -6,7 +6,7 @@ export function useUnreadCount() {
   const user = useAuthStore((s) => s.user);
 
   return useQuery({
-    queryKey: ['unreadCount', user?.id],
+    queryKey: ['unreadNotificationCount', user?.id],
     queryFn: async (): Promise<number> => {
       const { count, error } = await supabase
         .from('notifications')

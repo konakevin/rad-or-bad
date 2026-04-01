@@ -1,5 +1,6 @@
 import { showAlert } from '@/components/CustomAlert';
 import { useState, useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { View, Text, TouchableOpacity, FlatList, ActivityIndicator, StyleSheet, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,6 +12,7 @@ import { useMarkShareSeen } from '@/hooks/useMarkShareSeen';
 import { useDeleteShare } from '@/hooks/useDeleteShare';
 import { useMarkAllSeen } from '@/hooks/useMarkAllSeen';
 import { useDeleteAllNotifications } from '@/hooks/useDeleteAllNotifications';
+import { useAlbumStore } from '@/store/album';
 import { useRespondFriendRequest } from '@/hooks/useRespondFriendRequest';
 import { colors } from '@/constants/theme';
 import { MASCOT_URLS } from '@/constants/mascots';
@@ -169,6 +171,7 @@ export default function InboxScreen() {
   const { mutate: markAllSeen, isPending: markingAll } = useMarkAllSeen();
   const { mutate: deleteAll } = useDeleteAllNotifications();
   const { mutate: respondRequest } = useRespondFriendRequest();
+  const queryClient = useQueryClient();
 
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -227,8 +230,11 @@ export default function InboxScreen() {
     if (item.type === 'friend_request' || item.type === 'friend_accepted') {
       router.push(`/user/${item.actorId}`);
     } else if (item.type === 'dream_generated' && item.uploadId) {
+      useAlbumStore.getState().clearAlbum();
+      queryClient.invalidateQueries({ queryKey: ['dreamWish'] });
       router.push(`/photo/${item.uploadId}`);
     } else if (item.uploadId) {
+      useAlbumStore.getState().clearAlbum();
       router.push(`/photo/${item.uploadId}`);
     }
   }

@@ -186,11 +186,25 @@ async function generateDreamForUser(
 
   if (!imageUrl) throw new Error('Generation timed out');
 
+  // Download from Replicate and upload to Supabase Storage (Replicate URLs are temporary)
+  const imgResp = await fetch(imageUrl);
+  if (!imgResp.ok) throw new Error('Failed to download generated image');
+  const imgBuf = await imgResp.arrayBuffer();
+  const fileName = `${user.user_id}/${Date.now()}.jpg`;
+
+  const { error: storageErr } = await supabase.storage
+    .from('uploads')
+    .upload(fileName, imgBuf, { contentType: 'image/jpeg' });
+  if (storageErr) throw new Error(`Storage upload failed: ${storageErr.message}`);
+
+  const { data: urlData } = supabase.storage.from('uploads').getPublicUrl(fileName);
+  const permanentUrl = urlData.publicUrl;
+
   // Store the dream
   const { data: upload } = await supabase.from('uploads').insert({
     user_id: user.user_id,
     categories: ['art'],
-    image_url: imageUrl,
+    image_url: permanentUrl,
     media_type: 'image',
     caption: null,
     is_ai_generated: true,

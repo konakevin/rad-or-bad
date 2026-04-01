@@ -2,9 +2,9 @@
  * DreamWishSheet — fullscreen form for making a dream wish.
  */
 
-import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Modal, ScrollView, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Modal, ScrollView, StyleSheet, Pressable } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -17,38 +17,28 @@ import {
   EMPTY_MODIFIERS, type WishModifier, type WishModifiers,
 } from '@/constants/wishModifiers';
 
-function ModifierPill({ item, selected, onPress }: { item: WishModifier; selected: boolean; onPress: () => void }) {
-  return (
-    <TouchableOpacity
-      onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); onPress(); }}
-      activeOpacity={0.7}
-      style={[s.pill, selected && s.pillActive]}
-    >
-      <Ionicons name={item.icon as keyof typeof Ionicons.glyphMap} size={14} color={selected ? '#FFFFFF' : colors.textSecondary} />
-      <Text style={[s.pillText, selected && s.pillTextActive]}>{item.label}</Text>
-    </TouchableOpacity>
-  );
-}
-
-function ModifierRow({ label, options, selected, onSelect }: {
+function ModifierDropdown({ label, options, selected, onSelect, onOpenPicker }: {
   label: string;
   options: WishModifier[];
   selected: string | null;
   onSelect: (key: string | null) => void;
+  onOpenPicker: (label: string, options: WishModifier[], selected: string | null, onSelect: (key: string | null) => void) => void;
 }) {
+  const selectedItem = options.find((o) => o.key === selected);
+
   return (
-    <View style={s.modRow}>
-      <Text style={s.modLabel}>{label}</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.modScroll}>
-        {options.map((opt) => (
-          <ModifierPill
-            key={opt.key}
-            item={opt}
-            selected={selected === opt.key}
-            onPress={() => onSelect(selected === opt.key ? null : opt.key)}
-          />
-        ))}
-      </ScrollView>
+    <View style={s.dropdownRow}>
+      <Text style={s.dropdownLabel}>{label}</Text>
+      <TouchableOpacity
+        style={s.dropdown}
+        onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); onOpenPicker(label, options, selected, onSelect); }}
+        activeOpacity={0.7}
+      >
+        <Text style={[s.dropdownValue, !selectedItem && s.dropdownPlaceholder]}>
+          {selectedItem?.label ?? 'Any'}
+        </Text>
+        <Ionicons name="chevron-down" size={16} color={colors.textSecondary} />
+      </TouchableOpacity>
     </View>
   );
 }
@@ -67,8 +57,32 @@ export function DreamWishSheet({ visible, onClose, currentWish, currentModifiers
   const [recipientIds, setRecipientIds] = useState<Set<string>>(new Set(currentRecipientIds ?? []));
   const [showFriendPicker, setShowFriendPicker] = useState(false);
   const [friendSearch, setFriendSearch] = useState('');
+  const [picker, setPicker] = useState<{ label: string; options: WishModifier[]; selected: string | null; onSelect: (k: string | null) => void } | null>(null);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+
+  // Sync state when sheet opens
+  useEffect(() => {
+    if (visible) {
+      setText(currentWish ?? '');
+      setModifiers(currentModifiers ?? EMPTY_MODIFIERS);
+      setRecipientIds(new Set(currentRecipientIds ?? []));
+      setPicker(null);
+      setShowClearConfirm(false);
+    }
+  }, [visible]);
   const { mutate: setWish, isPending } = useSetDreamWish();
   const { data: friends = [] } = useShareableVibers();
+  const insets = useSafeAreaInsets();
+
+  // Dirty checking — only enable save if form has content and something changed
+  const hasText = text.trim().length > 0;
+  const isNew = !currentWish;
+  const isDirty = isNew || (
+    text.trim() !== (currentWish ?? '') ||
+    JSON.stringify(modifiers) !== JSON.stringify(currentModifiers ?? EMPTY_MODIFIERS) ||
+    JSON.stringify([...recipientIds].sort()) !== JSON.stringify([...(currentRecipientIds ?? [])].sort())
+  );
+  const canSave = hasText && isDirty && !isPending;
 
   function updateModifier(key: keyof WishModifiers, value: string | null) {
     setModifiers((prev) => ({ ...prev, [key]: value }));
@@ -86,7 +100,7 @@ export function DreamWishSheet({ visible, onClose, currentWish, currentModifiers
           const msg = recipientIds.size > 0
             ? `Wish set! Sending to ${recipientIds.size} friend${recipientIds.size > 1 ? 's' : ''} tonight`
             : 'Wish set! Your Dream Bot will dream it next';
-          Toast.show(msg, 'sparkles');
+          Toast.show(msg, 'sparkles', 3500);
           onClose();
         },
       },
@@ -94,6 +108,10 @@ export function DreamWishSheet({ visible, onClose, currentWish, currentModifiers
   }
 
   function handleClear() {
+    setShowClearConfirm(true);
+  }
+
+  function doClear() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setWish(
       { wish: null, modifiers: null, recipientIds: null },
@@ -110,24 +128,29 @@ export function DreamWishSheet({ visible, onClose, currentWish, currentModifiers
   }
 
   return (
-    <Modal visible={visible} animationType="fade" statusBarTranslucent>
-      <SafeAreaView style={s.root}>
+    <Modal visible={visible} animationType="fade">
+      <View style={[s.root, { paddingTop: insets.top + 8, paddingBottom: insets.bottom }]}>
         {/* Header */}
         <View style={s.header}>
-          <Text style={s.title}>{currentWish ? 'Your wish is set' : 'Make a wish'}</Text>
+          <Text style={s.title}>{currentWish ? 'Edit your wish' : 'Make a wish'}</Text>
           <TouchableOpacity onPress={onClose} hitSlop={12}>
             <Ionicons name="close" size={24} color={colors.textSecondary} />
           </TouchableOpacity>
         </View>
 
-        <Text style={s.subtitle}>Set the mood for tonight's dream</Text>
+        <Text style={s.subtitle}>What should Dream Bot dream tonight?</Text>
 
         <ScrollView style={s.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-          {/* Modifier pills */}
-          <ModifierRow label="Mood" options={MOOD_OPTIONS} selected={modifiers.mood} onSelect={(v) => updateModifier('mood', v)} />
-          <ModifierRow label="Weather" options={WEATHER_OPTIONS} selected={modifiers.weather} onSelect={(v) => updateModifier('weather', v)} />
-          <ModifierRow label="Energy" options={ENERGY_OPTIONS} selected={modifiers.energy} onSelect={(v) => updateModifier('energy', v)} />
-          <ModifierRow label="Vibe" options={VIBE_OPTIONS} selected={modifiers.vibe} onSelect={(v) => updateModifier('vibe', v)} />
+          {/* Modifiers (optional) */}
+          <Text style={s.sectionLabel}>Set the vibe (optional)</Text>
+          <View style={s.dropdownGrid}>
+            <ModifierDropdown label="Mood" options={MOOD_OPTIONS} selected={modifiers.mood} onSelect={(v) => updateModifier('mood', v)} onOpenPicker={(l, o, sel, cb) => setPicker({ label: l, options: o, selected: sel, onSelect: cb })} />
+            <ModifierDropdown label="Weather" options={WEATHER_OPTIONS} selected={modifiers.weather} onSelect={(v) => updateModifier('weather', v)} onOpenPicker={(l, o, sel, cb) => setPicker({ label: l, options: o, selected: sel, onSelect: cb })} />
+          </View>
+          <View style={s.dropdownGrid}>
+            <ModifierDropdown label="Energy" options={ENERGY_OPTIONS} selected={modifiers.energy} onSelect={(v) => updateModifier('energy', v)} onOpenPicker={(l, o, sel, cb) => setPicker({ label: l, options: o, selected: sel, onSelect: cb })} />
+            <ModifierDropdown label="Vibe" options={VIBE_OPTIONS} selected={modifiers.vibe} onSelect={(v) => updateModifier('vibe', v)} onOpenPicker={(l, o, sel, cb) => setPicker({ label: l, options: o, selected: sel, onSelect: cb })} />
+          </View>
 
           {/* Text input */}
           <Text style={s.modLabel}>Describe your dream</Text>
@@ -143,32 +166,18 @@ export function DreamWishSheet({ visible, onClose, currentWish, currentModifiers
           />
           <Text style={s.charCount}>{text.length}/200</Text>
 
-          {/* Send to friends */}
-          <TouchableOpacity
-            style={s.sendButton}
-            onPress={() => setShowFriendPicker(true)}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="people-outline" size={18} color={recipientIds.size > 0 ? colors.accent : colors.textSecondary} />
-            <Text style={[s.sendButtonText, recipientIds.size > 0 && { color: colors.accent }]}>
-              {recipientIds.size > 0
-                ? `Sending to ${recipientIds.size} friend${recipientIds.size > 1 ? 's' : ''}`
-                : 'Send to friends'}
-            </Text>
-            <Ionicons name="chevron-forward" size={16} color={colors.textTertiary} style={{ marginLeft: 'auto' }} />
-          </TouchableOpacity>
         </ScrollView>
 
         {/* Bottom actions */}
         <View style={s.footer}>
           <TouchableOpacity
-            style={[s.saveButton, (!text.trim() || isPending) && s.saveButtonDisabled]}
+            style={[s.saveButton, !canSave && s.saveButtonDisabled]}
             onPress={handleSave}
-            disabled={!text.trim() || isPending}
+            disabled={!canSave}
             activeOpacity={0.7}
           >
-            <Ionicons name="sparkles" size={18} color={!text.trim() ? colors.textSecondary : '#FFFFFF'} />
-            <Text style={[s.saveButtonText, !text.trim() && s.saveButtonTextDisabled]}>
+            <Ionicons name="sparkles" size={18} color={canSave ? '#FFFFFF' : colors.textSecondary} />
+            <Text style={[s.saveButtonText, !canSave && s.saveButtonTextDisabled]}>
               {currentWish ? 'Update wish' : 'Make this wish'}
             </Text>
           </TouchableOpacity>
@@ -179,11 +188,57 @@ export function DreamWishSheet({ visible, onClose, currentWish, currentModifiers
             </TouchableOpacity>
           )}
         </View>
-      </SafeAreaView>
+        {/* Clear wish confirmation overlay */}
+        {showClearConfirm && (
+          <Pressable style={s.confirmOverlay} onPress={() => setShowClearConfirm(false)}>
+            <Pressable style={s.confirmBox} onPress={() => {}}>
+              <Text style={s.confirmTitle}>Clear wish</Text>
+              <Text style={s.confirmMessage}>Are you sure you want to clear your wish?</Text>
+              <View style={s.confirmActions}>
+                <TouchableOpacity style={s.confirmCancel} onPress={() => setShowClearConfirm(false)} activeOpacity={0.7}>
+                  <Text style={s.confirmCancelText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={s.confirmDestructive} onPress={() => { setShowClearConfirm(false); doClear(); }} activeOpacity={0.7}>
+                  <Text style={s.confirmDestructiveText}>Clear</Text>
+                </TouchableOpacity>
+              </View>
+            </Pressable>
+          </Pressable>
+        )}
+      </View>
+
+      {/* Modifier picker sheet */}
+      <Modal visible={!!picker} transparent animationType="slide">
+        <Pressable style={s.pickerBackdrop} onPress={() => setPicker(null)}>
+          <View style={s.pickerBottomSheet}>
+            <View style={s.pickerSheetHandle} />
+            <Text style={s.pickerSheetTitle}>{picker?.label ?? ''}</Text>
+            <TouchableOpacity
+              style={[s.pickerSheetOption, !picker?.selected && s.pickerSheetOptionActive]}
+              onPress={() => { picker?.onSelect(null); setPicker(null); }}
+              activeOpacity={0.7}
+            >
+              <Text style={[s.pickerSheetOptionText, !picker?.selected && s.pickerSheetOptionTextActive]}>Any</Text>
+              {!picker?.selected && <Ionicons name="checkmark" size={18} color={colors.accent} />}
+            </TouchableOpacity>
+            {picker?.options.map((opt) => (
+              <TouchableOpacity
+                key={opt.key}
+                style={[s.pickerSheetOption, picker?.selected === opt.key && s.pickerSheetOptionActive]}
+                onPress={() => { Haptics.selectionAsync(); picker?.onSelect(opt.key); setPicker(null); }}
+                activeOpacity={0.7}
+              >
+                <Text style={[s.pickerSheetOptionText, picker?.selected === opt.key && s.pickerSheetOptionTextActive]}>{opt.label}</Text>
+                {picker?.selected === opt.key && <Ionicons name="checkmark" size={18} color={colors.accent} />}
+              </TouchableOpacity>
+            ))}
+          </View>
+        </Pressable>
+      </Modal>
 
       {/* Friend picker modal */}
       <Modal visible={showFriendPicker} animationType="slide" statusBarTranslucent>
-        <SafeAreaView style={s.root}>
+        <View style={[s.root, { paddingTop: insets.top + 8, paddingBottom: insets.bottom }]}>
           <View style={s.header}>
             <Text style={s.title}>Send to friends</Text>
             <TouchableOpacity onPress={() => { setShowFriendPicker(false); setFriendSearch(''); }} hitSlop={12}>
@@ -242,7 +297,7 @@ export function DreamWishSheet({ visible, onClose, currentWish, currentModifiers
               <Text style={s.saveButtonText}>Done</Text>
             </TouchableOpacity>
           </View>
-        </SafeAreaView>
+        </View>
       </Modal>
     </Modal>
   );
@@ -252,43 +307,84 @@ const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },
   header: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingHorizontal: 20, paddingVertical: 14,
+    paddingHorizontal: 20, paddingTop: 4, paddingBottom: 14,
     borderBottomWidth: 0.5, borderBottomColor: colors.border,
   },
   title: { color: colors.textPrimary, fontSize: 20, fontWeight: '800' },
   subtitle: {
     color: colors.textSecondary, fontSize: 14,
-    paddingHorizontal: 20, paddingTop: 12, paddingBottom: 8,
+    paddingHorizontal: 20, paddingTop: 8, paddingBottom: 16,
   },
   content: { flex: 1, paddingHorizontal: 20 },
-  footer: { paddingHorizontal: 20, paddingVertical: 16, gap: 8 },
+  footer: { paddingHorizontal: 20, paddingVertical: 16, gap: 8, borderTopWidth: 0.5, borderTopColor: colors.border },
 
-  // Modifier pills
-  modRow: { marginBottom: 14 },
-  modLabel: {
-    color: colors.textSecondary, fontSize: 12, fontWeight: '700',
-    textTransform: 'uppercase', letterSpacing: 0.5,
-    marginBottom: 8, marginLeft: 2,
+  // Dropdowns
+  sectionLabel: {
+    color: colors.textSecondary, fontSize: 13, fontWeight: '600',
+    marginBottom: 12,
   },
-  modScroll: { gap: 8, paddingRight: 8 },
-  pill: {
-    flexDirection: 'row', alignItems: 'center', gap: 5,
-    paddingVertical: 7, paddingHorizontal: 12,
-    borderRadius: 16, backgroundColor: colors.surface,
+  dropdownGrid: { flexDirection: 'row', gap: 12, marginBottom: 12 },
+  dropdownRow: { flex: 1 },
+  dropdownLabel: {
+    color: colors.textSecondary, fontSize: 12, fontWeight: '600',
+    marginBottom: 6,
+  },
+  dropdown: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    backgroundColor: colors.surface, borderRadius: 12,
+    borderWidth: 1, borderColor: colors.border,
+    paddingHorizontal: 14, paddingVertical: 12,
+  },
+  dropdownValue: { color: colors.textPrimary, fontSize: 14, fontWeight: '600' },
+  dropdownPlaceholder: { color: colors.textMuted },
+  // Clear confirmation (absolute overlay, not a Modal)
+  confirmOverlay: {
+    ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.6)',
+    alignItems: 'center', justifyContent: 'center', zIndex: 10,
+  },
+  confirmBox: {
+    backgroundColor: colors.card, borderRadius: 16, padding: 24,
+    width: '80%', alignItems: 'center', gap: 8,
     borderWidth: 1, borderColor: colors.border,
   },
-  pillActive: { backgroundColor: colors.accent, borderColor: colors.accent },
-  pillText: { color: colors.textSecondary, fontSize: 13, fontWeight: '600' },
-  pillTextActive: { color: '#FFFFFF' },
+  confirmTitle: { color: colors.textPrimary, fontSize: 18, fontWeight: '700' },
+  confirmMessage: { color: colors.textSecondary, fontSize: 14, textAlign: 'center', lineHeight: 20 },
+  confirmActions: { flexDirection: 'row', gap: 12, marginTop: 12, width: '100%' },
+  confirmCancel: {
+    flex: 1, paddingVertical: 12, borderRadius: 12, alignItems: 'center',
+    backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border,
+  },
+  confirmCancelText: { color: colors.textPrimary, fontSize: 15, fontWeight: '600' },
+  confirmDestructive: {
+    flex: 1, paddingVertical: 12, borderRadius: 12, alignItems: 'center',
+    backgroundColor: colors.error,
+  },
+  confirmDestructiveText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
+
+  // Modifier picker bottom sheet
+  pickerBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+  pickerBottomSheet: {
+    backgroundColor: colors.surface, borderTopLeftRadius: 20, borderTopRightRadius: 20,
+    paddingHorizontal: 20, paddingBottom: 40, paddingTop: 12,
+  },
+  pickerSheetHandle: { width: 40, height: 4, borderRadius: 2, backgroundColor: colors.border, alignSelf: 'center', marginBottom: 16 },
+  pickerSheetTitle: { color: colors.textPrimary, fontSize: 18, fontWeight: '700', marginBottom: 12 },
+  pickerSheetOption: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingVertical: 14, borderBottomWidth: 0.5, borderBottomColor: colors.border,
+  },
+  pickerSheetOptionActive: {},
+  pickerSheetOptionText: { color: colors.textSecondary, fontSize: 16, fontWeight: '600' },
+  pickerSheetOptionTextActive: { color: colors.accent },
 
   // Text input
   input: {
-    width: '100%', minHeight: 80, backgroundColor: colors.surface,
+    width: '100%', minHeight: 120, backgroundColor: colors.surface,
     borderRadius: 14, borderWidth: 1, borderColor: colors.border,
     paddingHorizontal: 16, paddingTop: 14, paddingBottom: 14,
     color: colors.textPrimary, fontSize: 15, lineHeight: 21,
   },
-  charCount: { color: colors.textMuted, fontSize: 12, alignSelf: 'flex-end', marginTop: 4, marginBottom: 14 },
+  charCount: { color: colors.textMuted, fontSize: 12, alignSelf: 'flex-end', marginTop: 6, marginBottom: 8 },
 
   // Send to friends
   sendButton: {

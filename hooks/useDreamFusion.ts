@@ -161,7 +161,22 @@ export function useDreamFusion() {
 
       // Generate image
       console.log('[Fusion] Generating...');
-      const imageUrl = await generateImage(prompt);
+      const tempUrl = await generateImage(prompt);
+
+      // Download from Replicate and upload to Supabase Storage (Replicate URLs are temporary)
+      console.log('[Fusion] Uploading to storage...');
+      const imgResp = await fetch(tempUrl);
+      if (!imgResp.ok) throw new Error('Failed to download generated image');
+      const imgBuf = await imgResp.arrayBuffer();
+      const fileName = `${user.id}/${Date.now()}.jpg`;
+
+      const { error: storageErr } = await supabase.storage
+        .from('uploads')
+        .upload(fileName, imgBuf, { contentType: 'image/jpeg' });
+      if (storageErr) throw new Error(`Storage upload failed: ${storageErr.message}`);
+
+      const { data: urlData } = supabase.storage.from('uploads').getPublicUrl(fileName);
+      const imageUrl = urlData.publicUrl;
 
       // Post it
       const { data: upload } = await supabase.from('uploads').insert({

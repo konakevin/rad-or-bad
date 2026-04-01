@@ -5,10 +5,8 @@
 
 import { useState } from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '@/constants/theme';
-import { MASCOT_URLS } from '@/constants/mascots';
 import { useDreamWish } from '@/hooks/useDreamWish';
 import { DreamWishSheet } from '@/components/DreamWishSheet';
 
@@ -28,19 +26,19 @@ export function DreamWishBadge({ variant = 'pill' }: Props) {
         onPress={() => setShowSheet(true)}
         activeOpacity={0.7}
       >
-        <Image
-          source={{ uri: MASCOT_URLS[1] }}
-          style={variant === 'card' ? s.cardIcon : s.pillIcon}
-          cachePolicy="memory-disk"
+        <Ionicons
+          name="moon-outline"
+          size={variant === 'card' ? 16 : 14}
+          color={colors.textSecondary}
         />
         <Text
           style={variant === 'card' ? s.cardText : s.pillText}
           numberOfLines={1}
         >
-          {wish ?? 'Make a wish'}
+          {wish ? 'A wish is on its way' : 'Make a wish'}
         </Text>
         {wish && (
-          <Ionicons name="checkmark-circle" size={14} color="#FFFFFF" />
+          <Ionicons name="checkmark-circle" size={16} color={colors.success} />
         )}
       </TouchableOpacity>
 

@@ -111,6 +111,27 @@ const MEDIUM_POOL: TaggedOption[] = [
   { text: 'children\'s chalk drawing on sidewalk, colorful and wobbly, puddle reflections', axes: { realism: 'low', complexity: 'low', brightness: 'high', energy: 'low' } },
   { text: 'Looney Tunes cartoon, exaggerated squash and stretch, painted backgrounds, slapstick energy', axes: { realism: 'low', energy: 'high', brightness: 'high', color_warmth: 'high' } },
   { text: '1920s Steamboat Willie style, black and white rubber hose animation, simple shapes', axes: { realism: 'low', complexity: 'low', brightness: 'low', energy: 'high' } },
+  // Art movements
+  { text: 'pointillism, entire image made of tiny colored dots, Seurat style', axes: { realism: 'low', complexity: 'high', energy: 'low', brightness: 'high' } },
+  { text: 'Mondrian De Stijl, bold black grid lines, primary color blocks, geometric abstraction', axes: { realism: 'low', complexity: 'low', energy: 'low', brightness: 'high' } },
+  { text: 'Bauhaus design, clean geometric shapes, primary colors, functional minimalism', axes: { realism: 'low', complexity: 'low', energy: 'low', brightness: 'high' } },
+  { text: 'Soviet Constructivist propaganda poster, bold red and black, angular typography, dramatic composition', axes: { realism: 'low', energy: 'high', brightness: 'low', complexity: 'low' } },
+  { text: 'Art Brut outsider art, raw untrained style, intense emotion, unconventional materials', axes: { realism: 'low', energy: 'high', complexity: 'low', brightness: 'high' } },
+  // Modern aesthetics
+  { text: 'cottagecore aesthetic, wildflowers, linen, honey jars, soft pastoral warmth', axes: { realism: 'high', energy: 'low', brightness: 'high', color_warmth: 'high' } },
+  { text: 'dark academia aesthetic, leather-bound books, candlelit libraries, autumn tones', axes: { realism: 'high', energy: 'low', brightness: 'low', color_warmth: 'high' } },
+  { text: 'solarpunk, lush green futurism, solar panels on organic architecture, optimistic sci-fi', axes: { realism: 'high', energy: 'low', brightness: 'high', color_warmth: 'high' } },
+  { text: 'vaporwave aesthetic, pink and cyan gradients, Greek statues, Windows 95, surreal consumerism', axes: { realism: 'low', energy: 'low', brightness: 'high', color_warmth: 'low' } },
+  // Music-inspired
+  { text: 'lo-fi hip hop album cover, cozy room, warm lighting, anime-inspired chill', axes: { realism: 'low', energy: 'low', brightness: 'low', color_warmth: 'high' } },
+  { text: 'heavy metal album cover, dark fantasy, skulls and fire, intricate detail', axes: { realism: 'low', energy: 'high', brightness: 'low', complexity: 'high' } },
+  { text: 'Blue Note jazz album cover, bold graphic shapes, smoky atmosphere, cool tones', axes: { realism: 'low', energy: 'low', brightness: 'low', color_warmth: 'low' } },
+  // Hyperreal & psychedelic
+  { text: 'hyperrealistic CGI render, impossibly sharp detail, every pore and fiber visible, uncanny perfection', axes: { realism: 'high', complexity: 'high', brightness: 'high', energy: 'low' } },
+  { text: 'kaleidoscope vision, infinite symmetrical reflections, fractal patterns, shifting geometry', axes: { realism: 'low', complexity: 'high', energy: 'high', brightness: 'high' } },
+  { text: 'DMT visionary art, machine elf entities, sacred geometry, infinite recursive patterns, overwhelming color', axes: { realism: 'low', complexity: 'high', energy: 'high', brightness: 'high', color_warmth: 'high' } },
+  { text: 'acid trip visuals, melting surfaces, breathing walls, trails and halos, colors bleeding into each other', axes: { realism: 'low', complexity: 'high', energy: 'high', brightness: 'high' } },
+  { text: 'Alex Grey visionary art, translucent bodies, energy meridians, cosmic consciousness', axes: { realism: 'low', complexity: 'high', energy: 'high', brightness: 'high', color_warmth: 'high' } },
 ];
 
 // ── ATMOSPHERE: Mood Pool ───────────────────────────────────────────────────
@@ -789,6 +810,13 @@ const DREAM_SUBJECTS = [
   'a gentle long-necked dinosaur in a lush prehistoric valley',
   'a Funko Pop figure with oversized glossy head and tiny body',
   'Falkor the luck dragon soaring through clouds, NeverEnding Story',
+  // Insects & botanical
+  'a jewel-colored beetle on a mossy log', 'a praying mantis perfectly still among flowers',
+  'a dragonfly with iridescent wings hovering over water', 'a carnivorous plant with a tiny world inside its mouth',
+  'an ancient twisted bonsai tree', 'a single mushroom glowing in the dark',
+  // Weather as subject
+  'a tornado made of something unexpected', 'a single lightning bolt frozen in time',
+  'a cloud formation that looks like something alive',
   'a Wallace & Gromit-style inventor tinkering with mad contraptions',
   'a Totoro-sized gentle forest spirit',
   'a brass automaton winding down in a garden',
@@ -796,7 +824,7 @@ const DREAM_SUBJECTS = [
   'a whale swimming through the clouds',
   'a train that runs on starlight between floating islands',
   // Stylized characters (illustrated, not photorealistic faces)
-  'a tiny cloaked wanderer seen from far away', 'a silhouette standing at the edge of something vast',
+  'a tiny cloaked wanderer exploring a strange place',
   'a small explorer with a glowing backpack', 'a masked spirit dancer',
   'a robot child discovering something for the first time',
   // Attractive/stylized human figures — tasteful, never explicit
@@ -877,8 +905,8 @@ function filterPool(pool: TaggedOption[], rolledAxes: Record<string, 'high' | 'l
     return pick(wildcardPool).text;
   }
 
-  // Normal pick: top 8 scorers — tight enough to filter, wide enough for variety
-  return pick(scored.slice(0, 8)).text;
+  // Normal pick: top 15 scorers — wide enough for real variety across 90+ mediums
+  return pick(scored.slice(0, 15)).text;
 }
 
 // ── Public Interface ────────────────────────────────────────────────────────
@@ -1191,6 +1219,8 @@ RULES:
 - Attractive, sexy, or glamorous characters welcome — no nudity or explicit content
 - Be concrete and visual, not poetic or abstract
 - The result should make someone say "that's MY dream bot — it gets me"
+- AVOID AI ART CLICHÉS: no "figure standing with back to camera gazing at vast landscape", no "lone silhouette on cliff edge", no "person looking up at giant glowing thing". These are overused. Be more creative with composition.
+- LEAN INTO THE ART STYLE: if the medium is cartoon, make it LOOK like a cartoon — exaggerated, flat colors, bold outlines. Don't let it default to photorealistic with a filter. The medium should fundamentally change HOW the image looks.
 
 Output ONLY the prompt, nothing else.`;
 }
