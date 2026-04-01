@@ -127,9 +127,9 @@ export default function DreamScreen() {
         const tags = input.personalityTags.join(', ');
         const hint = userHint.trim();
 
-        const haikuRequest = `Write a 30-word max image restyling prompt.
+        const haikuRequest = `Write a 40-word max dream reimagining prompt. This is NOT a filter or style transfer — it's a full creative reimagining. The photo is just inspiration, not something to preserve.
 
-RECIPE DEFAULTS (use these unless the user's hint overrides a specific part):
+DREAM BOT PERSONALITY:
 - Medium/Style: ${input.medium}
 - Mood: ${input.mood}
 - Lighting: ${input.lighting}
@@ -140,12 +140,15 @@ ${input.spiritAppears && input.spiritCompanion ? `- Companion: small ${input.spi
 
 ${hint ? `USER HINT: "${hint}"
 
-The user typed this hint. Figure out their INTENT — what are they trying to change? Replace ONLY the recipe attribute(s) that match their intent. Keep everything else exactly as the recipe says.
+The user typed this hint. Figure out their INTENT and weave it into the dream.` : ''}
 
-For example if the recipe says "oil painting, cozy mood, warm colors, forest scene" and the user says "make it neon" — only the colors change. The oil painting, cozy mood, and forest stay.` : ''}
+IMPORTANT RULES:
+- If the photo has a person/face, DO NOT just apply a filter to their face. Instead, reimagine them as a character in a completely new scene using the medium above.
+- Transform the photo into something the original photographer could never have taken. Make it a DREAM, not an edit.
+- Change the environment, add fantastical elements, alter reality.
 
-FORMAT: "Restyle as [medium]. [scene]. [mood + lighting + colors]. Keep the subject recognizable."
-NO poetry. NO abstract words. Output ONLY the prompt.`;
+FORMAT: "[medium]. [reimagined scene with fantastical elements]. [mood + lighting + colors]."
+NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`;
 
         try {
           const haikuRes = await fetch('https://api.anthropic.com/v1/messages', {
@@ -166,7 +169,7 @@ NO poetry. NO abstract words. Output ONLY the prompt.`;
           const haikuData = await haikuRes.json();
           p = haikuData.content?.[0]?.text?.trim() ?? '';
         } catch {
-          p = `Restyle this image as ${input.medium}, ${style}. ${hint ? `Theme: ${hint}.` : ''} Keep the subject recognizable.`;
+          p = `Reimagine this image as ${input.medium}. Transform into a fantastical dream scene, ${style}. ${hint ? `Theme: ${hint}.` : ''} No filters, full creative reimagining.`;
         }
       }
 
