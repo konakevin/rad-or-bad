@@ -1,9 +1,11 @@
 import { useRef } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import { Tabs, Redirect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/store/auth';
 import { useFeedStore } from '@/store/feed';
+import { useUnreadCount } from '@/hooks/useUnreadCount';
 
 export default function TabLayout() {
   const { session, initialized } = useAuthStore();
@@ -11,6 +13,7 @@ export default function TabLayout() {
   const regenerateSeed = useFeedStore((s) => s.regenerateSeed);
   const queryClient = useQueryClient();
   const activeTab = useRef('index');
+  const { data: unreadCount = 0 } = useUnreadCount();
 
   if (initialized && !session) {
     return <Redirect href="/(auth)" />;
@@ -72,7 +75,14 @@ export default function TabLayout() {
         name="inbox"
         options={{
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="chatbubble-outline" size={size} color={color} />
+            <View>
+              <Ionicons name="chatbubble-outline" size={size} color={color} />
+              {unreadCount > 0 && (
+                <View style={tabStyles.badge}>
+                  <Text style={tabStyles.badgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
+                </View>
+              )}
+            </View>
           ),
         }}
         listeners={{ tabPress: () => { activeTab.current = 'inbox'; } }}
@@ -91,3 +101,23 @@ export default function TabLayout() {
     </Tabs>
   );
 }
+
+const tabStyles = StyleSheet.create({
+  badge: {
+    position: 'absolute',
+    top: -4,
+    right: -8,
+    backgroundColor: '#E8485F',
+    borderRadius: 8,
+    minWidth: 16,
+    height: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  badgeText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '800',
+  },
+});

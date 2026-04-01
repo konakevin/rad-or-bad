@@ -13,6 +13,7 @@ import { useMarkAllSeen } from '@/hooks/useMarkAllSeen';
 import { useDeleteAllNotifications } from '@/hooks/useDeleteAllNotifications';
 import { useRespondFriendRequest } from '@/hooks/useRespondFriendRequest';
 import { colors } from '@/constants/theme';
+import { MASCOT_URLS } from '@/constants/mascots';
 
 function formatTimeAgo(dateStr: string): string {
   const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
@@ -42,6 +43,8 @@ function getNotificationText(item: NotificationItem): { action: string; preview:
       return { action: 'accepted your dream request', preview: null };
     case 'post_milestone':
       return { action: 'Your post hit ' + (item.body ?? 'a milestone!'), preview: null };
+    case 'dream_generated':
+      return { action: 'A new dream has arrived ✨', preview: item.body };
     default:
       return { action: '', preview: null };
   }
@@ -53,6 +56,7 @@ function getNotificationIcon(type: NotificationItem['type']): string {
     case 'post_comment': return 'chatbubble';
     case 'comment_reply': return 'arrow-undo';
     case 'comment_mention': return 'at';
+    case 'dream_generated': return 'sparkles';
     default: return 'notifications';
   }
 }
@@ -86,8 +90,10 @@ function NotificationRow({ item, onPress, onDelete, selectMode, isSelected, onTo
         </View>
       )}
 
-      {/* Actor avatar */}
-      {item.actorAvatarUrl ? (
+      {/* Actor avatar — show bot mascot for dream notifications */}
+      {item.type === 'dream_generated' ? (
+        <Image source={{ uri: MASCOT_URLS[2] }} style={styles.avatar} />
+      ) : item.actorAvatarUrl ? (
         <Image source={{ uri: item.actorAvatarUrl }} style={styles.avatar} />
       ) : (
         <View style={styles.avatarFallback}>
@@ -98,8 +104,14 @@ function NotificationRow({ item, onPress, onDelete, selectMode, isSelected, onTo
       {/* Text */}
       <View style={styles.textCol}>
         <Text style={styles.mainLine} numberOfLines={2}>
-          <Text style={styles.actorName}>{item.actorUsername}</Text>
-          <Text style={styles.actionText}> {action}</Text>
+          {item.type === 'dream_generated' ? (
+            <Text style={styles.actorName}>{action}</Text>
+          ) : (
+            <>
+              <Text style={styles.actorName}>{item.actorUsername}</Text>
+              <Text style={styles.actionText}> {action}</Text>
+            </>
+          )}
         </Text>
         {preview && (
           <Text style={styles.preview} numberOfLines={1}>"{preview}"</Text>
@@ -205,9 +217,11 @@ export default function InboxScreen() {
     if (!item.isSeen) {
       markSeen(item.id);
     }
-    // Friend notifications → profile, everything else → post
+    // Friend notifications → profile, dream → full detail, everything else → post
     if (item.type === 'friend_request' || item.type === 'friend_accepted') {
       router.push(`/user/${item.actorId}`);
+    } else if (item.type === 'dream_generated' && item.uploadId) {
+      router.push(`/photo/${item.uploadId}`);
     } else if (item.uploadId) {
       router.push(`/photo/${item.uploadId}`);
     }

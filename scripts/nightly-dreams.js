@@ -298,7 +298,7 @@ async function main() {
       if (!imageUrl) throw new Error('No URL returned');
 
       // Insert upload
-      await sb.from('uploads').insert({
+      const { data: upload } = await sb.from('uploads').insert({
         user_id: user.user_id,
         categories: ['fantasy'],
         image_url: imageUrl,
@@ -308,7 +308,18 @@ async function main() {
         ai_prompt: prompt,
         is_approved: true,
         is_active: true,
-      });
+      }).select('id').single();
+
+      // Send in-app notification
+      if (upload?.id) {
+        await sb.from('notifications').insert({
+          recipient_id: user.user_id,
+          actor_id: user.user_id,
+          type: 'dream_generated',
+          upload_id: upload.id,
+          body: wish ? `Wish: "${wish.slice(0, 60)}"` : null,
+        }).catch(() => {});
+      }
 
       // Log generation
       await sb.from('ai_generation_log').insert({
