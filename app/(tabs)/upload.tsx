@@ -16,6 +16,7 @@ import { DEFAULT_RECIPE } from '@/types/recipe';
 import type { Recipe } from '@/types/recipe';
 import { colors } from '@/constants/theme';
 import { randomMascot } from '@/constants/mascots';
+import { DreamWishBadge } from '@/components/DreamWishBadge';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const PREVIEW_WIDTH = SCREEN_WIDTH - 48;
@@ -284,6 +285,9 @@ NO poetry. NO abstract words. Output ONLY the prompt.`;
             <Ionicons name="images" size={20} color="#FFF" />
             <Text style={s.ctaText}>Choose a Photo</Text>
           </TouchableOpacity>
+          <View style={s.wishSection}>
+            <DreamWishBadge variant="card" />
+          </View>
         </View>
       </SafeAreaView>
     );
@@ -423,6 +427,7 @@ const s = StyleSheet.create({
   loadingMascot: { width: 140, height: 140, borderRadius: 28, marginBottom: 8 },
   title: { color: colors.textPrimary, fontSize: 24, fontWeight: '800' },
   sub: { color: colors.textSecondary, fontSize: 15, textAlign: 'center', lineHeight: 22 },
+  wishSection: { width: '100%', marginTop: 12 },
   cta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: colors.accent, borderRadius: 14, paddingVertical: 16, paddingHorizontal: 24, width: '100%' },
   ctaText: { color: '#FFF', fontSize: 17, fontWeight: '700' },
   ctaDisabled: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },

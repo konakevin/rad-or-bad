@@ -6,6 +6,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { useAuthStore } from '@/store/auth';
 import { useFeedStore } from '@/store/feed';
+import { DreamWishBadge } from '@/components/DreamWishBadge';
 import { colors } from '@/constants/theme';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
@@ -169,6 +170,7 @@ export default function HomeScreen() {
         pointerEvents="box-none"
       >
         <FeedTabs active={activeTab} onChange={handleTabChange} />
+        <DreamWishBadge variant="pill" />
       </LinearGradient>
     </View>
   );

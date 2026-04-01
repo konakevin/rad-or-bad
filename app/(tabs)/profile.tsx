@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { useFeedStore } from '@/store/feed';
+import { DreamWishBadge } from '@/components/DreamWishBadge';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -177,15 +178,20 @@ export default function ProfileScreen() {
       */}
 
       {(activeTab === 'posts' || activeTab === 'saved') && (
-        <TouchableOpacity
-          style={styles.discoverButton}
-          onPress={() => router.push('/discoverVibers')}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="moon" size={14} color={colors.accent} />
-          <Text style={styles.discoverButtonText}>Find similar dreamers</Text>
-          <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
-        </TouchableOpacity>
+        <>
+          <TouchableOpacity
+            style={styles.discoverButton}
+            onPress={() => router.push('/discoverVibers')}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="moon" size={14} color={colors.accent} />
+            <Text style={styles.discoverButtonText}>Find similar dreamers</Text>
+            <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+          </TouchableOpacity>
+          <View style={styles.wishRow}>
+            <DreamWishBadge variant="card" />
+          </View>
+        </>
       )}
 
       {(activeTab === 'posts' || activeTab === 'saved') && (
@@ -483,6 +489,7 @@ const styles = StyleSheet.create({
     maxWidth: 52,
     textAlign: 'center',
   },
+  wishRow: { paddingHorizontal: 16, paddingBottom: 8 },
   discoverButton: {
     flexDirection: 'row',
     alignItems: 'center',
