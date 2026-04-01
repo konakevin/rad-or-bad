@@ -816,7 +816,7 @@ export function buildRawPrompt(input: PromptInput): string {
 
   // Avoid photorealistic humans — stylized/fantastical characters are ok
   parts.push('no photorealistic humans or faces');
-  parts.push('portrait orientation 9:16 ratio');
+  parts.push('vertical composition');
 
   return parts.join(', ');
 }
