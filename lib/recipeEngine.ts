@@ -239,24 +239,6 @@ const BONUS_SETTINGS = [
   'bamboo forest path in Kyoto, sunbeams filtering through',
   'anime train crossing at sunset, railroad signal blinking',
   'K-pop concert stage, ocean of lightsticks, confetti, LED screens',
-  // Hobbies & lifestyle
-  'classic muscle car in a neon-lit garage, chrome gleaming',
-  'monster truck rally, dirt flying, stadium lights, crowd roaring',
-  'fishing boat at dawn, misty lake, rod bending with a catch',
-  'campfire in the woods, sparks rising, tent in background',
-  'hunting cabin at dawn, frost on windows, rifle rack, antlers on wall',
-  'motorcycle on an open highway, desert stretching to horizon',
-  'hot rod drag strip, burnout smoke, checkered flag',
-  'jeep on a mountain trail, mud splashing, adventure',
-  'woodworking shop, handmade furniture, sawdust, warm light',
-  'shooting range, brass casings, bullseye target',
-  'fly fishing in a mountain river, golden light, waders',
-  'lifted truck mudding through a creek, water spray',
-  'drift racing, tire smoke, Japanese street racing',
-  'vintage VW van at the beach, surfboards on top',
-  'rock climbing gym, colorful holds, chalk bag',
-  'pottery wheel, hands shaping clay, peaceful studio',
-  'home garden, raised beds, tomatoes, sunlight',
   // Famous landmarks & tourist destinations
   'Eiffel Tower at night, twinkling lights, Seine river below',
   'Grand Canyon at sunrise, vast layered red rock, golden light',
@@ -539,6 +521,12 @@ const INTEREST_FLAVORS: Record<string, string[]> = {
     // Gym & fitness
     'gym weight room, iron plates, chalk dust, determination', 'yoga pose on a cliff at sunrise',
     'CrossFit box, tire flips, ropes, gritty', 'running track, sprint finish, motion blur',
+    // Hobbies & vehicles (only for sports interest)
+    'classic muscle car in a neon-lit garage', 'monster truck rally, dirt flying',
+    'motorcycle on an open highway', 'hot rod drag strip, burnout smoke',
+    'drift racing, tire smoke', 'lifted truck mudding through a creek',
+    'vintage VW van at the beach, surfboards', 'rock climbing gym, colorful holds',
+    'fly fishing in a mountain river', 'campfire in the woods, sparks rising',
   ],
   travel: [
     'Eiffel Tower at midnight', 'cherry blossom temple in Kyoto',
@@ -572,8 +560,12 @@ const INTEREST_FLAVORS: Record<string, string[]> = {
     'ice palace', 'underground bunker', 'futuristic greenhouse',
   ],
   fashion: [
-    'haute couture runway', 'cyberpunk streetwear', 'fairy tale ballgown',
-    'space suit fashion', 'steampunk accessories', 'neon rave outfit',
+    'haute couture aesthetic, fabric textures, elegant design',
+    'vintage boutique, mannequins, lace and velvet',
+    'fairy tale wardrobe, glass slippers, enchanted gown',
+    'steampunk accessories, goggles, gears, leather',
+    'pastel aesthetic, soft fabrics, dreamy styling',
+    'bohemian textile market, colorful patterns, flowing fabrics',
   ],
   pride: [
     'rainbow flag colors flowing through the sky', 'pride parade confetti and joy',
@@ -585,7 +577,7 @@ const INTEREST_FLAVORS: Record<string, string[]> = {
 };
 
 // Interests that are too vague on their own — always expand to a specific flavor
-const ALWAYS_EXPAND = new Set(['gaming', 'movies', 'music', 'geek', 'sports', 'travel', 'pride']);
+const ALWAYS_EXPAND = new Set(['gaming', 'movies', 'music', 'geek', 'sports', 'travel', 'pride', 'fashion']);
 
 function expandInterest(interest: string): string {
   const flavors = INTEREST_FLAVORS[interest];
@@ -778,6 +770,8 @@ export function buildRawPrompt(input: PromptInput): string {
     parts.push(`a small ${companion} visible somewhere in the scene`);
   }
 
+  // Focus on scenes/environments, not human portraits
+  parts.push('focus on the scene and environment, not human faces or figures');
   parts.push('portrait orientation 9:16 ratio');
 
   return parts.join(', ');
