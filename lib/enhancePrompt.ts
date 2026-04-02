@@ -6,7 +6,7 @@
 import { buildPromptInput, buildRawPrompt, buildHaikuPrompt } from '@/lib/recipeEngine';
 import type { Recipe } from '@/types/recipe';
 
-const ANTHROPIC_KEY = '***REMOVED***';
+const ANTHROPIC_KEY = process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY ?? '';
 
 export async function generateDreamPrompt(recipe: Recipe): Promise<string> {
   const input = buildPromptInput(recipe);

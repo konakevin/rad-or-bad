@@ -5,9 +5,8 @@
 
 import { supabase } from '@/lib/supabase';
 
-// TODO: move to edge function for production
-export const REPLICATE_TOKEN = '***REMOVED***';
-export const ANTHROPIC_KEY = '***REMOVED***';
+export const REPLICATE_TOKEN = process.env.EXPO_PUBLIC_REPLICATE_API_TOKEN ?? '';
+export const ANTHROPIC_KEY = process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY ?? '';
 
 const HAIKU_HEADERS = {
   'Content-Type': 'application/json',

@@ -124,7 +124,7 @@ export function RevealStep({ onBack }: Props) {
   }
 
   async function generateFluxImage(prompt: string): Promise<string> {
-    const replicateToken = '***REMOVED***';
+    const replicateToken = process.env.EXPO_PUBLIC_REPLICATE_API_TOKEN ?? '';
 
     // Submit prediction
     const submitResponse = await fetch('https://api.replicate.com/v1/models/black-forest-labs/flux-dev/predictions', {
