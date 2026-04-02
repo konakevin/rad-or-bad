@@ -52,7 +52,7 @@ function FriendRevealRow({ friend, userVote, index }: {
       : `rgba(244, 33, 46, ${bgOpacity.value})`,
   }));
 
-  const initial = friend.username[0]?.toUpperCase() ?? '?';
+  const initial = (friend.username || '?')[0].toUpperCase();
 
   return (
     <Animated.View style={[styles.friendRow, rowBgStyle]}>

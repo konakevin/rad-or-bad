@@ -191,24 +191,32 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
 
   async function post() {
     const currentDream = dreamAlbum[activeIndex];
-    if (!currentDream || !user || posting) return;
+    console.log('[Post] START — dream:', !!currentDream, 'user:', !!user, 'posting:', posting, 'activeIndex:', activeIndex, 'albumLen:', dreamAlbum.length);
+    if (!currentDream || !user || posting) { console.log('[Post] SKIPPED — missing dream/user or already posting'); return; }
     const multiImage = dreamAlbum.length > 1;
     if (!multiImage) setPhase('posting');
     else setPosting(true);
     const postUrl = currentDream.url;
     const postPrompt = currentDream.prompt;
     const postWish = currentDream.fromWish;
-    console.log('[Post] Starting post with URL:', postUrl.slice(0, 60));
+    console.log('[Post] URL:', postUrl.slice(0, 80));
+    console.log('[Post] Prompt:', postPrompt.slice(0, 80));
+    console.log('[Post] User ID:', user.id);
+    console.log('[Post] Username:', user.user_metadata?.username ?? '(none)');
 
     try {
+      console.log('[Post] Persisting image...');
       const imageUrl = await persistImage(postUrl, user.id);
+      console.log('[Post] Image persisted:', imageUrl.slice(0, 60));
 
       let recipeId: string | null = null;
       try {
         const recipe = cachedRecipe ?? (await loadRecipe());
         recipeId = await registerRecipe(user.id, recipe);
-      } catch { /* non-critical */ }
+        console.log('[Post] Recipe registered:', recipeId);
+      } catch (recipeErr) { console.warn('[Post] Recipe registration failed (non-critical):', recipeErr); }
 
+      console.log('[Post] Inserting upload row...');
       const uploadId = await postDream({
         userId: user.id,
         imageUrl,
@@ -216,6 +224,7 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
         recipeId,
         fromWish: postWish,
       });
+      console.log('[Post] Upload created:', uploadId);
 
       pinToFeed({
         id: uploadId,
@@ -224,6 +233,7 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
         username: user.user_metadata?.username ?? '',
         avatarUrl: user.user_metadata?.avatar_url ?? null,
       });
+      console.log('[Post] Pinned to feed');
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 

@@ -38,7 +38,7 @@ function SearchRow({ user }: { user: SearchUser }) {
         <Image source={{ uri: user.avatarUrl }} style={styles.avatar} />
       ) : (
         <View style={styles.avatarFallback}>
-          <Text style={styles.avatarText}>{(user.username ?? '?')[0].toUpperCase()}</Text>
+          <Text style={styles.avatarText}>{(user.username || '?')[0].toUpperCase()}</Text>
         </View>
       )}
 
@@ -92,7 +92,15 @@ function SearchRow({ user }: { user: SearchUser }) {
 export default function SearchScreen() {
   const [query, setQuery] = useState('');
   const { data: results = [], isLoading } = useSearchUsers(query);
+  const { data: friendIds = new Set<string>() } = useFriendIds();
   const { translateY, panHandlers } = useSheetDismiss();
+
+  // Sort friends first
+  const sortedResults = [...results].sort((a, b) => {
+    const aFriend = friendIds.has(a.id) ? 0 : 1;
+    const bFriend = friendIds.has(b.id) ? 0 : 1;
+    return aFriend - bFriend;
+  });
 
   return (
     <View style={styles.root}>
@@ -134,7 +142,7 @@ export default function SearchScreen() {
 
         {/* Results */}
         <FlatList
-          data={results}
+          data={sortedResults}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <SearchRow user={item} />}
           keyboardShouldPersistTaps="handled"

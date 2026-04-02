@@ -1,7 +1,6 @@
 import { showAlert } from '@/components/CustomAlert';
 import { useState, useMemo } from 'react';
-import { View, Text, TouchableOpacity, FlatList, TextInput, ActivityIndicator, StyleSheet, Dimensions, Pressable, Animated } from 'react-native';
-import * as Clipboard from 'expo-clipboard';
+import { View, Text, TouchableOpacity, FlatList, TextInput, ActivityIndicator, StyleSheet, Dimensions, Pressable, Animated, Share } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -34,7 +33,7 @@ function ViberBubble({ item, selected, onToggle }: { item: ShareableViber; selec
           <Image source={{ uri: item.avatarUrl }} style={[styles.avatar, selected && styles.avatarSelected]} />
         ) : (
           <View style={[styles.avatarFallback, selected && styles.avatarSelected]}>
-            <Text style={styles.avatarInitial}>{(item.username ?? '?')[0].toUpperCase()}</Text>
+            <Text style={styles.avatarInitial}>{(item.username || '?')[0].toUpperCase()}</Text>
           </View>
         )}
         {selected && (
@@ -95,8 +94,7 @@ export default function SharePostScreen() {
 
   function handleCopyLink() {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    Clipboard.setStringAsync(`https://dreambot.app/post/${uploadId}`);
-    Toast.show('Link copied', 'checkmark-circle');
+    Share.share({ url: `https://dreambot.app/post/${uploadId}`, message: 'Check out this dream on DreamBot' });
   }
 
   return (

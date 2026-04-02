@@ -298,7 +298,7 @@ async function main() {
       if (!imageUrl) throw new Error('No URL returned');
 
       // Insert upload
-      await sb.from('uploads').insert({
+      const { data: uploadRow } = await sb.from('uploads').insert({
         user_id: user.user_id,
         categories: ['fantasy'],
         image_url: imageUrl,
@@ -308,30 +308,52 @@ async function main() {
         ai_prompt: prompt,
         is_approved: true,
         is_active: true,
-      });
+        from_wish: wish || null,
+      }).select('id').single();
 
-      // Log generation
-      await sb.from('ai_generation_log').insert({
-        user_id: user.user_id,
-        recipe_snapshot: recipe,
-        raw_prompt_input: { wish },
-        enhanced_prompt: prompt,
-        model_used: 'flux-dev',
-        cost_cents: COST_PER_IMAGE_CENTS,
-        status: 'completed',
-      }).catch(() => {}); // Non-critical
+      const uploadId = uploadRow?.id;
 
-      // Update budget
-      await sb.from('ai_generation_budget').upsert({
-        user_id: user.user_id,
-        date: today,
-        images_generated: 1,
-        total_cost_cents: COST_PER_IMAGE_CENTS,
-      }, { onConflict: 'user_id,date' }).catch(() => {});
+      // Send notification
+      const BOT_ACCOUNT = '3431d831-1a32-40cd-8fb7-030ada98ad53';
+      const notifBody = wish
+        ? `Your wish has been granted: "${wish.slice(0, 80)}"`
+        : 'A new dream has been conjured';
+      try {
+        await sb.from('notifications').insert({
+          recipient_id: user.user_id,
+          actor_id: BOT_ACCOUNT,
+          type: 'dream_generated',
+          upload_id: uploadId,
+          body: notifBody,
+        });
+      } catch {}
 
-      // Clear wish after use
+      // Log generation (non-critical)
+      try {
+        await sb.from('ai_generation_log').insert({
+          user_id: user.user_id,
+          recipe_snapshot: recipe,
+          raw_prompt_input: { wish },
+          enhanced_prompt: prompt,
+          model_used: 'flux-dev',
+          cost_cents: COST_PER_IMAGE_CENTS,
+          status: 'completed',
+        });
+      } catch {}
+
+      // Update budget (non-critical)
+      try {
+        await sb.from('ai_generation_budget').upsert({
+          user_id: user.user_id,
+          date: today,
+          images_generated: 1,
+          total_cost_cents: COST_PER_IMAGE_CENTS,
+        }, { onConflict: 'user_id,date' });
+      } catch {}
+
+      // Clear wish + modifiers after use
       if (wish) {
-        await sb.from('user_recipes').update({ dream_wish: null }).eq('user_id', user.user_id);
+        await sb.from('user_recipes').update({ dream_wish: null, wish_modifiers: null }).eq('user_id', user.user_id);
       }
 
       console.log('✅', wish ? `(wish: "${wish.slice(0, 30)}")` : '');

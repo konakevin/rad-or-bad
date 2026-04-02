@@ -14,7 +14,7 @@ interface Props {
 }
 
 export function FriendRequestRow({ request, onAccept, onDecline }: Props) {
-  const initial = request.username[0]?.toUpperCase() ?? '?';
+  const initial = (request.username || '?')[0].toUpperCase();
 
   return (
     <View style={styles.row}>

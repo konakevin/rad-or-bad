@@ -85,7 +85,7 @@ export function CommentRow({ comment, uploadId, postOwnerId, isReply = false, on
             <Image source={{ uri: comment.avatarUrl }} style={[styles.avatar, isReply && styles.replyAvatar]} />
           ) : (
             <View style={[styles.avatarFallback, isReply && styles.replyAvatar]}>
-              <Text style={styles.avatarText}>{(comment.username ?? '?')[0].toUpperCase()}</Text>
+              <Text style={styles.avatarText}>{(comment.username || '?')[0].toUpperCase()}</Text>
             </View>
           )}
         </TouchableOpacity>
@@ -93,7 +93,7 @@ export function CommentRow({ comment, uploadId, postOwnerId, isReply = false, on
         {/* Body */}
         <View style={styles.body}>
           <Text style={styles.headerLine}>
-            <Text style={styles.username}>{comment.username}</Text>
+            <Text style={styles.username}>{comment.username ?? 'dreamer'}</Text>
             <Text style={styles.time}>  {formatTimeAgo(comment.createdAt)}</Text>
           </Text>
           <Text style={styles.commentText}>

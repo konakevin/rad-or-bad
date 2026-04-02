@@ -45,7 +45,7 @@ function getNotificationText(item: NotificationItem): { action: string; preview:
     case 'post_milestone':
       return { action: 'Your post hit ' + (item.body ?? 'a milestone!'), preview: null };
     case 'dream_generated':
-      return { action: 'A new dream has been conjured', preview: item.body };
+      return { action: item.body?.startsWith('Your wish') ? item.body : 'A new dream has been conjured', preview: null };
     default:
       return { action: '', preview: null };
   }
@@ -105,7 +105,7 @@ function NotificationRow({ item, onPress, onDelete, selectMode, isSelected, onTo
           <Image source={{ uri: item.actorAvatarUrl }} style={styles.avatar} />
         ) : (
           <View style={styles.avatarFallback}>
-            <Text style={styles.avatarText}>{item.actorUsername[0].toUpperCase()}</Text>
+            <Text style={styles.avatarText}>{(item.actorUsername || '?')[0].toUpperCase()}</Text>
           </View>
         )}
       </TouchableOpacity>

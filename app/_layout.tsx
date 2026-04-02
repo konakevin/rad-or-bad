@@ -87,6 +87,50 @@ function RevenueCatInitializer() {
   return null;
 }
 
+function RealtimeSubscriber() {
+  const user = useAuthStore((s) => s.user);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel(`user-${user.id}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'notifications', filter: `recipient_id=eq.${user.id}` },
+        () => {
+          // New notification — refresh inbox and unread count
+          queryClient.invalidateQueries({ queryKey: ['inbox', user.id] });
+          queryClient.invalidateQueries({ queryKey: ['unreadNotificationCount', user.id] });
+        },
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'user_recipes', filter: `user_id=eq.${user.id}` },
+        () => {
+          // Recipe/wish updated (e.g. wish cleared after granting)
+          queryClient.invalidateQueries({ queryKey: ['dreamWish', user.id] });
+        },
+      )
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'uploads', filter: `user_id=eq.${user.id}` },
+        () => {
+          // New dream generated for this user — refresh feed
+          queryClient.invalidateQueries({ queryKey: ['dreamFeed'] });
+          queryClient.invalidateQueries({ queryKey: ['userPosts'] });
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
+
+  return null;
+}
+
 function DataPrefetcher() {
   const user = useAuthStore((s) => s.user);
   const activityLogged = useRef(false);
@@ -155,6 +199,7 @@ export default function RootLayout() {
         <AuthInitializer />
         <PushRegistrar />
         <RevenueCatInitializer />
+        <RealtimeSubscriber />
         <DataPrefetcher />
         <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#000000' } }}>
           <Stack.Screen name="index" />

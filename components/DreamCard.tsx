@@ -313,10 +313,10 @@ export function DreamCard({ item, bottomPadding, isLiked, onLike, onToggleLike, 
                 <Image source={{ uri: item.avatar_url }} style={s.avatar} />
               ) : (
                 <View style={s.avatarFallback}>
-                  <Text style={s.avatarText}>{(item.username ?? '?')[0].toUpperCase()}</Text>
+                  <Text style={s.avatarText}>{(item.username || '?')[0].toUpperCase()}</Text>
                 </View>
               )}
-              <Text style={s.username}>{item.username}</Text>
+              <Text style={s.username}>{item.username ?? 'dreamer'}</Text>
             </TouchableOpacity>
             {item.from_wish && (
               <TouchableOpacity

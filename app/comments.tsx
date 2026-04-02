@@ -197,7 +197,7 @@ export default function CommentsScreen() {
                   <Image source={{ uri: user.avatarUrl }} style={styles.mentionAvatar} />
                 ) : (
                   <View style={styles.mentionAvatarFallback}>
-                    <Text style={styles.mentionAvatarText}>{(user.username ?? '?')[0].toUpperCase()}</Text>
+                    <Text style={styles.mentionAvatarText}>{(user.username || '?')[0].toUpperCase()}</Text>
                   </View>
                 )}
                 <Text style={styles.mentionUsername}>{user.username}</Text>

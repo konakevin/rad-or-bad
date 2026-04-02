@@ -25,7 +25,7 @@ export function FollowUserRow({ item, isFollowing, onFollow }: Props) {
         <Image source={{ uri: item.avatar_url }} style={styles.avatar} />
       ) : (
         <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{(item.username ?? '?')[0].toUpperCase()}</Text>
+          <Text style={styles.avatarText}>{(item.username || '?')[0].toUpperCase()}</Text>
         </View>
       )}
       <Text style={styles.username}>{item.username}</Text>

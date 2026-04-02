@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Dimensions, FlatList } from '
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
 import { useAuthStore } from '@/store/auth';
 import { useFeedStore } from '@/store/feed';
 import { colors } from '@/constants/theme';
@@ -175,7 +176,17 @@ export default function HomeScreen() {
         style={[s.topOverlay, { paddingTop: insets.top }]}
         pointerEvents="box-none"
       >
-        <FeedTabs active={activeTab} onChange={handleTabChange} />
+        <View style={s.topRow}>
+          <FeedTabs active={activeTab} onChange={handleTabChange} />
+          <TouchableOpacity
+            style={s.searchButton}
+            onPress={() => router.push('/search')}
+            activeOpacity={0.7}
+            hitSlop={12}
+          >
+            <Ionicons name="search" size={20} color="rgba(255,255,255,0.8)" />
+          </TouchableOpacity>
+        </View>
       </LinearGradient>
     </View>
   );
@@ -186,6 +197,8 @@ const s = StyleSheet.create({
   emptyWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, paddingHorizontal: 40 },
   emptyTitle: { color: colors.textPrimary, fontSize: 20, fontWeight: '700' },
   emptySub: { color: colors.textSecondary, fontSize: 15, textAlign: 'center' },
-  topOverlay: { position: 'absolute', top: 0, left: 0, right: 0, alignItems: 'center', paddingBottom: 20 },
+  topOverlay: { position: 'absolute', top: 0, left: 0, right: 0, paddingBottom: 20 },
+  topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16 },
   feedTabs: { flexDirection: 'row', gap: 8 },
+  searchButton: { position: 'absolute', right: 16 },
 });

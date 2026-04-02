@@ -38,7 +38,7 @@ function AvatarCircle({ url, size, username }: { url?: string | null; size: numb
   // Fallback: initial letter on a dark circle
   return (
     <View style={[styles.avatarFallback, { width: size, height: size, borderRadius: size / 2 }]}>
-      <Text style={[styles.avatarInitial, { fontSize: size * 0.45 }]}>{username[0]?.toUpperCase() ?? '?'}</Text>
+      <Text style={[styles.avatarInitial, { fontSize: size * 0.45 }]}>{(username || '?')[0].toUpperCase()}</Text>
     </View>
   );
 }

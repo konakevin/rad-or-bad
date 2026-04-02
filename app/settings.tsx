@@ -221,7 +221,7 @@ export default function SettingsScreen() {
     );
   }
 
-  const initial = (profile?.username ?? user?.user_metadata?.username ?? '?')[0].toUpperCase();
+  const initial = (profile?.username || user?.user_metadata?.username || '?')[0].toUpperCase();
 
   return (
     <SafeAreaView style={styles.root}>

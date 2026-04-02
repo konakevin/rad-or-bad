@@ -277,7 +277,7 @@ export function DreamWishSheet({ visible, onClose, currentWish, currentModifiers
                       <Image source={{ uri: friend.avatarUrl }} style={s.pickerAvatar} />
                     ) : (
                       <View style={s.pickerAvatarFallback}>
-                        <Text style={s.pickerAvatarText}>{(friend.username ?? '?')[0].toUpperCase()}</Text>
+                        <Text style={s.pickerAvatarText}>{(friend.username || '?')[0].toUpperCase()}</Text>
                       </View>
                     )}
                     <Text style={s.pickerUsername}>{friend.username}</Text>
