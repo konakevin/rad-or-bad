@@ -159,19 +159,18 @@ export const ui = StyleSheet.create({
 
   // Side action buttons (feed cards)
   sideButton: {
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
     width: 44,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
+    paddingVertical: 8,
     backgroundColor: colors.overlayLight,
     borderRadius: 22,
   },
   sideCount: {
     color: '#FFFFFF',
     fontSize: 11,
-    fontWeight: '700',
-    position: 'absolute',
-    bottom: -2,
+    fontWeight: '700' as const,
+    marginTop: 1,
     textShadowColor: 'rgba(0,0,0,0.5)',
     textShadowRadius: 3,
     textShadowOffset: { width: 0, height: 1 },
