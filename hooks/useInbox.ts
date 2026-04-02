@@ -7,7 +7,7 @@ export interface NotificationItem {
   actorId: string;
   actorUsername: string;
   actorAvatarUrl: string | null;
-  type: 'post_comment' | 'comment_reply' | 'comment_mention' | 'post_share' | 'friend_request' | 'friend_accepted' | 'post_milestone' | 'dream_generated';
+  type: 'post_comment' | 'comment_reply' | 'comment_mention' | 'post_share' | 'friend_request' | 'friend_accepted' | 'post_milestone' | 'dream_generated' | 'post_like';
   uploadId: string | null;
   commentId: string | null;
   body: string | null;

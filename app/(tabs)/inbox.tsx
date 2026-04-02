@@ -46,6 +46,8 @@ function getNotificationText(item: NotificationItem): { action: string; preview:
       return { action: 'Your post hit ' + (item.body ?? 'a milestone!'), preview: null };
     case 'dream_generated':
       return { action: item.body?.startsWith('Your wish') ? item.body : 'A new dream has been conjured', preview: null };
+    case 'post_like':
+      return { action: 'liked your dream', preview: null };
     default:
       return { action: '', preview: null };
   }
@@ -58,6 +60,7 @@ function getNotificationIcon(type: NotificationItem['type']): string {
     case 'comment_reply': return 'arrow-undo';
     case 'comment_mention': return 'at';
     case 'dream_generated': return 'sparkles';
+    case 'post_like': return 'heart';
     default: return 'notifications';
   }
 }
