@@ -314,7 +314,7 @@ async function main() {
       const uploadId = uploadRow?.id;
 
       // Send notification
-      const BOT_ACCOUNT = '3431d831-1a32-40cd-8fb7-030ada98ad53';
+      const BOT_ACCOUNT = user.user_id; // self-notification for system-generated dreams
       const notifBody = wish
         ? `Your wish has been granted: "${wish.slice(0, 80)}"`
         : 'A new dream has been conjured';

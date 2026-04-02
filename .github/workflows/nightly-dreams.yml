@@ -1,0 +1,27 @@
+name: Nightly Dream Generation
+
+on:
+  schedule:
+    - cron: '0 9 * * *' # 2:00 AM MST (UTC-7)
+  workflow_dispatch: # Allow manual trigger from GitHub UI
+
+jobs:
+  grant-wishes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run nightly dreams
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          REPLICATE_API_TOKEN: ${{ secrets.REPLICATE_API_TOKEN }}
+        run: node scripts/nightly-dreams.js
