@@ -11,6 +11,8 @@ interface PostDreamOpts {
   prompt: string;
   recipeId?: string | null;
   fromWish?: string | null;
+  twinOf?: string | null;
+  fuseOf?: string | null;
 }
 
 /**
@@ -38,6 +40,8 @@ export async function postDream(opts: PostDreamOpts): Promise<string> {
     height: 1664,
     from_wish: opts.fromWish ?? null,
     recipe_id: opts.recipeId ?? null,
+    twin_of: opts.twinOf ?? null,
+    fuse_of: opts.fuseOf ?? null,
   }).select('id').single();
 
   if (error) throw error;

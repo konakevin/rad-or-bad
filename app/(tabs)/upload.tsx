@@ -5,7 +5,8 @@ import ImageCropPicker from 'react-native-image-crop-picker';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import Animated, { useSharedValue, useAnimatedStyle, withTiming, withSequence } from 'react-native-reanimated';
+import { GestureDetector, Gesture } from 'react-native-gesture-handler';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming, withSequence, withSpring } from 'react-native-reanimated';
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/auth';
@@ -24,6 +25,7 @@ const PREVIEW_WIDTH = SCREEN_WIDTH - 48;
 
 import { enhanceWithHaiku, generateFluxDev, generateFluxKontext, persistImage, ANTHROPIC_KEY } from '@/lib/dreamApi';
 import { postDream, pinToFeed } from '@/lib/dreamPost';
+import { useFusionStore } from '@/store/fusion';
 
 type Phase = 'pick' | 'preview' | 'dreaming' | 'reveal' | 'posting';
 
@@ -46,6 +48,10 @@ export default function DreamScreen() {
   const [error, setError] = useState<string | null>(null);
   const [reusePhoto, setReusePhoto] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
+  const dreamMode = useFusionStore((s) => s.mode);
+  const fusionTarget = useFusionStore((s) => s.target);
+  const clearDreamMode = useFusionStore((s) => s.clear);
+  const isTwinMode = dreamMode === 'twin' && !!fusionTarget;
 
   // Derived from album for backward compat
   const activeDream = dreamAlbum[activeIndex] ?? null;
@@ -60,6 +66,43 @@ export default function DreamScreen() {
   const fsOverlayStyle = useAnimatedStyle(() => ({
     opacity: fsOpacity.value,
   }));
+
+  // Pinch to zoom on fullscreen preview — focal point aware (matches DreamCard)
+  const pinchScale = useSharedValue(1);
+  const pinchTransX = useSharedValue(0);
+  const pinchTransY = useSharedValue(0);
+  const pinchFocalX = useSharedValue(0);
+  const pinchFocalY = useSharedValue(0);
+  const pinchStartX = useSharedValue(0);
+  const pinchStartY = useSharedValue(0);
+
+  const pinchGesture = Gesture.Pinch()
+    .onStart((e) => {
+      pinchFocalX.value = e.focalX - SCREEN_WIDTH / 2;
+      pinchFocalY.value = e.focalY - SCREEN_HEIGHT / 2;
+      pinchStartX.value = e.focalX;
+      pinchStartY.value = e.focalY;
+    })
+    .onUpdate((e) => {
+      const sc = Math.max(1, Math.min(5, e.scale));
+      pinchScale.value = sc;
+      pinchTransX.value = pinchFocalX.value * (1 - sc) + (e.focalX - pinchStartX.value);
+      pinchTransY.value = pinchFocalY.value * (1 - sc) + (e.focalY - pinchStartY.value);
+    })
+    .onEnd(() => {
+      pinchScale.value = withTiming(1, { duration: 200 });
+      pinchTransX.value = withTiming(0, { duration: 200 });
+      pinchTransY.value = withTiming(0, { duration: 200 });
+    });
+
+  const pinchStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: pinchTransX.value },
+      { translateY: pinchTransY.value },
+      { scale: pinchScale.value },
+    ],
+  }));
+
   const busy = useRef(false);
   const [cachedRecipe, setCachedRecipe] = useState<Recipe | null>(null);
 
@@ -223,6 +266,7 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
         prompt: postPrompt,
         recipeId,
         fromWish: postWish,
+        twinOf: isTwinMode ? fusionTarget?.postId : null,
       });
       console.log('[Post] Upload created:', uploadId);
 
@@ -239,6 +283,7 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
 
       if (dreamAlbum.length <= 1) {
         // Last/only image — go home
+        clearDreamMode();
         reset();
         router.replace('/(tabs)');
       } else {
@@ -255,6 +300,57 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
       setPhase('reveal');
     }
   }
+
+  // Twin dream — re-roll the exact same prompt from the source post
+  async function twinDream() {
+    if (!user || !fusionTarget) return;
+    if (busy.current) { Toast.show('Already dreaming...', 'hourglass'); return; }
+    busy.current = true;
+    setError(null);
+    if (dreamAlbum.length > 0) {
+      setDreaming(true);
+    } else {
+      imgOpacity.value = 0;
+      imgScale.value = 0.85;
+      setPhase('dreaming');
+    }
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+    try {
+      const p = fusionTarget.prompt;
+      console.log('[Twin] Generating from prompt:', p.slice(0, 80));
+      const url = await generateFluxDev(p);
+      setDreamAlbum(prev => {
+        const newIndex = prev.length;
+        setActiveIndex(newIndex);
+        setTimeout(() => albumRef.current?.scrollToIndex({ index: newIndex, animated: true }), 100);
+        return [...prev, { url, prompt: p, fromWish: null }];
+      });
+      setDreaming(false);
+      setPhase('reveal');
+      imgOpacity.value = withTiming(1, { duration: 600 });
+      imgScale.value = withSequence(withTiming(1.05, { duration: 400 }), withTiming(1, { duration: 200 }));
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
+      Toast.show(`Twin error: ${msg}`, 'close-circle');
+      setError(msg);
+      setDreaming(false);
+      setPhase(dreamAlbum.length > 0 ? 'reveal' : 'pick');
+    } finally {
+      busy.current = false;
+    }
+  }
+
+  // Auto-trigger twin generation when entering twin mode
+  const twinTriggered = useRef(false);
+  useMemo(() => {
+    if (isTwinMode && !twinTriggered.current && phase === 'pick') {
+      twinTriggered.current = true;
+      setTimeout(() => twinDream(), 100);
+    }
+    if (!isTwinMode) twinTriggered.current = false;
+  }, [isTwinMode, phase]);
 
   async function justDream() {
     console.log('[JustDream] START, user:', !!user, 'busy:', busy.current);
@@ -508,9 +604,13 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
             setTimeout(() => setFullscreen(false), 260);
           }}>
             <Animated.View style={[s.fsOverlay, fsOverlayStyle]}>
-              <Animated.View style={[s.fsImageWrap, fsStyle]}>
-                <Image source={{ uri: dreamAlbum[activeIndex]?.url ?? ''}} style={s.fsImage} contentFit="contain" />
-              </Animated.View>
+              <GestureDetector gesture={pinchGesture}>
+                <Animated.View style={[s.fsImageWrap, fsStyle]}>
+                  <Animated.View style={pinchStyle}>
+                    <Image source={{ uri: dreamAlbum[activeIndex]?.url ?? ''}} style={s.fsImage} contentFit="contain" />
+                  </Animated.View>
+                </Animated.View>
+              </GestureDetector>
               <TouchableOpacity
                 style={s.fsClose}
                 onPress={() => {
@@ -547,11 +647,15 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
             </TouchableOpacity>
           )}
           <View style={s.row}>
-            <TouchableOpacity style={s.sec} onPress={() => reusePhoto && photoUri ? dream() : justDream()} activeOpacity={0.7}>
-              <Ionicons name="refresh" size={16} color={colors.textSecondary} />
-              <Text style={s.secText}>Dream again</Text>
+            <TouchableOpacity style={s.sec} onPress={() => {
+              if (isTwinMode) twinDream();
+              else if (reusePhoto && photoUri) dream();
+              else justDream();
+            }} activeOpacity={0.7}>
+              <Ionicons name={isTwinMode ? 'dice-outline' : 'refresh'} size={16} color={colors.textSecondary} />
+              <Text style={s.secText}>{isTwinMode ? 'Twin again' : 'Dream again'}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={s.sec} onPress={reset} activeOpacity={0.7}>
+            <TouchableOpacity style={s.sec} onPress={() => { clearDreamMode(); reset(); }} activeOpacity={0.7}>
               <Ionicons name="images" size={16} color={colors.textSecondary} />
               <Text style={s.secText}>Start over</Text>
             </TouchableOpacity>

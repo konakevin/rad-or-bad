@@ -48,6 +48,10 @@ function getNotificationText(item: NotificationItem): { action: string; preview:
       return { action: item.body?.startsWith('Your wish') ? item.body : 'A new dream has been conjured', preview: null };
     case 'post_like':
       return { action: 'liked your dream', preview: null };
+    case 'post_twin':
+      return { action: 'twinned your dream', preview: null };
+    case 'post_fuse':
+      return { action: 'fused with your dream', preview: null };
     default:
       return { action: '', preview: null };
   }
@@ -61,6 +65,8 @@ function getNotificationIcon(type: NotificationItem['type']): string {
     case 'comment_mention': return 'at';
     case 'dream_generated': return 'sparkles';
     case 'post_like': return 'heart';
+    case 'post_twin': return 'dice-outline';
+    case 'post_fuse': return 'git-merge-outline';
     default: return 'notifications';
   }
 }

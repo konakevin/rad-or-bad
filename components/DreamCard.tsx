@@ -39,6 +39,10 @@ export interface DreamPostItem {
   like_count?: number;
   from_wish?: string | null;
   recipe_id?: string | null;
+  twin_count?: number;
+  fuse_count?: number;
+  twin_of?: string | null;
+  fuse_of?: string | null;
 }
 
 interface Props {
@@ -54,6 +58,7 @@ interface Props {
   disableSwipeToProfile?: boolean;
   onDelete?: () => void;
   onFuse?: () => void;
+  onFamily?: () => void;
 }
 
 /** A single sparkle particle that floats along the border edge */
@@ -130,7 +135,7 @@ function WishSparkle({ index, total, seed }: { index: number; total: number; see
   );
 }
 
-export function DreamCard({ item, bottomPadding, isLiked, onLike, onToggleLike, onComment, onShare, isSaved, onToggleSave, disableSwipeToProfile, onDelete, onFuse }: Props) {
+export function DreamCard({ item, bottomPadding, isLiked, onLike, onToggleLike, onComment, onShare, isSaved, onToggleSave, disableSwipeToProfile, onDelete, onFuse, onFamily }: Props) {
   const currentUser = useAuthStore((s) => s.user);
   const isOwnPost = currentUser?.id === item.user_id;
   const lastTap = useRef(0);
@@ -353,9 +358,12 @@ export function DreamCard({ item, bottomPadding, isLiked, onLike, onToggleLike, 
             <TouchableOpacity style={ui.sideButton} onPress={onShare ?? (() => router.push(`/sharePost?uploadId=${item.id}`))} activeOpacity={0.7}>
               <Ionicons name="paper-plane-outline" size={24} color="#FFFFFF" />
             </TouchableOpacity>
-            {onFuse && item.is_ai_generated && (
-              <TouchableOpacity style={ui.sideButton} onPress={onFuse} activeOpacity={0.7}>
-                <Ionicons name="git-merge" size={24} color="#FFFFFF" />
+            {item.is_ai_generated && onFamily && (
+              <TouchableOpacity style={ui.sideButton} onPress={onFamily} activeOpacity={0.7}>
+                <Ionicons name="albums-outline" size={24} color="#FFFFFF" />
+                {((item.twin_count ?? 0) + (item.fuse_count ?? 0)) > 0 && (
+                  <Text style={ui.sideCount}>{(item.twin_count ?? 0) + (item.fuse_count ?? 0)}</Text>
+                )}
               </TouchableOpacity>
             )}
           </View>

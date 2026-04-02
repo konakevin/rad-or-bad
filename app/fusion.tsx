@@ -138,6 +138,7 @@ export default function FusionScreen() {
         imageUrl: current.url,
         prompt: current.prompt,
         recipeId,
+        fuseOf: target?.postId ?? null,
       });
       pinToFeed({
         id: uploadId,

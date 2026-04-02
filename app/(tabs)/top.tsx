@@ -55,6 +55,8 @@ function useCategoryDreams(category: DreamCategory) {
           from_wish: (row.from_wish as string | null) ?? null,
           recipe_id: (row.recipe_id as string | null) ?? null,
           ai_prompt: (row.ai_prompt as string | null) ?? null,
+          twin_count: (row.twin_count as number) ?? 0,
+          fuse_count: (row.fuse_count as number) ?? 0,
         }));
     },
     initialPageParam: 0,

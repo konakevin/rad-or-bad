@@ -6,7 +6,7 @@
  * end-reached loading. Cards are rendered via DreamCard.
  */
 
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { View, FlatList, StyleSheet, Dimensions, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image as ExpoImage } from 'expo-image';
@@ -23,6 +23,7 @@ import { useAuthStore } from '@/store/auth';
 import { supabase } from '@/lib/supabase';
 import { Toast } from '@/components/Toast';
 import { useFusionStore } from '@/store/fusion';
+import { DreamFamilySheet } from '@/components/DreamFamilySheet';
 import { colors } from '@/constants/theme';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -59,7 +60,10 @@ export function FullScreenFeed({
   const { mutate: toggleFavorite } = useToggleFavorite();
   const { data: likeIds = new Set<string>() } = useLikeIds();
   const { mutate: toggleLike } = useToggleLike();
-  const setFusionTarget = useFusionStore((s) => s.setTarget);
+  const setTwin = useFusionStore((s) => s.setTwin);
+  const setFuse = useFusionStore((s) => s.setFuse);
+  const [familyPostId, setFamilyPostId] = useState<string | null>(null);
+  const [familyPost, setFamilyPost] = useState<DreamPostItem | null>(null);
 
   const handleDelete = useCallback(async (uploadId: string) => {
     const { error } = await supabase.from('uploads').delete().eq('id', uploadId);
@@ -139,20 +143,44 @@ export function FullScreenFeed({
           }}
           disableSwipeToProfile={disableSwipeToProfile}
           onDelete={item.user_id === user?.id ? () => handleDelete(item.id) : undefined}
-          onFuse={item.user_id !== user?.id && item.is_ai_generated ? () => {
-            setFusionTarget({
-              postId: item.id,
-              prompt: item.ai_prompt ?? item.caption ?? '',
-              imageUrl: item.image_url,
-              username: item.username,
-              userId: item.user_id,
-              recipeId: item.recipe_id ?? null,
-            });
-            router.push('/fusion');
+          onFamily={item.is_ai_generated ? () => {
+            setFamilyPostId(item.id);
+            setFamilyPost(item);
           } : undefined}
         />
       )}
     />
+    {familyPost && (
+      <DreamFamilySheet
+        visible={!!familyPostId}
+        onClose={() => { setFamilyPostId(null); setFamilyPost(null); }}
+        uploadId={familyPost.id}
+        isAiGenerated={familyPost.is_ai_generated}
+        aiPrompt={familyPost.ai_prompt ?? null}
+        onTwin={() => {
+          setTwin({
+            postId: familyPost.id,
+            prompt: familyPost.ai_prompt ?? familyPost.caption ?? '',
+            imageUrl: familyPost.image_url,
+            username: familyPost.username,
+            userId: familyPost.user_id,
+            recipeId: familyPost.recipe_id ?? null,
+          });
+          router.navigate('/(tabs)/upload');
+        }}
+        onFuse={() => {
+          setFuse({
+            postId: familyPost.id,
+            prompt: familyPost.ai_prompt ?? familyPost.caption ?? '',
+            imageUrl: familyPost.image_url,
+            username: familyPost.username,
+            userId: familyPost.user_id,
+            recipeId: familyPost.recipe_id ?? null,
+          });
+          router.push('/fusion');
+        }}
+      />
+    )}
     </>
   );
 }
