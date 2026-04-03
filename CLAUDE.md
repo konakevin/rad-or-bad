@@ -158,36 +158,45 @@ This is the core creative engine. It transforms a user's taste recipe into a lay
 
 ### How to Prompt Haiku and Flux — Hard-Won Lessons
 
-These are lessons from extensive testing on 2026-04-03. Read before touching the dream engine.
+These are lessons from extensive testing on 2026-04-03. **Read before touching the dream engine.**
+
+**THE GOLDEN RULE: We set the stage, the AI turns on the lights.**
+Our engine provides ingredients and inspiration. Haiku and Flux express them creatively. NEVER over-constrain — every rule, ban, or instruction we add makes the output more generic. The best results came from the SIMPLEST prompts with the RICHEST ingredients.
 
 **HAIKU (prompt writer):**
-- Haiku writes BETTER prompts when given LESS structure. A rich archetype brief + art medium + "surprise me" produces better output than a template with 15 rules and priority lists.
-- Haiku plays it safe when over-instructed. The more rules, bans, examples, and structure you add, the more generic the output. Give it creative freedom within constraints, not a checklist.
-- Haiku writes vivid prompts when the INPUT is vivid. "Tonight you dream of the old north. A longship cutting through fog, dragon prow emerging from mist" → Haiku matches that energy. "Generate a moody nature scene" → Haiku writes something generic.
-- When Haiku refused a creative override and improvised freely, it wrote the BEST prompt of the session (a hedgehog catching fireflies). The lesson: trust Haiku's creativity, guide it with identity not instructions.
-- Haiku will NOT write explicit/sexual content when framed as an override ("make it sexy"). But it WILL write attractive/alluring characters when framed as a creative brief ("a femme fatale in a smoky jazz club"). Framing matters.
-- Max 50 words for the final prompt to Flux. Longer prompts → Flux cherry-picks random parts and ignores the rest. Short, committed prompts → Flux follows faithfully.
+- **LESS IS MORE.** The Chord template is just: "Dream up a stunning image. Use these ingredients however you want." That's it. That produces the best output. Adding priority lists, numbered rules, examples, or "avoid X" makes Haiku play safe.
+- Haiku matches the energy of its input. Vivid archetype briefs → vivid prompts. Generic instructions → generic output. Put the creativity in the INGREDIENTS, not the instructions.
+- Present ingredients as INSPIRATION, not directives. "Inspiration: The Viking Saga" works. "You MUST channel this identity through the ingredients" doesn't.
+- 50 words max for the final prompt. Short committed prompts → Flux follows. Long complex prompts → Flux cherry-picks randomly.
+- Haiku will write attractive/alluring content when framed as a creative brief, but refuses when framed as an override. Framing matters.
 
 **FLUX DEV (image generator):**
-- Flux follows SHORT, CLEAR prompts well. 40-60 words ideal. Over 80 words and it starts ignoring things.
-- Flux renders photorealistic by default. To get a different art style, the style MUST be the first words of the prompt AND be described physically ("smooth rounded plastic shapes, bright saturated colors" not just "Pixar style").
-- Flux handles these styles well: vaporwave, voxel/pixel art, Bauhaus, neon/cyberpunk, watercolor (sometimes), stop-motion/craft. Flux struggles with: Escher impossible geometry, charcoal sketches, pure anime, abstract art movements.
-- "NOT a photograph" at the end of a prompt helps push away from photorealism but isn't magic.
-- Flux has biases: defaults to ferris wheels/carnivals when confused, defaults to photorealistic woman when "attractive" is mentioned, defaults to corridor/hallway compositions for moody lighting.
-- When a medium and scene CONFLICT (e.g., "charcoal sketch" + "neon cyberpunk city"), Flux ignores the medium and renders the scene in its default style. Medium and scene must harmonize.
-- Flux renders ONE clear subject better than multiple competing elements. "A dragon on a mountain" → great. "A dragon, a castle, a knight, a forest, a river, a sunset" → mush.
+- 40-50 word prompts are ideal. Art style MUST be the first words.
+- Medium MUST harmonize with the mood — axis-filtered medium selection is critical. Random medium selection produces clashing, generic images. This was tested and confirmed.
+- Flux has biases: Frida Kahlo portraits, ferris wheels, corridor compositions, photorealistic women. Add "No portraits of real people" to counteract.
+- ONE clear subject beats multiple competing elements. The DREAM_SUBJECTS pool should be action/scene seeds, not static objects.
+- Flux renders photorealistic by default. Artistic styles need physical descriptions ("smooth rounded plastic shapes" not just "Pixar style").
 
 **SDXL (illustration model):**
-- Routes via version-based API: POST /v1/predictions with version hash, NOT /v1/models/ path.
-- Better than Flux at: watercolor, oil painting, cartoon, anime, comic book, storybook illustration, craft styles. The Beatrix Potter watercolor test was dramatically better on SDXL than Flux.
-- Uses width/height (832x1216 for 9:16) instead of aspect_ratio.
-- ~$0.003/image vs Flux Dev's ~$0.03. 10x cheaper.
+- Routes via version-based API with version hash.
+- Better than Flux at: watercolor, oil painting, anime, comic book, storybook, craft styles.
+- 768x1344 for 9:16. ~$0.003/image (10x cheaper than Flux).
 
-**THE "LEAF" PRINCIPLE (creative depth):**
-- The best dreams come from specificity, not breadth. A dream about "a specific chess piece on a specific table in a specific room" beats "chess + ocean + neon."
-- The archetype system provides the identity/focus. The Chord engine provides the random ingredients. Haiku weaves them together. Each layer adds specificity without removing randomness.
-- The archetype is the TRUNK (who am I tonight). The engine ingredients are the BRANCHES (what medium, mood, lighting). Haiku finds the LEAF (the specific scene). The leaf is where the magic is — it's the most specific, vivid, surprising conclusion of all those inputs converging.
-- Don't try to control the leaf. Control the trunk and branches, let Haiku find the leaf. The best images came when Haiku had clear identity + clear style + creative freedom.
+**WHAT KILLS THE ENGINE (things we tried that made it worse):**
+- Random medium selection (no axis filtering) → clashing styles, generic output
+- Too many rules in the prompt template → Haiku plays safe, boring results
+- "NOT a photograph" and negative instructions → Haiku/Flux focus on what NOT to do
+- Overly specific archetype instructions ("channel this identity") → rigid, predictable
+- Art school mediums (Mondrian, Rothko, Banksy, etc.) → abstract art, not dreams
+- Too many competing subjects in one prompt → Flux picks random pieces, ignores rest
+
+**WHAT MAKES THE ENGINE SING:**
+- Rich, vivid archetype briefs as inspiration (not instructions)
+- Axis-filtered medium selection that harmonizes with the mood
+- Short, open-ended Haiku prompt: ingredients + "be creative" + "surprise us"
+- Dream subjects that are SCENES (action, movement, story) not OBJECTS (a lantern, a crystal)
+- Interest flavor expansions that are vivid scene seeds, not generic nouns
+- The three-part song: Chord for surprise mashups, Solo for focused identity, Song for pure beauty
 
 **THE THREE-PART SONG (live in generate-dream edge function):**
 Each dream randomly rolls which mode it uses:

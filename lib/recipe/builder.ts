@@ -151,9 +151,8 @@ export function buildPromptInput(recipe: Recipe, archetype?: DreamArchetype): Pr
     brightness: rollAxis(axes.brightness),
   };
 
-  // TECHNIQUE layer — medium is pure random for maximum visual variety
-  // (axes still filter moods and lighting, but medium should always surprise)
-  const medium = pick(MEDIUM_POOL).text;
+  // TECHNIQUE layer
+  const medium = filterPool(MEDIUM_POOL, rolled, chaos);
   const paletteKey = colorPalettes.length > 0 ? pick(colorPalettes) : 'everything';
   const colorKeywordsStr = PALETTE_KEYWORDS[paletteKey] || '';
   const weirdnessModifier = getModifierByValue(WEIRDNESS_MODIFIERS, axes.weirdness);
@@ -300,39 +299,22 @@ export function buildHaikuPrompt(input: PromptInput): string {
   // Pick a random composition for Haiku to consider
   const comp = pick(COMPOSITIONS);
 
-  return `You are a dream artist creating a single stunning image for someone. Below are ingredients rolled from their taste profile. Your job is NOT to use all of them — pick the 4-5 that work best together and IGNORE the rest. Competing elements make bad images.
+  return `Dream up a stunning image. Use these ingredients however you want — combine them, twist them, surprise us. Drop anything that doesn't fit.
 
-PRIORITY ORDER (most → least important):
-1. ART MEDIUM (always use this): ${input.medium}
-2. SUBJECT: ${input.dreamSubject || input.interests.map(expandInterest).join(' and ')}
-3. SETTING: ${input.settingKeywords}
-4. MOOD + LIGHTING: ${input.mood}, ${input.lighting}
-5. COLOR PALETTE: ${input.colorKeywords || 'vivid and expressive'}
+Style: ${input.medium}
+Subject: ${input.dreamSubject || input.interests.map(expandInterest).join(' and ')}
+Place: ${input.settingKeywords}, ${input.eraKeywords}
+Mood: ${input.mood}, ${input.lighting}
+${input.colorKeywords ? `Colors: ${input.colorKeywords}` : ''}
+${input.sceneAtmosphere ? `Weather: ${input.sceneAtmosphere}` : ''}
+${input.action ? `Action: ${input.action}` : ''}
+${input.sceneType ? `Moment: ${input.sceneType}` : ''}
+${comp ? `Frame: ${comp}` : ''}
+${input.spiritAppears && input.spiritCompanion ? `Hidden easter egg: a tiny ${input.spiritCompanion.replace(/_/g, ' ')}` : ''}
 
-OPTIONAL — use if they enhance the scene, skip if they clash:
-- Era flavor: ${input.eraKeywords}
-- Weather: ${input.sceneAtmosphere}
-- Personality vibe: ${input.personalityTags.join(', ')}
-- Framing: ${input.scaleModifier}
-${input.weirdnessModifier ? `- Surrealism: ${input.weirdnessModifier}` : ''}
-${input.action ? `- Action: ${input.action}` : ''}
-${input.spiritAppears && input.spiritCompanion ? `- Spirit companion: a ${input.spiritCompanion.replace(/_/g, ' ')} hidden in the scene` : ''}
-${comp ? `- Composition idea: ${comp}` : ''}
-${input.sceneType ? `- Scene type: ${input.sceneType}` : ''}
+Write a vivid image prompt (max 50 words). Start with the art style. Be creative — the best dreams are ones nobody has seen before. No photorealistic humans. No portraits of real people. No text or words in the image.
 
-WRITE a single image prompt (max 60 words). Start with the art style. Describe ONE specific, coherent scene — not a list of ingredients.
-
-RULES:
-- If elements conflict, DROP the lower-priority one. A coherent scene beats a complete checklist.
-- Characters should be stylized, illustrated, or silhouetted — NEVER photorealistic human faces or bodies. If a person appears, they should feel like part of the art style (cartoon, painted, sketched), not a photo of a real person.
-- No nudity or explicit content
-- Be concrete and visual, not poetic or abstract
-- The result should make someone say "that's MY dream bot — it gets me"
-- AVOID AI ART CLICHÉS: no "figure standing with back to camera gazing at vast landscape", no "lone silhouette on cliff edge", no "person looking up at giant glowing thing". These are overused. Be more creative with composition.
-- LEAN INTO THE ART STYLE: if the medium is cartoon, make it LOOK like a cartoon — exaggerated, flat colors, bold outlines. Don't let it default to photorealistic with a filter. The medium should fundamentally change HOW the image looks.
-- NEVER include text, words, letters, speech bubbles, signs with writing, or any readable text in the scene. Images only, no text.
-
-Output ONLY the prompt, nothing else.`;
+Output ONLY the prompt.`;
 }
 
 /** Archetype interface — used by the edge function to pass archetype data */

@@ -154,15 +154,16 @@ Deno.serve(async (req) => {
   lap('rate-limit-check');
 
   const todayCount = budgetRow?.images_generated ?? 0;
-  if (todayCount >= MAX_DAILY_GENERATIONS) {
-    return new Response(
-      JSON.stringify({
-        error: 'Daily generation limit reached. Try again tomorrow!',
-        retry_after: secondsUntilMidnightUTC(),
-      }),
-      { status: 429 }
-    );
-  }
+  // Rate limit disabled for now
+  // if (todayCount >= MAX_DAILY_GENERATIONS) {
+  //   return new Response(
+  //     JSON.stringify({
+  //       error: 'Daily generation limit reached. Try again tomorrow!',
+  //       retry_after: secondsUntilMidnightUTC(),
+  //     }),
+  //     { status: 429 }
+  //   );
+  // }
 
   // ── Build prompt ──────────────────────────────────────────────────────────
   let finalPrompt: string;
@@ -232,23 +233,23 @@ Deno.serve(async (req) => {
 
       if (dreamMode === 'beauty') {
         // BEAUTY MODE: pure visual focus, no narrative, just breathtaking imagery
-        haikuBrief = `Create the most visually breathtaking image possible using these ingredients. No story, no characters needed — just pure visual beauty that stops someone mid-scroll.
+        haikuBrief = `Dream up something breathtaking using these ingredients.
 
-Medium: ${input.medium}
+Style: ${input.medium}
 Mood: ${input.mood}
-Lighting: ${input.lighting}
-Setting: ${input.settingKeywords}
-Palette: ${input.colorKeywords || 'vivid and expressive'}
-Atmosphere: ${input.sceneAtmosphere}
+Light: ${input.lighting}
+Place: ${input.settingKeywords}
+${input.colorKeywords ? `Colors: ${input.colorKeywords}` : ''}
+${input.sceneAtmosphere ? `Weather: ${input.sceneAtmosphere}` : ''}
 
-Write an image prompt (max 50 words). Start with the art medium. Focus entirely on visual impact — color, light, composition, texture, scale. Make it the prettiest thing anyone has ever seen. NEVER include text, words, letters, or speech bubbles. Output ONLY the prompt.`;
+Write a vivid image prompt (max 50 words). Start with the art style. Make it beautiful. No text in the image. Output ONLY the prompt.`;
       } else {
         // CHORD or ARCHETYPE mode — use the standard Chord template
         haikuBrief = buildHaikuPrompt(input);
 
         // If archetype is active, inject its creative brief so Haiku knows the identity
         if (archetype) {
-          haikuBrief += `\n\nTONIGHT'S DREAM IDENTITY: ${archetype.name}\n${archetype.prompt_context}\n\nUse the ingredients above but channel them through this identity. The dream should feel like it came from "${archetype.name}."`;
+          haikuBrief += `\n\nInspiration: ${archetype.name}\n${archetype.prompt_context}`;
         }
       }
 

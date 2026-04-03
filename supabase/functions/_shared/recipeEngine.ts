@@ -6,7 +6,7 @@
  *                  lib/recipe/utils.ts, lib/recipe/builder.ts
  *
  * DO NOT EDIT DIRECTLY. Run: node scripts/sync-deno-engine.js
- * Generated: 2026-04-03T14:40:57.036Z
+ * Generated: 2026-04-03T15:06:31.451Z
  */
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -398,10 +398,6 @@ export const MEDIUM_POOL: TaggedOption[] = [
   {
     text: 'vintage travel poster, bold flat shapes, limited color palette, art deco lettering',
     axes: { realism: 'low', complexity: 'low', color_warmth: 'high' },
-  },
-  {
-    text: '1960s Pan Am airline advertisement illustration, glamorous jet-age optimism, bold colors',
-    axes: { realism: 'low', brightness: 'high', color_warmth: 'high', energy: 'low' },
   },
   {
     text: 'dreamy soft-focus film photography, 35mm grain, light leaks, golden tones',
@@ -1805,91 +1801,46 @@ export const INTEREST_FLAVORS: Record<string, string[]> = {
 // ── SUBJECT: Dream creatures/subjects ──────────────────────────────────────
 
 export const DREAM_SUBJECTS = [
-  // Mythical creatures
-  'a massive dragon',
-  'a gentle giant sea serpent',
-  'a phoenix rising from embers',
-  'a tiny fairy with glowing wings',
-  'a crystal golem',
-  'a floating jellyfish made of light',
-  'a ancient tree spirit',
-  'a cloud whale swimming through the sky',
-  'a mechanical clockwork bird',
-  'a galaxy-patterned wolf',
-  // Fantasy creatures
-  'a baby kraken',
-  'an enormous friendly mushroom creature',
-  'a bioluminescent deep sea fish',
-  'a stone guardian covered in moss',
-  'a glass butterfly',
-  'a constellation bear',
-  'a tiny dragon sleeping on a leaf',
-  'a flying manta ray made of aurora light',
-  'a fox made of autumn leaves',
-  'a cat made of starlight',
-  // Objects as subjects
-  'a glowing lantern floating alone',
-  'an ancient telescope pointed at the stars',
-  'a massive ancient tree',
-  'a mysterious floating crystal',
-  'a forgotten lighthouse',
-  'a tiny house inside a seashell',
-  'an overgrown abandoned train',
-  'a door standing alone in a field',
-  'a giant flower blooming in an impossible place',
-  'a music box playing to no one',
-  // Scale subjects
-  'a miniature world inside a dewdrop',
-  'an enormous clock tower',
-  'a tiny boat on a vast ocean',
-  'a single candle in infinite darkness',
-  // Puppet & craft characters
-  'a fuzzy felt Muppet-style creature with googly eyes and a wide grin',
-  'a knitted Sackboy-style character exploring a cardboard world',
-  'a gentle long-necked dinosaur in a lush prehistoric valley',
-  'a Funko Pop figure with oversized glossy head and tiny body',
-  'Falkor the luck dragon soaring through clouds, NeverEnding Story',
-  // Insects & botanical
-  'a jewel-colored beetle on a mossy log',
-  'a praying mantis perfectly still among flowers',
-  'a dragonfly with iridescent wings hovering over water',
-  'a carnivorous plant with a tiny world inside its mouth',
-  'an ancient twisted bonsai tree',
-  'a single mushroom glowing in the dark',
-  // Weather as subject
-  'a tornado made of something unexpected',
-  'a single lightning bolt frozen in time',
-  'a cloud formation that looks like something alive',
-  'a Wallace & Gromit-style inventor tinkering with mad contraptions',
-  'a Totoro-sized gentle forest spirit',
-  'a brass automaton winding down in a garden',
-  "a lighthouse keeper's ghost still tending the light",
-  'a whale swimming through the clouds',
-  'a train that runs on starlight between floating islands',
-  // Stylized characters (illustrated, not photorealistic faces)
-  'a tiny cloaked wanderer exploring a strange place',
-  'a small explorer with a glowing backpack',
-  'a masked spirit dancer',
-  'a robot child discovering something for the first time',
-  // Attractive/stylized human figures — tasteful, never explicit
-  'a fierce warrior in ornate battle armor',
-  'a rock star mid-guitar-solo, leather and chains',
-  'a shadowy figure in a slinky evening outfit, noir lighting',
-  'a blacksmith hammering at a glowing forge',
-  'a haute couture figure strutting through a fantasy world',
-  'a brooding vampire in a velvet cloak',
-  'a sea creature lounging on sun-warmed rocks',
-  'a gladiator raising a sword to the crowd',
-  'a sorcerer in flowing robes channeling arcane power',
-  'an elven archer poised to fire, wind in their hair',
-  'a dancer mid-leap, fabric trailing like wings',
-  'a cyberpunk hacker in sleek gear and neon visor',
-  'a pirate captain at the helm, tattoos showing',
-  'a celestial being descending from the clouds in golden armor',
-  'a mysterious alchemist stirring a glowing cauldron',
-  'a surfer riding a massive wave, sun-bronzed',
-  'a mysterious figure in a wet trench coat under city rain',
-  'a winged warrior on a flying horse, battle-ready',
+  // Epic creatures in action
+  'a dragon mid-flight through a thunderstorm, lightning reflecting off scales',
+  'a phoenix exploding out of a volcano, wings of pure fire spreading across the sky',
+  'a sea serpent breaching the surface, boats scattering, a wall of water rising',
+  'a wolf pack running across a frozen lake, cracks spreading beneath their paws',
+  'a whale breaching through clouds, an entire city visible on its back',
+  // Cute creatures with personality
+  'a fox kit discovering snow for the first time, nose buried, tail wagging',
+  'a cat sitting in a window watching rain, the reflection telling a different story',
+  'a baby dragon trying to roast a marshmallow and accidentally melting the stick',
+  'an octopus organizing a library, each tentacle shelving a different book',
+  'a raccoon breaking into a candy store at midnight, paws full of lollipops',
+  // Characters mid-action
+  'a warrior sliding down a collapsing bridge, sword sparking against stone',
+  'a witch on a broomstick racing through a canyon, cloak streaming behind',
+  'a ninja mid-leap between rooftops, city lights streaking below',
+  'a diver touching the nose of a whale shark, both frozen in the moment',
+  'a kid cannonballing into a lake, the splash frozen in time, pure joy',
+  // Impossible scenes
+  'a train crossing a bridge that spans between two mountains, clouds below',
+  'a tree growing upside down from the ceiling of a massive cave, roots in the sky',
+  'a door in the middle of the ocean, slightly open, golden light spilling out',
+  'a staircase spiraling up through clouds, each step a different season',
+  'two worlds colliding — one made of water, one made of fire, meeting in the middle',
+  // Nature as character
+  'a storm front approaching across open plains, one farmhouse in its path',
+  'a single cherry tree in full bloom on a volcanic black sand beach',
+  'a waterfall so tall it disappears into mist, rainbows at every level',
+  'a coral reef at the exact moment the sun hits it, every color exploding',
+  'a field of sunflowers all turning to face something other than the sun',
+  // Craft/toy characters
+  'a felt puppet fox on a tiny adventure, button eyes wide with wonder',
+  'a clay dragon carefully painting a miniature landscape with its tail',
+  'a LEGO astronaut planting a flag on a LEGO moon, Earth in the background',
+  'a paper boat navigating rapids made from a watercolor painting coming alive',
+  // Emotional moments
+  'two silhouettes reaching toward each other across a gap that is almost but not quite crossable',
+  'a figure standing at the edge of a vast landscape, about to take the first step',
+  'a crowd of lanterns rising into the night, each one carrying a wish',
+  'a kid asleep in a blanket fort, the shadows on the wall showing their dream',
 ];
 
 // Interests that are too vague on their own — always expand to a specific flavor
@@ -2221,9 +2172,8 @@ export function buildPromptInput(recipe: Recipe, archetype?: DreamArchetype): Pr
     brightness: rollAxis(axes.brightness),
   };
 
-  // TECHNIQUE layer — medium is pure random for maximum visual variety
-  // (axes still filter moods and lighting, but medium should always surprise)
-  const medium = pick(MEDIUM_POOL).text;
+  // TECHNIQUE layer
+  const medium = filterPool(MEDIUM_POOL, rolled, chaos);
   const paletteKey = colorPalettes.length > 0 ? pick(colorPalettes) : 'everything';
   const colorKeywordsStr = PALETTE_KEYWORDS[paletteKey] || '';
   const weirdnessModifier = getModifierByValue(WEIRDNESS_MODIFIERS, axes.weirdness);
@@ -2370,39 +2320,22 @@ export function buildHaikuPrompt(input: PromptInput): string {
   // Pick a random composition for Haiku to consider
   const comp = pick(COMPOSITIONS);
 
-  return `You are a dream artist creating a single stunning image for someone. Below are ingredients rolled from their taste profile. Your job is NOT to use all of them — pick the 4-5 that work best together and IGNORE the rest. Competing elements make bad images.
+  return `Dream up a stunning image. Use these ingredients however you want — combine them, twist them, surprise us. Drop anything that doesn't fit.
 
-PRIORITY ORDER (most → least important):
-1. ART MEDIUM (always use this): ${input.medium}
-2. SUBJECT: ${input.dreamSubject || input.interests.map(expandInterest).join(' and ')}
-3. SETTING: ${input.settingKeywords}
-4. MOOD + LIGHTING: ${input.mood}, ${input.lighting}
-5. COLOR PALETTE: ${input.colorKeywords || 'vivid and expressive'}
+Style: ${input.medium}
+Subject: ${input.dreamSubject || input.interests.map(expandInterest).join(' and ')}
+Place: ${input.settingKeywords}, ${input.eraKeywords}
+Mood: ${input.mood}, ${input.lighting}
+${input.colorKeywords ? `Colors: ${input.colorKeywords}` : ''}
+${input.sceneAtmosphere ? `Weather: ${input.sceneAtmosphere}` : ''}
+${input.action ? `Action: ${input.action}` : ''}
+${input.sceneType ? `Moment: ${input.sceneType}` : ''}
+${comp ? `Frame: ${comp}` : ''}
+${input.spiritAppears && input.spiritCompanion ? `Hidden easter egg: a tiny ${input.spiritCompanion.replace(/_/g, ' ')}` : ''}
 
-OPTIONAL — use if they enhance the scene, skip if they clash:
-- Era flavor: ${input.eraKeywords}
-- Weather: ${input.sceneAtmosphere}
-- Personality vibe: ${input.personalityTags.join(', ')}
-- Framing: ${input.scaleModifier}
-${input.weirdnessModifier ? `- Surrealism: ${input.weirdnessModifier}` : ''}
-${input.action ? `- Action: ${input.action}` : ''}
-${input.spiritAppears && input.spiritCompanion ? `- Spirit companion: a ${input.spiritCompanion.replace(/_/g, ' ')} hidden in the scene` : ''}
-${comp ? `- Composition idea: ${comp}` : ''}
-${input.sceneType ? `- Scene type: ${input.sceneType}` : ''}
+Write a vivid image prompt (max 50 words). Start with the art style. Be creative — the best dreams are ones nobody has seen before. No photorealistic humans. No portraits of real people. No text or words in the image.
 
-WRITE a single image prompt (max 60 words). Start with the art style. Describe ONE specific, coherent scene — not a list of ingredients.
-
-RULES:
-- If elements conflict, DROP the lower-priority one. A coherent scene beats a complete checklist.
-- Characters should be stylized, illustrated, or silhouetted — NEVER photorealistic human faces or bodies. If a person appears, they should feel like part of the art style (cartoon, painted, sketched), not a photo of a real person.
-- No nudity or explicit content
-- Be concrete and visual, not poetic or abstract
-- The result should make someone say "that's MY dream bot — it gets me"
-- AVOID AI ART CLICHÉS: no "figure standing with back to camera gazing at vast landscape", no "lone silhouette on cliff edge", no "person looking up at giant glowing thing". These are overused. Be more creative with composition.
-- LEAN INTO THE ART STYLE: if the medium is cartoon, make it LOOK like a cartoon — exaggerated, flat colors, bold outlines. Don't let it default to photorealistic with a filter. The medium should fundamentally change HOW the image looks.
-- NEVER include text, words, letters, speech bubbles, signs with writing, or any readable text in the scene. Images only, no text.
-
-Output ONLY the prompt, nothing else.`;
+Output ONLY the prompt.`;
 }
 
 /** Archetype interface — used by the edge function to pass archetype data */
