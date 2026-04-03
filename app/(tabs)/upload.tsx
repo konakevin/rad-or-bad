@@ -684,8 +684,8 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
                     contentFit="cover"
                     transition={300}
                   />
-                  {/* Debug: dream mode label */}
-                  {__DEV__ && item.dreamMode && (
+                  {/* Dream mode label */}
+                  {item.dreamMode && (
                     <View style={s.dreamModeLabel}>
                       <Text style={s.dreamModeLabelText}>
                         {item.dreamMode === 'archetype' ? `♫ Solo: ${(item.archetype ?? '').replace(/_/g, ' ').slice(0, 25)}` : item.dreamMode === 'beauty' ? '🎵 Song' : '🎶 Chord'}

@@ -177,6 +177,12 @@ export function buildPromptInput(recipe: Recipe, archetype?: DreamArchetype): Pr
     if (subjectRoll < 0.3) {
       // 30% — a fantastical creature or character
       dreamSubject = pick(DREAM_SUBJECTS);
+      // 20% chance to pluralize — "a dragon" becomes "a group of dragons"
+      if (Math.random() < 0.2 && dreamSubject.startsWith('a ')) {
+        const groupWords = ['a group of', 'a pack of', 'a flock of', 'a swarm of', 'an army of', 'a parade of', 'a crew of', 'a trio of'];
+        const singular = dreamSubject.slice(2); // remove "a "
+        dreamSubject = `${pick(groupWords)} ${singular}s`;
+      }
     } else if (subjectRoll < 0.35) {
       // 5% — spirit companion as main subject
       dreamSubject = spiritCompanion
@@ -323,7 +329,7 @@ WRITE a single image prompt (max 60 words) with rich, saturated, beautiful color
 
 RULES:
 - If elements conflict, DROP the lower-priority one. A coherent scene beats a complete checklist.
-- Characters should be stylized, illustrated, or silhouetted — NEVER photorealistic human faces or bodies. If a person appears, they should feel like part of the art style (cartoon, painted, sketched), not a photo of a real person.
+- Characters should be stylized, illustrated, or silhouetted — NEVER photorealistic human faces or bodies. If a person appears, they should feel like part of the art style (cartoon, painted, sketched), not a photo of a real person. Favor facing toward the viewer. Vary their age — kids, teens, adults, elderly are all welcome.
 - No nudity or explicit content
 - Be concrete and visual, not poetic or abstract
 - The result should make someone say "that's MY dream bot — it gets me"
