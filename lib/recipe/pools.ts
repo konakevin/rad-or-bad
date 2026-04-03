@@ -1607,6 +1607,7 @@ export const ALWAYS_EXPAND = new Set([
   'horror',
   'tattoo_art',
   'mythology',
+  'architecture',
   'sports',
   'travel',
   'pride',
