@@ -1,0 +1,312 @@
+[
+  {
+    "index": 1,
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775211550391.jpg",
+    "prompt": "Vaporwave digital art: Greek statues in neon pink-cyan glow reflecting in mirror-still canal waters, Windows 95 windows floating overhead, flower boxes luminous under starlit Milky Way, warm candlelight dancing across pale marble and rippling reflections, pure opulent visual symphony.",
+    "mode": "beauty",
+    "archetype": "none",
+    "model": "black-forest-labs/flux-dev",
+    "medium": "vaporwave aesthetic, pink and cyan gradients, Greek statues, Windows 95, surreal consumerism",
+    "mood": "luxurious and opulent",
+    "interests": [
+      "nature"
+    ],
+    "elapsed_ms": 5239,
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/dream-batch-output/dream_001_beauty.jpg"
+  },
+  {
+    "index": 2,
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775211559565.jpg",
+    "prompt": "# Image Prompt\n\nSolarpunk village at twilight: iridescent solar panels curve organically over cobblestone market square, bioluminescent green vines cascade between quaint shops, soft golden lantern light mingles with emerald aurora dancing overhead, pristine snow glitters below, jewel-toned and luminous.",
+    "mode": "beauty",
+    "archetype": "none",
+    "model": "black-forest-labs/flux-dev",
+    "medium": "solarpunk, lush green futurism, solar panels on organic architecture, optimistic sci-fi",
+    "mood": "soft and glowing",
+    "interests": [
+      "ocean",
+      "whimsical"
+    ],
+    "elapsed_ms": 7107,
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/dream-batch-output/dream_002_beauty.jpg"
+  },
+  {
+    "index": 3,
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775211569682.jpg",
+    "prompt": "Makoto Shinkai photorealistic anime style: a massive pirate galleon orbits a ringed planet, its deck transformed into a cosmic DJ booth with turntables glowing neon-blue. Silhouetted crew members dance wildly across the deck as colored light beams pierce through tumbling asteroid debris. Dawn light refracts through the ship's rigging like stained glass, casting vivid purples and golds across the starfield. Vast, sweeping perspective emphasizing the ship's scale against infinite space.",
+    "mode": "chord",
+    "archetype": "none",
+    "model": "sdxl",
+    "medium": "Makoto Shinkai style, photorealistic anime backgrounds, dramatic sky",
+    "mood": "quietly awe-inspiring",
+    "interests": [
+      "geek",
+      "music"
+    ],
+    "elapsed_ms": 8343,
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/dream-batch-output/dream_003_chord.jpg"
+  },
+  {
+    "index": 4,
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775211580070.jpg",
+    "prompt": "Wes Anderson symmetrical dollhouse cross-section: cursed golden art deco ruins half-submerged in crystalline shallow reef. Tiny sea turtle glides past crumbling columns as multicolored Christmas lights twinkle through water, casting warm bokeh. Pastel turquoise, coral pink, mint green. Miniature scale, perfectly balanced, utterly absurd and whimsical.",
+    "mode": "chord",
+    "archetype": "none",
+    "model": "black-forest-labs/flux-dev",
+    "medium": "Wes Anderson symmetrical composition, pastel color palette, dollhouse miniature",
+    "mood": "silly and absurd",
+    "interests": [
+      "dark",
+      "cute"
+    ],
+    "elapsed_ms": 8355,
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/dream-batch-output/dream_004_chord.jpg"
+  },
+  {
+    "index": 5,
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775211588110.jpg",
+    "prompt": "A vaporwave hidden cove where Greek statues emerge from sea glass and driftwood, rendered in soft pink and cyan gradients with Windows 95 interface elements floating surreally among the cliffs. Playful, whimsical mood with gentle waves and diffused overcast light creating a dreamlike, pastel-tinted scene of surreal consumerism meeting nature.",
+    "mode": "chord",
+    "archetype": "none",
+    "model": "black-forest-labs/flux-dev",
+    "medium": "vaporwave aesthetic, pink and cyan gradients, Greek statues, Windows 95, surreal consumerism",
+    "mood": "playful and whimsical",
+    "interests": [
+      "fantasy"
+    ],
+    "elapsed_ms": 6111,
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/dream-batch-output/dream_005_chord.jpg"
+  },
+  {
+    "index": 6,
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775211595509.jpg",
+    "prompt": "1960s Pan Am advertisement illustration style: a gleaming space station orbiting a ringed planet, its chrome hull reflecting vivid magentas and electric blues. Crystalline asteroids tumble nearby like forgotten debris. Inside the observation deck, translucent ghostly figures in vintage spacesuits drift through their routines, eternally boarding. Neon signage flickers with impossible colors—\"FLIGHTS TO TOMORROW\"—casting eerie glows on surfaces that flicker between solid and data-like. The AI still runs everything, beautiful and abandoned.",
+    "mode": "archetype",
+    "archetype": "scifi_neon_ghost_city",
+    "model": "black-forest-labs/flux-dev",
+    "medium": "1960s Pan Am airline advertisement illustration, glamorous jet-age optimism, bold colors",
+    "mood": "soft and glowing",
+    "interests": [
+      "sci_fi"
+    ],
+    "elapsed_ms": 4961,
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/dream-batch-output/dream_006_archetype.jpg"
+  },
+  {
+    "index": 7,
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775211601705.jpg",
+    "prompt": "A whimsical cottagecore illustration of a tiny Funko Pop figure floating in an underground cavern above a mirror-still lake, surrounded by glowing wildflowers and honey jars suspended in mid-air. Aurora borealis light ripples across the water below, casting soft pastels upward. Soft, storybook art style with muted golds and purples.",
+    "mode": "chord",
+    "archetype": "none",
+    "model": "black-forest-labs/flux-dev",
+    "medium": "cottagecore aesthetic, wildflowers, linen, honey jars, soft pastoral warmth",
+    "mood": "playful and whimsical",
+    "interests": [
+      "whimsical",
+      "geek"
+    ],
+    "elapsed_ms": 4617,
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/dream-batch-output/dream_007_chord.jpg"
+  },
+  {
+    "index": 8,
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775211609645.jpg",
+    "prompt": "Bauhaus geometric kitchen rendered in bold primary colors and clean lines: sentient vegetables arranged in stark triangular compositions on cutting boards, their simple illustrated forms mid-conversation. A glowing refrigerator door opens to reveal layered shelves where spices blend into visible color clouds—reds, yellows, blues mixing in perfect circles. Warm steam rises from a pot in graceful arcs. Starlight streams through a single window, casting sharp shadows across the scene. Everything feels alive, purposeful, minimalist yet whimsical.",
+    "mode": "archetype",
+    "archetype": "whimsical_food_sentient",
+    "model": "black-forest-labs/flux-dev",
+    "medium": "Bauhaus design, clean geometric shapes, primary colors, functional minimalism",
+    "mood": "passionate and fiery",
+    "interests": [
+      "whimsical",
+      "cute"
+    ],
+    "elapsed_ms": 5714,
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/dream-batch-output/dream_008_archetype.jpg"
+  },
+  {
+    "index": 9,
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775211628764.jpg",
+    "prompt": "Tarot card illustration with ornate gold borders: Kirby as a small pink mercenary silhouette perched on a snow-laden mountain cabin rooftop, neon-bright cyberware glinting beneath his round form, overlooking a sprawling night city of stacked highways and holographic corporate signs below. Wood smoke curls upward, framing the card's ornate border. Soft overcast light mingles with cold neon blues and purples—cozy warmth inside the cabin windows contrasts the vast, glittering dystopia beyond.",
+    "mode": "archetype",
+    "archetype": "gaming_cyberpunk_edgerunner",
+    "model": "sdxl",
+    "medium": "tarot card illustration, ornate gold borders, mystical symbolism",
+    "mood": "epic and grandiose",
+    "interests": [
+      "gaming"
+    ],
+    "elapsed_ms": 16909,
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/dream-batch-output/dream_009_archetype.jpg"
+  },
+  {
+    "index": 10,
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775211642762.jpg",
+    "prompt": "Oil painting on canvas with visible impressionist brushstrokes: an abandoned conservatory ballroom at twilight, a grand piano rendered in soft glowing candlelight, sheet music pages suspended mid-flight through moonlit air, marble floors reflecting flickering flames, portraits of composers lining shadowed walls with faintly visible eyes, all rendered in moody blues and golds with dreamlike distortions where reality feels gently unraveled.",
+    "mode": "archetype",
+    "archetype": "music_dark_academia_orchestra",
+    "model": "sdxl",
+    "medium": "oil painting on canvas, visible brushstrokes, impressionist",
+    "mood": "soft and glowing",
+    "interests": [
+      "music",
+      "dark"
+    ],
+    "elapsed_ms": 11661,
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/dream-batch-output/dream_010_archetype.jpg"
+  },
+  {
+    "index": 11,
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775211656453.jpg",
+    "prompt": "Japanese sumi-e painting: a treasure chest half-buried in an underground root chamber, ancient gnarled roots descending like dark brushstrokes. A single gold coin catches pale moonlight filtering through soil cracks above. Minimal composition—mostly negative space and shadow, with a tiny beetle silhouette for scale. Raw, mysterious, zen stillness.",
+    "mode": "chord",
+    "archetype": "none",
+    "model": "sdxl",
+    "medium": "Japanese ink sumi-e, minimal brushstrokes, zen simplicity, negative space",
+    "mood": "mysterious and suspenseful",
+    "interests": [
+      "ocean"
+    ],
+    "elapsed_ms": 11038,
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/dream-batch-output/dream_011_chord.jpg"
+  },
+  {
+    "index": 12,
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775211663853.jpg",
+    "prompt": "Hyperrealistic CGI render: Sonic mid-guitar solo in a sunken arcade cabinet, electric blue spotlight piercing through bioluminescent coral overgrowth, porthole fish silhouettes swimming through glowing neon screens. Triumphant firelight dances across every surface—his spikes catch light like chrome, sweat droplets frozen mid-air. Vivid cyan and hot pink arcade glow bleeds into ancient shipwreck shadows. Everything feels impossibly sharp, impossibly alive.",
+    "mode": "archetype",
+    "archetype": "gaming_arcade_neon_fever",
+    "model": "black-forest-labs/flux-dev",
+    "medium": "hyperrealistic CGI render, impossibly sharp detail, every pore and fiber visible, uncanny perfection",
+    "mood": "triumphant and heroic",
+    "interests": [
+      "gaming",
+      "music"
+    ],
+    "elapsed_ms": 5583,
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/dream-batch-output/dream_012_archetype.jpg"
+  },
+  {
+    "index": 13,
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775211671290.jpg",
+    "prompt": "Soft-focus 35mm film photography with golden light leaks and grain: the rose-red Petra treasury glows as crystalline structures emerge from its carved surfaces, data streams cascading like waterfalls through the narrow canyon. A phoenix nest materializes mid-air, its form shifting between stone and light, while android silhouettes tend the surrounding crystalline gardens in quiet reverence. Rain reflects bioluminescent patterns across wet stone—the landscape learning itself for the first time.",
+    "mode": "archetype",
+    "archetype": "scifi_genesis_planet_awakening",
+    "model": "black-forest-labs/flux-dev",
+    "medium": "dreamy soft-focus film photography, 35mm grain, light leaks, golden tones",
+    "mood": "magical and enchanted",
+    "interests": [
+      "sci_fi",
+      "fantasy"
+    ],
+    "elapsed_ms": 4937,
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/dream-batch-output/dream_013_archetype.jpg"
+  },
+  {
+    "index": 14,
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775211677690.jpg",
+    "prompt": "Pixar-style 3D render: A bioluminescent jellyfish drifts through a crystalline kitchen at dawn, its tentacles casting soft blue light across a steaming mug and scattered fruit. Rounded, glowing forms contrast with geometric counter edges. Cool moonlit palette with pops of warm amber from the mug—dreamlike and intimate, first moment of discovery.",
+    "mode": "chord",
+    "archetype": "none",
+    "model": "black-forest-labs/flux-dev",
+    "medium": "Pixar-style 3D render, soft rounded shapes, vibrant colors",
+    "mood": "still and crystalline",
+    "interests": [
+      "dark"
+    ],
+    "elapsed_ms": 4488,
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/dream-batch-output/dream_014_chord.jpg"
+  },
+  {
+    "index": 15,
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775211687805.jpg",
+    "prompt": "Golden age storybook illustration in Beatrix Potter watercolor style: moonlit floating market on frost-kissed boats, lantern-glow reflecting on icy water, swirling snowflakes catching cool blue light, intricate linework frosted silver, jewel-toned canopies shimmering against indigo night sky.",
+    "mode": "beauty",
+    "archetype": "none",
+    "model": "sdxl",
+    "medium": "golden age storybook illustration, Beatrix Potter watercolor, gentle linework",
+    "mood": "quietly awe-inspiring",
+    "interests": [
+      "dark"
+    ],
+    "elapsed_ms": 8013,
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/dream-batch-output/dream_015_beauty.jpg"
+  },
+  {
+    "index": 16,
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775211698391.jpg",
+    "prompt": "Botanical scientific illustration in ink linework and watercolor: a figure silhouetted mid-surfboard across a comet's tail, streaking above a starlit cobblestone village square, lanterns casting dramatic golden backlighting below. Milky Way swirls behind. Detailed linework frames the composition tightly—rooftop edges, shop signs, market stalls crowding the borders. Vivid watercolor washes of deep indigo, amber, and sage green. Dreamlike and suspended between worlds.",
+    "mode": "chord",
+    "archetype": "none",
+    "model": "sdxl",
+    "medium": "botanical scientific illustration, ink linework with watercolor",
+    "mood": "mysterious and suspenseful",
+    "interests": [
+      "space"
+    ],
+    "elapsed_ms": 8515,
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/dream-batch-output/dream_016_chord.jpg"
+  },
+  {
+    "index": 17,
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775211708590.jpg",
+    "prompt": "In the soft, painterly style of Bob Ross, a cozy cabin interior glows with golden hour light streaming through large windows. A tiny capybara pup sits contentedly on a woven rug beside a stone fireplace, its fur rendered in warm, happy brushstrokes. Behind it, shelves hold small potted plants and books. Outside the window, soft mountains and gentle trees frame the scene in muted greens and blues. Everything feels utterly peaceful and unbothered.",
+    "mode": "archetype",
+    "archetype": "cute_capybara_zen",
+    "model": "sdxl",
+    "medium": "Bob Ross happy little trees, soft landscape, calm mountains, cabin",
+    "mood": "silly and absurd",
+    "interests": [
+      "cute"
+    ],
+    "elapsed_ms": 8319,
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/dream-batch-output/dream_017_archetype.jpg"
+  },
+  {
+    "index": 18,
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775211718875.jpg",
+    "prompt": "A tiny LEGO minifigure stands at the base of a colossal clock tower embedded inside a crystal grotto, surrounded by towering quartz formations. Laser light beams in hot pink, electric blue, and cyan slice through luminous haze, refracting off the crystals' facets. The minifigure's rigid plastic body contrasts sharply against the organic, glowing mineral landscape. Vast, overwhelming scale. Vivid, electric color palette.",
+    "mode": "chord",
+    "archetype": "none",
+    "model": "black-forest-labs/flux-dev",
+    "medium": "LEGO minifigure in a realistic world, tiny plastic character in a real environment",
+    "mood": "cozy and intimate",
+    "interests": [
+      "sci_fi",
+      "fashion"
+    ],
+    "elapsed_ms": 7936,
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/dream-batch-output/dream_018_chord.jpg"
+  },
+  {
+    "index": 19,
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775211731255.jpg",
+    "prompt": "A Monet impressionist painting of haute couture models gliding across a luminous runway suspended through swirling clouds, their gowns dissolving into soft brushstrokes of silk and light. Golden hour radiance bathes the scene as the Ivory Tower gleams in misty distance. Fabric textures shimmer between solid and ethereal, defying gravity. Below, the audience transforms into mirror-like reflections and beloved silhouettes, all rendered in dreamy, dappled impressionist blur where confetti spirals upward through rainbow spotlights.",
+    "mode": "archetype",
+    "archetype": "pride_runway_transcendent",
+    "model": "sdxl",
+    "medium": "Monet impressionist, soft water lilies, dappled light, dreamy blur",
+    "mood": "magical and enchanted",
+    "interests": [
+      "fashion"
+    ],
+    "elapsed_ms": 10657,
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/dream-batch-output/dream_019_archetype.jpg"
+  },
+  {
+    "index": 20,
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775211740446.jpg",
+    "prompt": "A whimsical chalk drawing on wet sidewalk: a wobbly-legged dragon with rainbow scales breathes colorful sparkles over a mirror-still mountain lake at dawn. Pine trees frame both sides in chalk lines. Warm Christmas lights twinkle as bokeh orbs reflected in puddles below, creating a playful double-world of vivid blues, golds, and purples. Everything slightly tilted and hand-drawn imperfect.",
+    "mode": "chord",
+    "archetype": "none",
+    "model": "black-forest-labs/flux-dev",
+    "medium": "children's chalk drawing on sidewalk, colorful and wobbly, puddle reflections",
+    "mood": "playful and whimsical",
+    "interests": [
+      "whimsical",
+      "music"
+    ],
+    "elapsed_ms": 6336,
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/dream-batch-output/dream_020_chord.jpg"
+  }
+]

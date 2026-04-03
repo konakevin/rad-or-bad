@@ -1,0 +1,1768 @@
+[
+  {
+    "key": "movies_harry_potter",
+    "name": "The Hogwarts Dreamer",
+    "description": "movies+fantasy pop culture archetype",
+    "trigger_interests": [
+      "movies",
+      "fantasy"
+    ],
+    "trigger_moods": [
+      "cozy",
+      "whimsical",
+      "nostalgic",
+      "mysterious"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of magic school. Floating candles in a great hall with an enchanted ceiling showing tonight's weather. A winding staircase that moves while you're on it. A room that appears only when you truly need it, filled with everything you've ever lost. Butterbeer in a snow-covered village, warm and foamy. An owl delivering a letter at dawn. A wand choosing its wizard, sparks flying. Quidditch in a thunderstorm. The library's restricted section whispering after hours.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "anime_lofi_study",
+    "name": "The Lo-Fi Study Girl",
+    "description": "music+cute+geek archetype",
+    "trigger_interests": [
+      "music",
+      "cute",
+      "geek"
+    ],
+    "trigger_moods": [
+      "cozy",
+      "peaceful",
+      "dreamy",
+      "nostalgic"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of the eternal study session. An anime girl at a desk by a window, headphones on, rain outside, a cat sleeping on a stack of books. Warm lamp light on scattered notes. A cup of coffee still steaming. Plants on the windowsill catching droplets. The city visible through rain-streaked glass, blurred and twinkling. Lo-fi beats you can almost hear. Time has stopped but not in a sad way — in the way where this moment is so perfect you never want it to end.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "music_jazz_midnight",
+    "name": "The Midnight Jazz",
+    "description": "music archetype",
+    "trigger_interests": [
+      "music"
+    ],
+    "trigger_moods": [
+      "moody",
+      "mysterious",
+      "nostalgic"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream in blue notes and bourbon. A basement jazz club with brick walls sweating, a saxophone player whose shadow on the wall moves differently than they do. Smoke curling around a single spotlight, a double bass so deep you feel it in your teeth. An empty stage after the set, instruments still warm, one glass of whiskey half-finished on the piano. A trumpet echoing down a wet alley at 3am. The city sleeping above while the music keeps going below. Everything is slightly blue.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "food_feast_of_kings",
+    "name": "The Grand Feast",
+    "description": "food+fantasy archetype",
+    "trigger_interests": [
+      "food",
+      "fantasy"
+    ],
+    "trigger_moods": [
+      "epic",
+      "dramatic",
+      "whimsical",
+      "nostalgic"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of a table that goes on forever. A medieval banquet hall where the table runs the length of the room and every inch is covered — whole roasted creatures, towers of fruit, fountains of chocolate, bread loaves the size of pillows. Candlelight on a thousand plates. A feast where the food is the spectacle — a cake taller than the guests, a pie that releases songbirds when cut, a punch bowl you could swim in. The abundance is almost obscene. Nobody is hungry but everyone is still eating.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "abstract_infinity_room",
+    "name": "The Infinity Room",
+    "description": "abstract+architecture+space archetype",
+    "trigger_interests": [
+      "abstract",
+      "architecture",
+      "space"
+    ],
+    "trigger_moods": [
+      "mysterious",
+      "dreamy",
+      "serene",
+      "whimsical"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of rooms without ends. A mirrored room where your reflection goes on forever in every direction, each copy slightly different. A library with shelves that extend infinitely in all directions, no walls, no floor, no ceiling, just books. A staircase that is also a Möbius strip — you walk up and arrive where you started, one floor higher, which is also one floor lower. A room full of doors, each one opening to a different room full of doors. The architecture of a dream that knows it's a dream.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "movies_marvel_hero",
+    "name": "The Hero Dreamer",
+    "description": "movies+geek pop culture archetype",
+    "trigger_interests": [
+      "movies",
+      "geek"
+    ],
+    "trigger_moods": [
+      "epic",
+      "intense",
+      "dramatic",
+      "playful"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of heroes. A superhero landing — one knee down, fist cracking pavement, cape settling. A city skyline at golden hour with a figure perched on the tallest building, watching. The moment before the battle, everyone assembling, the camera pulling back to show the scale. A web swinging between skyscrapers, the city reflected in glass below. A shield thrown and ricocheting off walls in a narrow corridor. Power unleashed for the first time, the wielder as surprised as everyone else.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "fashion_vintage_glamour",
+    "name": "The Vintage Glamour",
+    "description": "fashion archetype",
+    "trigger_interests": [
+      "fashion"
+    ],
+    "trigger_moods": [
+      "nostalgic",
+      "dramatic",
+      "dreamy",
+      "whimsical"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of eras when glamour was an art form. A 1920s flapper in a beaded dress catching light as she dances, champagne tower behind her. A 1950s woman in a full-skirted dress and pearls, perfectly composed, stepping out of a pastel Cadillac. A 1970s disco queen in platform boots and a jumpsuit that catches every light in the room. Vintage department store windows at Christmas, each one a tiny world of fashion. Dressing rooms with gold mirrors and velvet stools. Style as time travel.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "movies_lotr_fellowship",
+    "name": "The Fellowship Dreamer",
+    "description": "movies+fantasy pop culture archetype",
+    "trigger_interests": [
+      "movies",
+      "fantasy"
+    ],
+    "trigger_moods": [
+      "epic",
+      "dreamy",
+      "nostalgic",
+      "peaceful"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of Middle-earth. The Shire at golden hour — round green doors, smoking chimneys, a party tree hung with lanterns. Rivendell waterfalls catching rainbow light, elven architecture impossible and beautiful. A lone figure on a mountain pass, cloak whipping in wind, a vast kingdom visible below. Minas Tirith's white towers catching dawn light, seven levels of city carved into rock. The mines of Moria, a single shaft of light illuminating ancient dwarf architecture. Eagles soaring over misty mountains.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "food_midnight_feast",
+    "name": "The Midnight Feast",
+    "description": "food archetype",
+    "trigger_interests": [
+      "food"
+    ],
+    "trigger_moods": [
+      "mysterious",
+      "moody",
+      "playful"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of forbidden food at forbidden hours. A refrigerator door open at 2am, the only light source in the kitchen, casting long shadows while you eat cake standing up. A night market in an alley that wasn't there yesterday — stalls of impossible foods, glowing soups, smoking desserts, a chef who knows your name but you've never met. An all-night diner where the menu is one page and everything on it is perfect. Food eaten secretly tastes better. The guilt is part of the flavor.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "movies_blade_runner",
+    "name": "The Replicant Dreamer",
+    "description": "movies+sci_fi pop culture archetype",
+    "trigger_interests": [
+      "movies",
+      "sci_fi"
+    ],
+    "trigger_moods": [
+      "moody",
+      "mysterious",
+      "intense",
+      "dramatic"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of electric sheep. Rain falling endlessly on neon-soaked streets, reflections doubling the city. A flying car ascending past massive building-sized advertisements, geisha hologram flickering. Origami animals left on a windowsill, each one a message. A dove released into grey sky from a rooftop. Tears in rain. An eye reflecting an entire burning city. Off-world colonies glimpsed through a window. The question of what is real and what is memory, rendered in perpetual rain and neon.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "movies_ghibli_world",
+    "name": "The Ghibli Dreamer",
+    "description": "movies+nature+cute pop culture archetype",
+    "trigger_interests": [
+      "movies",
+      "nature",
+      "cute"
+    ],
+    "trigger_moods": [
+      "dreamy",
+      "peaceful",
+      "whimsical",
+      "cozy",
+      "nostalgic"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream like Miyazaki. A soot sprite carrying a star down a corridor. A giant fluffy creature waiting at a bus stop in the rain, holding a leaf umbrella. A sky full of flying machines that shouldn't work but do. A bakery by the sea where a witch's cat judges the customers. A bathhouse for spirits, steam and lanterns and impossible architecture. A girl running through tall grass, the wind animated with visible joy. Every frame is a painting. Every creature is gentle.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "gaming_zelda_wanderer",
+    "name": "The Zelda Wanderer",
+    "description": "gaming pop culture archetype",
+    "trigger_interests": [
+      "gaming"
+    ],
+    "trigger_moods": [
+      "dreamy",
+      "nostalgic",
+      "peaceful",
+      "whimsical"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream in Hyrule. Rolling green hills with ancient ruins half-buried in wildflowers. A mysterious temple entrance overgrown with vines, light spilling from within. A fairy hovering over a still pond at dawn. Master sword stuck in a mossy pedestal in a sunbeam. Cooking a dubious meal over a campfire while rain falls. Shield-surfing down a snowy mountain at sunset. Paragliding over an endless world. The feeling of discovering something ancient and magical in an ordinary field.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "gaming_dark_souls",
+    "name": "The Dark Souls Pilgrim",
+    "description": "gaming pop culture archetype",
+    "trigger_interests": [
+      "gaming"
+    ],
+    "trigger_moods": [
+      "moody",
+      "intense",
+      "dramatic",
+      "mysterious"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream in a dying world of terrible beauty. A lone knight resting at a bonfire, embers spiraling upward into an ash-grey sky. A crumbling cathedral so massive it has its own weather. A bridge over a bottomless void with something enormous moving in the darkness below. A dragon coiled around a tower, both of them ancient and decaying. Fog gates glowing in abandoned hallways. The beauty is in the ruin — everything is broken and somehow more beautiful for it.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "gaming_minecraft_builder",
+    "name": "The Minecraft Builder",
+    "description": "gaming pop culture archetype",
+    "trigger_interests": [
+      "gaming"
+    ],
+    "trigger_moods": [
+      "cozy",
+      "playful",
+      "peaceful",
+      "whimsical"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream in blocks. A cozy cabin built into a mountainside, warm light from windows, smoke from a chimney, a farm outside. An enormous castle made of colorful blocks floating above clouds. A mine shaft deep underground with diamond ore glowing in the walls and lava flowing nearby. A treehouse village connected by bridges, lanterns everywhere. Pixel sheep on a blocky hillside at sunset. The joy of building something with your own hands in a world made of cubes.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "gaming_pokemon_trainer",
+    "name": "The Pokemon Trainer",
+    "description": "gaming+cute pop culture archetype",
+    "trigger_interests": [
+      "gaming",
+      "cute"
+    ],
+    "trigger_moods": [
+      "playful",
+      "whimsical",
+      "nostalgic",
+      "cozy"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of catching them all. A Pikachu napping on a warm windowsill, cheeks sparking softly. Tall grass rustling with something about to appear. A pokeball rolling to a stop on a forest path, glowing. Flying on a giant bird pokemon over a patchwork landscape of routes and cities. A pokemon center at night, warm and inviting. Eevee evolutions playing in a meadow. The feeling of your first starter pokemon looking up at you. Illustrated, colorful, pure joy.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "gaming_retro_arcade",
+    "name": "The Arcade Ghost",
+    "description": "gaming+geek pop culture archetype",
+    "trigger_interests": [
+      "gaming",
+      "geek"
+    ],
+    "trigger_moods": [
+      "nostalgic",
+      "playful",
+      "whimsical"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of quarters and high scores. A dark arcade at midnight, rows of cabinets glowing, no one around except the ghosts in the machines. Pac-Man maze rendered as a real neon labyrinth you could walk through. Space Invaders descending over a real city skyline. A kid's face lit by a CRT screen, the game reflecting in their glasses. Joysticks worn smooth by a million hands. The carpet pattern, the sounds, the feeling of one more quarter.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "gaming_animal_crossing",
+    "name": "The Island Dreamer",
+    "description": "gaming+cute+nature pop culture archetype",
+    "trigger_interests": [
+      "gaming",
+      "cute",
+      "nature"
+    ],
+    "trigger_moods": [
+      "cozy",
+      "peaceful",
+      "whimsical",
+      "serene"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of island life. A tiny house on a cliff overlooking the sea, flowers planted in neat rows. Fishing at a river while cherry blossoms fall. A museum full of donated bugs and fossils, moonlight through the glass ceiling. A campfire on the beach with animal neighbors sitting on log stumps, KK Slider playing guitar. Shooting stars over a terraformed paradise. The gentle satisfaction of a perfect island at golden hour.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "gaming_cyberpunk_edgerunner",
+    "name": "The Edgerunner",
+    "description": "gaming+sci_fi pop culture archetype",
+    "trigger_interests": [
+      "gaming",
+      "sci_fi"
+    ],
+    "trigger_moods": [
+      "intense",
+      "dramatic",
+      "moody"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of Night City. Neon advertisements reflecting in rain puddles on chrome streets. A mercenary on a rooftop overlooking a megacity that never sleeps. Braindance editing in a dingy apartment, holographic memories floating in the air. A high-speed chase through stacked highway levels, sparks flying. Japanese street food stalls under massive corporate holograms. Cyberware glinting under skin. The beauty and tragedy of a world that sold its soul for technology.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "gaming_ghibli_adventure",
+    "name": "The Ghibli Adventurer",
+    "description": "gaming+fantasy+nature pop culture archetype",
+    "trigger_interests": [
+      "gaming",
+      "fantasy",
+      "nature"
+    ],
+    "trigger_moods": [
+      "dreamy",
+      "peaceful",
+      "whimsical",
+      "serene"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream like a Miyazaki film. A bathhouse perched impossibly on a cliff over crashing waves. A moving castle trailing smoke across a flower meadow. A forest spirit made of moss and stars, enormous and gentle. A girl on a broomstick over a seaside town at sunset. A cat bus bounding through rain-soaked countryside. Ancient robots overgrown with flowers on a floating island. Every cloud has a silver lining and every shadow hides something kind.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "movies_star_wars",
+    "name": "The Jedi Dreamer",
+    "description": "movies+sci_fi pop culture archetype",
+    "trigger_interests": [
+      "movies",
+      "sci_fi"
+    ],
+    "trigger_moods": [
+      "epic",
+      "dramatic",
+      "nostalgic",
+      "intense"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream in a galaxy far far away. Binary sunset over a desert homestead, two suns melting into the horizon. A lightsaber igniting in darkness, the wielder's face lit green or blue. X-wings skimming a trench at impossible speed. A cantina on a dusty planet, alien musicians, strange drinks. The forest moon with speeder bikes weaving through giant redwoods. A tiny green master lifting impossible things with a wave of his hand. The Force as visible energy, connecting everything.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "movies_pixar_heart",
+    "name": "The Pixar Dreamer",
+    "description": "movies+cute+whimsical pop culture archetype",
+    "trigger_interests": [
+      "movies",
+      "cute",
+      "whimsical"
+    ],
+    "trigger_moods": [
+      "playful",
+      "nostalgic",
+      "cozy",
+      "dreamy",
+      "whimsical"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream like Pixar. A house lifted by thousands of balloons, floating over a waterfall paradise. A rat secretly cooking a masterpiece in a Parisian kitchen. A robot holding a plant in a wasteland, the last beautiful thing. Emotions as tiny colorful characters arguing in a control room. A cowboy and spaceman toy on a windowsill watching their kid leave for college. Monsters opening closet doors into children's bedrooms. The moment that makes adults cry in a kids movie.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "movies_wes_anderson",
+    "name": "The Anderson Dreamer",
+    "description": "movies+architecture+fashion pop culture archetype",
+    "trigger_interests": [
+      "movies",
+      "architecture",
+      "fashion"
+    ],
+    "trigger_moods": [
+      "whimsical",
+      "nostalgic",
+      "playful",
+      "peaceful"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream in perfect symmetry. A pastel hotel with identical windows, each one showing a different tiny drama. A train compartment in dusty pinks and teals, luggage stacked impossibly neat. A library where every book is the same shade of cream. A bakery with pastries arranged in mathematical precision. Two people standing in the exact center of a vast, color-coordinated room, looking at each other. Flat compositions, deadpan beauty, every prop placed with obsessive care.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "movies_horror_beautiful",
+    "name": "The Beautiful Nightmare",
+    "description": "movies+dark pop culture archetype",
+    "trigger_interests": [
+      "movies",
+      "dark"
+    ],
+    "trigger_moods": [
+      "mysterious",
+      "moody",
+      "intense",
+      "dramatic"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of gorgeous dread. A hallway in a haunted hotel, identical twins at the end, the carpet pattern hypnotic. A house that is definitely alive, windows like eyes, door like a mouth. A girl climbing out of a television, hair covering her face, the screen the only light. A forest where the trees have too many branches and they're all reaching. A beautiful old mirror reflecting a room that isn't this one. Horror that is compositionally stunning — you'd frame it on your wall even though it unsettles you.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "ocean_mermaid_siren",
+    "name": "The Mermaid Siren",
+    "description": "ocean+cute+fantasy archetype",
+    "trigger_interests": [
+      "ocean",
+      "cute",
+      "fantasy"
+    ],
+    "trigger_moods": [
+      "dreamy",
+      "whimsical",
+      "playful",
+      "mysterious"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of mermaids who could wreck ships with a glance. A mermaid lounging on sun-warmed rocks, iridescent tail dripping, seashell top barely containing, wet hair cascading over bare shoulders, bedroom eyes watching a passing ship. Underwater palace where mermaids swim in formation, bodies lithe and glistening, bioluminescent scales tracing every curve. A siren singing on a moonlit reef, back arched, the ocean itself drawn to her. Pearl jewelry on bare skin. Coral thrones. Sea foam clinging to everything.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "fantasy_fairy_seductress",
+    "name": "The Wild Fairy",
+    "description": "fantasy+nature+cute archetype",
+    "trigger_interests": [
+      "fantasy",
+      "nature",
+      "cute"
+    ],
+    "trigger_moods": [
+      "playful",
+      "whimsical",
+      "mysterious",
+      "dreamy"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of fairies with dangerous beauty. Tiny but impossibly gorgeous, wings like stained glass, wearing flower petals and moonlight and not much else. A fairy bathing in a dewdrop, steam rising, legs dangling. Dancing on a mushroom cap at midnight, dress made of cobwebs that shows everything and nothing. A fairy queen on a throne of roses, thorns and all, crown askew, wild hair, daring you to enter her kingdom. Firefly-lit glades where they whisper things that make flowers blush.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "cute_crystal_witch",
+    "name": "The Crystal Witch",
+    "description": "whimsical+dark+nature archetype",
+    "trigger_interests": [
+      "whimsical",
+      "dark",
+      "nature"
+    ],
+    "trigger_moods": [
+      "mysterious",
+      "dreamy",
+      "whimsical",
+      "cozy"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of gentle magic. A tiny apartment overflowing with crystals catching window light, throwing rainbows on every surface. Tarot cards laying themselves out on a velvet cloth. A cauldron bubbling with something that smells like lavender and starlight. Moon phases drawn in chalk on a dark floor. Dried flowers hanging from every rafter. A black cat sitting in a circle of candles, judging. Amethyst geodes split open revealing tiny worlds inside. The moon is always full in these dreams.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "cute_pastel_kingdom",
+    "name": "The Pastel Princess",
+    "description": "cute+fantasy+whimsical archetype",
+    "trigger_interests": [
+      "cute",
+      "fantasy",
+      "whimsical"
+    ],
+    "trigger_moods": [
+      "dreamy",
+      "playful",
+      "whimsical",
+      "peaceful"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream in pastels so soft they could be clouds. A castle made of pink quartz floating on a cotton candy cloud. Unicorns with flower mane braids drinking from a rainbow waterfall. A princess whose dress is a living garden, butterflies orbiting her crown. Rooms where the furniture is made of oversized macarons and the chandelier is a constellation. Baby dragons in teacups. Everything sparkles, everything is gentle, everything is precious and perfect.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "music_kpop_dreamer",
+    "name": "The K-Pop Dreamer",
+    "description": "music+fashion+cute archetype",
+    "trigger_interests": [
+      "music",
+      "fashion",
+      "cute"
+    ],
+    "trigger_moods": [
+      "playful",
+      "whimsical",
+      "dreamy",
+      "intense"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of sparkle and stage lights. A concert stage exploding with holographic effects, lightsticks creating an ocean of color. Photo booth strips scattered on a table next to iced coffee and stickers. Album photoshoot in a surreal set — clouds indoors, oversized flowers, mirrors everywhere. Practice room at 3am, someone dancing alone, perfect form, sweat and determination and beauty. Aesthetic dorm room with polaroids, LED lights, plushies, vinyl spinning.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "fashion_ballet_dreamer",
+    "name": "The Ballet Dreamer",
+    "description": "fashion+music archetype",
+    "trigger_interests": [
+      "fashion",
+      "music"
+    ],
+    "trigger_moods": [
+      "dreamy",
+      "serene",
+      "nostalgic",
+      "whimsical"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of grace made visible. A ballerina mid-leap in an empty theater, tulle catching dusty spotlight, the silence between notes. Satin pointe shoes hung on a dressing room mirror, surrounded by roses. A rehearsal in a room with floor-to-ceiling windows, rain outside, perfect positions reflected in the glass. Ribbon lacing up an ankle in close-up, the tension beautiful. A stage where the dancer's movements leave trails of light in the air, painting the space with her body.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "cute_sanrio_world",
+    "name": "The Sanrio Dreamer",
+    "description": "cute+whimsical archetype",
+    "trigger_interests": [
+      "cute",
+      "whimsical"
+    ],
+    "trigger_moods": [
+      "playful",
+      "whimsical",
+      "cozy",
+      "dreamy"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream in maximum kawaii. A world where everything has a face — the clouds smile, the stars wink, the flowers giggle. A kitchen where a tiny cat in a bow makes pancakes shaped like hearts. A bedroom entirely in pink and white, plushies piled so high they avalanche. A train shaped like a puppy running through a candy landscape. Tiny characters with no mouth somehow expressing pure joy. Sticker-covered everything. Sparkles that are a weather condition. Cuteness so intense it becomes transcendent.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "ocean_mermaid_cute",
+    "name": "The Mermaid Cove",
+    "description": "ocean+cute+whimsical archetype",
+    "trigger_interests": [
+      "ocean",
+      "cute",
+      "whimsical"
+    ],
+    "trigger_moods": [
+      "whimsical",
+      "dreamy",
+      "playful",
+      "peaceful"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of the cute side of the sea. A mermaid braiding a seahorse's mane in an underwater bedroom made of coral and shells. Pearl jewelry scattered on a clam-shell vanity. A mer-cat chasing glowing fish through kelp forests. An underwater tea party on the ocean floor, anemones as chairs, sea glass cups. A shell crown workshop where tiny crabs are the jewelers. Bioluminescent jellyfish used as lanterns, casting pink and blue light on everything. The ocean is warm and everything sparkles.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "nature_botanical_witch",
+    "name": "The Botanical Witch",
+    "description": "nature+dark+whimsical archetype",
+    "trigger_interests": [
+      "nature",
+      "dark",
+      "whimsical"
+    ],
+    "trigger_moods": [
+      "mysterious",
+      "peaceful",
+      "serene",
+      "cozy"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of a greenhouse that knows your name. Glass walls dripping with condensation, inside a jungle of impossible plants — flowers that glow, vines that move, mushrooms that hum. A wooden table covered in handwritten labels, dried herbs in glass jars, a mortar and pestle still fragrant. A witch's garden at midnight where the plants rearrange themselves when no one's looking. Propagation station with baby plants in tiny pots, each one a different shade of green. Moss-covered everything. The smell of rain and earth and growing things.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "gaming_boss_fight",
+    "name": "The Boss Fight",
+    "description": "gaming+fantasy archetype",
+    "trigger_interests": [
+      "gaming",
+      "fantasy"
+    ],
+    "trigger_moods": [
+      "epic",
+      "intense",
+      "dramatic"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of the final encounter. A colossal boss emerging from darkness — a mountain-sized creature made of molten rock and ancient armor, one glowing eye the size of a house. The arena crumbling. Lightning strikes illuminating the scale of what you face. Health bars in the sky. The ground cracking open with every step it takes. A tiny warrior with a glowing sword standing their ground. The music you can almost hear is a full orchestra going insane. This is the fight you trained for.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "space_astronaut_alone",
+    "name": "The Last Astronaut",
+    "description": "space+sci_fi archetype",
+    "trigger_interests": [
+      "space",
+      "sci_fi"
+    ],
+    "trigger_moods": [
+      "moody",
+      "serene",
+      "dreamy",
+      "mysterious"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of solitude in the cosmos. An astronaut floating alone above Earth, tethered by a single cable, the planet filling the entire view. A space station corridor with one flickering light, boots magnetized to the floor, coffee floating in zero-g. The surface of Mars at sunrise, a single set of boot prints in red dust. Saturn's rings close enough to touch from a ship's observation deck. The silence of space made visual. The helmet visor reflecting something impossible.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "sports_legendary_moment",
+    "name": "The Legendary Moment",
+    "description": "sports archetype",
+    "trigger_interests": [
+      "sports"
+    ],
+    "trigger_moods": [
+      "epic",
+      "intense",
+      "dramatic"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of peak human performance frozen in time. The buzzer-beater at the arc, ball spinning in air, entire arena holding its breath. A knockout punch in slow motion, sweat flying in an arc, spotlight cutting through smoke. A motorcycle leaning impossibly low through a turn, knee scraping asphalt at 120mph, sparks trailing. The photo finish — two sprinters lunging, muscles carved from stone, the clock reading identical times. A stadium erupting, confetti catching floodlights, the moment before glory.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "dark_samurai_ronin",
+    "name": "The Ronin",
+    "description": "dark+fantasy archetype",
+    "trigger_interests": [
+      "dark",
+      "fantasy"
+    ],
+    "trigger_moods": [
+      "moody",
+      "intense",
+      "dramatic",
+      "mysterious"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of the masterless warrior. A lone samurai on a rain-soaked bridge, blade drawn, facing five shadows. Cherry blossoms falling on a battlefield where the fight is already over — one figure standing among many fallen. A sword being drawn in moonlight, the steel catching light for one perfect instant. Meditation under a waterfall, scarred back visible, absolute stillness. A duel in a bamboo forest, each cut sending stalks toppling. Honor, solitude, and a blade sharper than regret.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "sci_fi_mech_pilot",
+    "name": "The Mech Pilot",
+    "description": "sci_fi+gaming+geek archetype",
+    "trigger_interests": [
+      "sci_fi",
+      "gaming",
+      "geek"
+    ],
+    "trigger_moods": [
+      "epic",
+      "intense",
+      "dramatic"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of machines the size of skyscrapers. A mech suit powering up in a hangar, eyes glowing to life, steam venting from joints the size of cars. Cockpit view — screens everywhere, hands gripping controls, a city-sized kaiju visible through the windshield. Two mechs clashing mid-air, sparks and debris, the shockwave flattening buildings below. A pilot climbing a ladder up their mech's leg, the foot alone bigger than a house. The rumble of hydraulics. The weight of metal moving mountains.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "sports_muscle_car",
+    "name": "The Midnight Driver",
+    "description": "sports+music archetype",
+    "trigger_interests": [
+      "sports",
+      "music"
+    ],
+    "trigger_moods": [
+      "intense",
+      "moody",
+      "dramatic",
+      "nostalgic"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of horsepower and empty roads. A muscle car on a desert highway at 2am, headlights cutting through nothing, the Milky Way overhead. Engine rumble you feel in your chest. A neon-lit garage at midnight, hood up, chrome engine gleaming, tools scattered, radio playing. Drifting through a rain-soaked Tokyo intersection, taillights painting red streaks on wet asphalt. A classic Mustang parked at a cliffside overlook, driver's door open, city lights spread below like a circuit board. Speed as meditation.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "fantasy_dragon_rider",
+    "name": "The Dragon Rider",
+    "description": "fantasy archetype",
+    "trigger_interests": [
+      "fantasy"
+    ],
+    "trigger_moods": [
+      "epic",
+      "intense",
+      "dramatic",
+      "dreamy"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of fire and flight. A massive dragon banking through clouds, rider crouched low against the scales, wind tearing at their cloak. Dragon eye in extreme close-up, ancient intelligence, fire reflected in the pupil. A volcanic lair filled with gold and bones, a dragon the size of the cavern itself, one eye cracked open. Dragon and rider diving through a thunderstorm, lightning illuminating wingspan that blocks out the sky. The bond between beast and rider visible as something almost like love. Scales like armor, breath like a forge.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "geek_hacker_den",
+    "name": "The Hacker",
+    "description": "geek+sci_fi archetype",
+    "trigger_interests": [
+      "geek",
+      "sci_fi"
+    ],
+    "trigger_moods": [
+      "moody",
+      "intense",
+      "mysterious"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of code as power. A dark room lit only by six monitors, green text scrolling, energy drink cans stacked into towers. Breaking through a firewall visualized as punching through a wall of light into a digital void beyond. A server room humming in blue light, cold breath visible, the internet's physical body. VR headset on, body in a chair, mind in a neon wireframe universe. The moment the hack succeeds — all screens go green simultaneously. Digital power made beautiful and dangerous.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "ocean_pirate_captain",
+    "name": "The Pirate Captain",
+    "description": "ocean+dark archetype",
+    "trigger_interests": [
+      "ocean",
+      "dark"
+    ],
+    "trigger_moods": [
+      "epic",
+      "dramatic",
+      "intense",
+      "playful"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of the high seas. A pirate ship cresting an impossible wave, lightning splitting the sky, crew holding on for their lives. A treasure chest cracking open in a cave, gold light illuminating weathered faces. The captain at the wheel in a storm, coat billowing, grinning into the wind. A sea monster tentacle wrapping around the mast, crew fighting back with cannons and cutlasses. Skull and crossbones flag snapping in gale winds. A map with an X that glows. The freedom of answering to no one.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "nature_mountain_king",
+    "name": "The Mountain King",
+    "description": "nature+sports archetype",
+    "trigger_interests": [
+      "nature",
+      "sports"
+    ],
+    "trigger_moods": [
+      "epic",
+      "serene",
+      "intense",
+      "peaceful"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of conquering peaks. Standing on a summit at dawn, the world below still sleeping in clouds, breath crystallizing in cold air. Free-soloing a sheer rock face, fingertips on a ledge, a thousand feet of nothing below. A base camp at night, tent glowing orange against blue ice, stars impossibly bright at altitude. Snowboarding through untouched powder in absolute silence. An avalanche viewed from a safe ridge — the raw power of the mountain asserting itself. The mountain doesn't care if you make it. That's why it matters.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "movies_heist_mastermind",
+    "name": "The Heist Mastermind",
+    "description": "movies+geek archetype",
+    "trigger_interests": [
+      "movies",
+      "geek"
+    ],
+    "trigger_moods": [
+      "intense",
+      "playful",
+      "dramatic",
+      "mysterious"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of the perfect plan. A blueprint spread across a table, red strings connecting photos on a wall, the clock ticking. Laser grids in a museum hallway, a figure tumbling through the gaps in slow motion. A vault door the size of a building, cracking open to reveal something that glows. The team assembled — each one a specialist, each one cooler than the last. The moment the disguise comes off and the mark realizes they've been played. Tuxedos, gadgets, timing, and the getaway car is already running.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "gaming_loot_drop",
+    "name": "The Legendary Loot",
+    "description": "gaming archetype",
+    "trigger_interests": [
+      "gaming"
+    ],
+    "trigger_moods": [
+      "epic",
+      "playful",
+      "whimsical",
+      "intense"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of that dopamine hit. A legendary item dropping — golden beam of light shooting from a defeated boss, the rarest weapon spinning in the air. An inventory screen as a physical room, shelves of glowing weapons, armor stands, potion bottles in every color. Opening a loot crate that contains a miniature galaxy. A blacksmith forging a sword from starlight, each hammer strike sending sparks that become constellations. The moment you equip something and your character transforms. That feeling of finding something no one else has.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "sci_fi_space_battle",
+    "name": "The Fleet Commander",
+    "description": "sci_fi+space archetype",
+    "trigger_interests": [
+      "sci_fi",
+      "space"
+    ],
+    "trigger_moods": [
+      "epic",
+      "intense",
+      "dramatic"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of war among the stars. A massive space fleet dropping out of hyperspace, hundreds of ships appearing from nothing. Capital ships exchanging broadside fire, explosions silent in the vacuum, debris tumbling in slow motion. A fighter weaving through the superstructure of a destroyer, too close, sparks from near-misses. The bridge of a flagship, commander silhouetted against a viewport filled with battle. A planet in the background, the stakes obvious. The scale is incomprehensible and every tiny ship has a crew with names.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "dark_viking_saga",
+    "name": "The Viking Saga",
+    "description": "dark+nature archetype",
+    "trigger_interests": [
+      "dark",
+      "nature"
+    ],
+    "trigger_moods": [
+      "epic",
+      "intense",
+      "dramatic",
+      "moody"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of the old north. A longship cutting through fog, dragon prow emerging from mist, oars moving in perfect rhythm. A warrior standing on a cliff in a blizzard, fur cloak whipping, axe planted in the ground, watching for something on the horizon. A mead hall at night, fire roaring in the center pit, shadows of celebrating warriors on the walls. Runes carved into standing stones, glowing faintly in moonlight. Northern lights over a frozen fjord, the colors reflected in black water. Glory and ice and the end of the world.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "sports_underdog_glory",
+    "name": "The Underdog",
+    "description": "sports+movies archetype",
+    "trigger_interests": [
+      "sports",
+      "movies"
+    ],
+    "trigger_moods": [
+      "epic",
+      "dramatic",
+      "nostalgic",
+      "intense"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of the impossible comeback. Down by everything with seconds left, and then — the shot, the catch, the knockout, the goal. Rocky at the top of the steps, arms raised, the city behind him. An empty gym at 5am, one person training alone, shadow boxing, breath visible. The locker room before the game — tape on hands, heads bowed, silence before thunder. The slow-motion replay of the moment everything changed. A championship trophy reflecting stadium lights. They said it couldn't be done. The scoreboard says otherwise.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "universal_impossible_landscape",
+    "name": "The Impossible Landscape",
+    "description": "Universal epic archetype",
+    "trigger_interests": [
+      "nature",
+      "abstract",
+      "space",
+      "fantasy"
+    ],
+    "trigger_moods": [
+      "epic",
+      "dreamy",
+      "serene",
+      "whimsical",
+      "mysterious"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of places that can't exist but do. A waterfall flowing upward into a crack in the sky. A mountain range made of frozen waves, sunlight hitting the crests. A desert where the sand dunes are different colors — violet, gold, teal — and they shift like breathing. An ocean with no horizon, the water curving up at the edges until it becomes the sky. A forest growing upside-down from a glass ceiling, roots reaching toward a sun below. No people. Just impossible, breathtaking geography.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "universal_scale_shock",
+    "name": "The Scale Shock",
+    "description": "Universal epic archetype",
+    "trigger_interests": [
+      "space",
+      "nature",
+      "fantasy",
+      "sci_fi",
+      "ocean"
+    ],
+    "trigger_moods": [
+      "epic",
+      "intense",
+      "dramatic",
+      "dreamy"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of scale that breaks your brain. A whale breaching through clouds, its eye the size of a stadium. A person standing at the base of a tree so tall the trunk has its own weather — clouds halfway up, snow at the crown. A planet rising over a horizon, so close you can see cities on its surface. A staircase carved into a cliff that takes three days to climb, visible from space. A single raindrop containing an entire coral reef. The feeling of being very small in something very, very big.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "universal_bioluminescent",
+    "name": "The Bioluminescent Dream",
+    "description": "Universal epic archetype",
+    "trigger_interests": [
+      "nature",
+      "ocean",
+      "fantasy",
+      "abstract",
+      "dark"
+    ],
+    "trigger_moods": [
+      "dreamy",
+      "mysterious",
+      "serene",
+      "whimsical",
+      "peaceful"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight everything glows. A beach where every wave leaves a trail of blue-green light. A forest where the mushrooms, the moss, the insects, even the fog — everything emits soft light in different colors. An underwater cave system lit entirely by living things, no sunlight needed, pulsing gently like breathing. A field at night where the flowers glow and the fireflies spell words nobody can read. Light without a source. Color without explanation. Nature doing something electricity wishes it could.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "universal_tiny_worlds",
+    "name": "The Tiny World",
+    "description": "Universal epic archetype",
+    "trigger_interests": [
+      "nature",
+      "cute",
+      "whimsical",
+      "fantasy",
+      "food",
+      "architecture"
+    ],
+    "trigger_moods": [
+      "whimsical",
+      "cozy",
+      "dreamy",
+      "playful",
+      "peaceful"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of miniature civilizations. An entire village inside a hollow log, tiny windows glowing, smoke from acorn-cap chimneys. A terrarium that contains a functioning ecosystem with weather — it rains every Tuesday at 3pm. A snow globe you can zoom into infinitely, each level revealing smaller worlds inside. A teacup containing an ocean, complete with a tiny island and a lighthouse that works. A bookshelf where each book spine is a different building on a tiny street. The smaller you look, the more you find.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "universal_surreal_mindbend",
+    "name": "The Mind Bender",
+    "description": "Universal epic archetype",
+    "trigger_interests": [
+      "abstract",
+      "dark",
+      "space",
+      "whimsical",
+      "fantasy"
+    ],
+    "trigger_moods": [
+      "mysterious",
+      "whimsical",
+      "dreamy",
+      "intense",
+      "moody"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of things that make you stare. A room where the floor is the ceiling and someone is walking on both. Stairs that lead to the same place no matter which direction you take them. A mirror reflecting a room that doesn't match the one you're in. Clocks melting off shelves but the time is still correct. A door that opens onto the sky — not a balcony, just sky, with birds flying through the living room. Gravity as a suggestion. Physics as a starting point for negotiation.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "universal_ancient_wonder",
+    "name": "The Ancient Wonder",
+    "description": "Universal epic archetype",
+    "trigger_interests": [
+      "architecture",
+      "nature",
+      "fantasy",
+      "dark"
+    ],
+    "trigger_moods": [
+      "epic",
+      "mysterious",
+      "nostalgic",
+      "serene",
+      "dreamy"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of ruins that humble you. A temple so old the jungle has made it part of itself — roots as columns, vines as curtains, a tree growing through the altar. A pyramid half-buried in sand, one corner exposed by wind, hieroglyphics still glowing faintly. A Roman aqueduct stretching across a misty valley, water still flowing after two thousand years. Stone circles at solstice, the sun threading through a gap that was placed there on purpose five thousand years ago. The engineering of people who didn't have the word for what they were building.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "universal_weather_drama",
+    "name": "The Storm Chaser",
+    "description": "Universal epic archetype",
+    "trigger_interests": [
+      "nature",
+      "space",
+      "abstract"
+    ],
+    "trigger_moods": [
+      "epic",
+      "intense",
+      "dramatic",
+      "moody"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of weather as spectacle. A supercell thunderstorm over open plains, the structure visible — anvil cloud, mammatus, the green tint that means run. Lightning frozen in time, branching across the entire sky like a nervous system. A tornado illuminated by sunset, pink and gold destruction. Double rainbow over a landscape still dripping from the storm that just passed. Northern lights so vivid they cast shadows. A wave so large it has weather patterns on its face. Nature reminding you who's in charge.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "universal_golden_hour",
+    "name": "The Golden Hour",
+    "description": "Universal epic archetype",
+    "trigger_interests": [
+      "nature",
+      "ocean",
+      "architecture",
+      "travel"
+    ],
+    "trigger_moods": [
+      "peaceful",
+      "nostalgic",
+      "dreamy",
+      "serene",
+      "cozy"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream in amber and gold. Everything is bathed in the last twenty minutes of sunlight. A city skyline where every window becomes a mirror reflecting fire. An old wooden pier stretching into still water, the sun touching the horizon, everything doubled in the reflection. A wheat field where the stalks glow like they're lit from inside. A narrow European street where the light only reaches the upper floors, turning stone walls to honey. That feeling that time is stopping because the light is too perfect to let go.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "universal_time_frozen",
+    "name": "The Frozen Moment",
+    "description": "Universal epic archetype",
+    "trigger_interests": [
+      "abstract",
+      "nature",
+      "whimsical",
+      "space",
+      "sci_fi"
+    ],
+    "trigger_moods": [
+      "mysterious",
+      "dreamy",
+      "whimsical",
+      "serene",
+      "intense"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of time stopped. A hummingbird frozen mid-hover, every feather detail visible, rainbow iridescence caught in a single instant. A glass of water knocked off a table, the liquid suspended mid-splash, light refracting through every droplet. A firework at the exact moment of explosion, the sphere of light still expanding. Cherry blossom petals frozen mid-fall, suspended in a sunbeam. A wave about to break but it never does. The beauty of one single moment that lasts forever.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "universal_seasons_collide",
+    "name": "The Four Seasons",
+    "description": "Universal epic archetype",
+    "trigger_interests": [
+      "nature",
+      "fantasy",
+      "whimsical",
+      "abstract"
+    ],
+    "trigger_moods": [
+      "whimsical",
+      "dreamy",
+      "playful",
+      "peaceful"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of all seasons at once. A single tree that is spring blossoms on one branch, summer green on another, autumn fire on a third, winter bare on the last. A path where each step takes you into a different month — snow melting into puddles into wildflowers into falling leaves in the space of a walk. A lake that is frozen on one side and tropical on the other, the boundary line perfectly visible. Nature's clock broken in the most beautiful way possible.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "fantasy_dragon_hoard",
+    "name": "The Dragon's Hoard",
+    "description": "High fantasy archetype",
+    "trigger_interests": [
+      "fantasy",
+      "dark"
+    ],
+    "trigger_moods": [
+      "epic",
+      "dramatic",
+      "mysterious",
+      "intense"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of impossible treasure. A cavern so vast the ceiling is lost in darkness, filled with gold coins deep enough to swim in. A dragon coiled atop the pile, scales reflecting ten thousand gold lights. Jeweled swords, enchanted crowns, glowing artifacts half-buried in coins. The light comes from the treasure itself — every gem, every magic ring, every stolen crown pulsing with old power. One narrow path through the gold, footprints of the last thief who tried.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "fantasy_enchanted_forest",
+    "name": "The Enchanted Wilds",
+    "description": "High fantasy archetype",
+    "trigger_interests": [
+      "fantasy",
+      "nature"
+    ],
+    "trigger_moods": [
+      "dreamy",
+      "mysterious",
+      "peaceful",
+      "whimsical"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of forests where the trees are alive and have opinions. Ancient oaks with faces in their bark, arguing about the weather. A path of glowing mushrooms leading somewhere you know you shouldn't go but absolutely will. A clearing where deer with crystal antlers drink from a pool that shows the future. Fairies using spider silk as hammocks. A tree so old it remembers when the forest was an ocean. Roots that move out of your way if you ask politely.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "fantasy_wizard_tower",
+    "name": "The Wizard's Tower",
+    "description": "High fantasy archetype",
+    "trigger_interests": [
+      "fantasy",
+      "architecture",
+      "geek"
+    ],
+    "trigger_moods": [
+      "mysterious",
+      "cozy",
+      "whimsical",
+      "nostalgic"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of a tower full of impossible things. A spiral staircase that goes up further than the tower is tall. A study where the books fly themselves back to the shelves. A telescope pointed at a star that doesn't exist yet. Potions bubbling in glass tubes that connect floors like a circulatory system. A globe of the world that updates in real time. An owl delivering mail through a window that opens onto a different season. Cluttered, brilliant, dangerous, and smelling of old paper and lightning.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "fantasy_elven_kingdom",
+    "name": "The Elven Realm",
+    "description": "High fantasy archetype",
+    "trigger_interests": [
+      "fantasy",
+      "nature",
+      "architecture"
+    ],
+    "trigger_moods": [
+      "dreamy",
+      "serene",
+      "peaceful",
+      "epic"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of civilization perfected over millennia. Towers grown from living trees, white bark spiraling upward, leaves forming roofs that shimmer silver. Bridges of woven light spanning impossible gorges. Waterfalls that fall in slow motion because even the water is polite here. Libraries carved into mountainsides with windows overlooking thousand-mile valleys. Elven armor displayed like art, each piece a masterwork. Music coming from everywhere and nowhere. Architecture that makes you weep because humans could never build this.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "fantasy_undead_kingdom",
+    "name": "The Necropolis",
+    "description": "High fantasy archetype",
+    "trigger_interests": [
+      "fantasy",
+      "dark"
+    ],
+    "trigger_moods": [
+      "moody",
+      "mysterious",
+      "intense",
+      "dramatic"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of a kingdom of the dead that is terrifyingly beautiful. A city of black marble where ghost-light drifts through the streets like fog. A throne room where the king has been dead for a thousand years but his crown still glows. Skeleton knights on skeleton horses, armor polished to mirror shine, riding in perfect formation. A graveyard where the headstones are taller than buildings and the epitaphs tell love stories. Death not as horror but as the quietest, most elegant thing that ever happened.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "fantasy_potion_shop",
+    "name": "The Potion Maker",
+    "description": "High fantasy archetype",
+    "trigger_interests": [
+      "fantasy",
+      "food",
+      "whimsical"
+    ],
+    "trigger_moods": [
+      "cozy",
+      "whimsical",
+      "playful",
+      "mysterious"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of liquid magic. A tiny shop crammed floor to ceiling with bottles — each one a different color, a different consistency, some bubbling, some glowing, one containing a tiny storm. A witch measuring ingredients with scales that weigh intentions, not grams. A cauldron that stirs itself and occasionally sighs. Ingredients: moonlight (bottled on a Tuesday), three whispered secrets, the color blue (extracted from a summer sky). Labels in beautiful handwriting. The smell of everything and nothing at once.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "fantasy_floating_islands",
+    "name": "The Sky Kingdom",
+    "description": "High fantasy archetype",
+    "trigger_interests": [
+      "fantasy",
+      "space",
+      "nature"
+    ],
+    "trigger_moods": [
+      "epic",
+      "dreamy",
+      "whimsical",
+      "serene"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of islands in the sky. Massive chunks of earth floating above the clouds, waterfalls pouring off their edges into mist. Rope bridges and chain links connecting a constellation of floating lands. A castle built across three islands, towers on each, connected by glass walkways above the void. Ships that sail through air instead of water. Gardens where the flowers grow sideways because gravity is confused. A sunset seen from above the cloud layer, painting everything in gold and rose.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "fantasy_tavern_night",
+    "name": "The Fantasy Tavern",
+    "description": "High fantasy archetype",
+    "trigger_interests": [
+      "fantasy",
+      "food",
+      "music"
+    ],
+    "trigger_moods": [
+      "cozy",
+      "playful",
+      "nostalgic",
+      "whimsical"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of the best tavern in any realm. A roaring fireplace big enough to roast an ox (and they are). A bard on a tiny stage playing a lute that glows faintly, the crowd actually listening. Tankards of something that sparkles and changes color as you drink it. A menu written in runes, the specials include \"dragon steak (ethically sourced)\" and \"cloud soup.\" A dwarf arm-wrestling an elf. A mysterious hooded figure in the corner who is definitely the quest-giver. The warmest, loudest, most welcoming room you've ever been in.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "anime_shonen_battle",
+    "name": "The Shonen Hero",
+    "description": "geek+gaming archetype",
+    "trigger_interests": [
+      "geek",
+      "gaming"
+    ],
+    "trigger_moods": [
+      "epic",
+      "intense",
+      "dramatic"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream like a shonen anime finale. A warrior powering up, energy crackling around them, hair floating upward, the ground cracking beneath their feet. A punch so powerful it parts the clouds. Two rivals facing each other across a destroyed battlefield, wind whipping between them, neither willing to back down. Speed lines. Impact frames. The moment before the final attack where everything goes silent and the music drops. Power levels that don't make sense and don't need to.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "anime_mecha_sunset",
+    "name": "The Evangelion Dreamer",
+    "description": "geek+sci_fi archetype",
+    "trigger_interests": [
+      "geek",
+      "sci_fi"
+    ],
+    "trigger_moods": [
+      "dramatic",
+      "moody",
+      "intense",
+      "mysterious"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of existential mecha. A giant humanoid machine standing knee-deep in an orange ocean, head bowed, the pilot somewhere inside questioning everything. A ruined city at sunset, a mech's hand protruding from rubble, fingers still reaching. Entry plugs filled with amber liquid, floating in void. A test facility so clean it's terrifying, a mech restrained by cables, one eye glowing. The loneliness of being fourteen and responsible for saving the world. Beautiful, sad, incomprehensible, and somehow deeply personal.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "anime_slice_of_life",
+    "name": "The Anime Afternoon",
+    "description": "geek+cute+music archetype",
+    "trigger_interests": [
+      "geek",
+      "cute",
+      "music"
+    ],
+    "trigger_moods": [
+      "peaceful",
+      "nostalgic",
+      "cozy",
+      "whimsical"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of a perfect ordinary day in anime. Cherry blossoms falling on a school courtyard, bikes parked in a row, nobody in a hurry. A convenience store at dusk, fluorescent light spilling onto wet pavement, someone buying an ice cream. A train crossing at sunset, the signal blinking, a bicycle waiting. Laundry drying on a balcony with a view of the whole neighborhood. The kind of beauty that only exists in the mundane when you really, really look at it.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "dark_cosmic_horror",
+    "name": "The Cosmic Horror",
+    "description": "dark+space+abstract archetype",
+    "trigger_interests": [
+      "dark",
+      "space",
+      "abstract"
+    ],
+    "trigger_moods": [
+      "mysterious",
+      "intense",
+      "moody",
+      "dramatic"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of things too large to comprehend. Something vast moving behind the stars, visible only as an absence of light. An ocean that goes down forever, and something at the bottom is looking up. A city built by something that didn't have human proportions — the doorways are wrong, the stairs are wrong, the geometry is wrong but beautiful. A signal received from somewhere that shouldn't exist, visualized as a pattern that hurts to look at but you can't stop. Awe and dread as the same emotion.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "dark_haunted_beauty",
+    "name": "The Haunted Beauty",
+    "description": "dark+architecture+nature archetype",
+    "trigger_interests": [
+      "dark",
+      "architecture",
+      "nature"
+    ],
+    "trigger_moods": [
+      "mysterious",
+      "moody",
+      "serene",
+      "nostalgic"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of abandoned places reclaimed by ghosts and nature. A grand ballroom where dust motes dance in a shaft of light and translucent figures waltz to music that ended decades ago. An overgrown mansion where roses have shattered the windows and birds nest in the chandeliers. A lighthouse with no keeper, its beam still sweeping, illuminating fog and nothing else. A piano in a flooded room, water lilies growing from the keys, one note still sustaining. Decay as the most beautiful art form.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "steampunk_airship",
+    "name": "The Airship Captain",
+    "description": "sci_fi+fantasy+architecture archetype",
+    "trigger_interests": [
+      "sci_fi",
+      "fantasy",
+      "architecture"
+    ],
+    "trigger_moods": [
+      "epic",
+      "dramatic",
+      "whimsical",
+      "nostalgic"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of brass and sky. An airship breaking through clouds at dawn, copper hull catching first light, propellers spinning, crew in goggles and leather. A floating city held up by a thousand balloons, connected by rope bridges and steam-powered elevators. A captain's quarters with maps pinned to every surface, a compass that points to what you want instead of north, a telescope aimed at a city that floats. Clockwork navigation instruments ticking. The hiss of steam. The creak of rigging. Somewhere between past and future, everything runs on ambition and hot air.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "steampunk_clockwork",
+    "name": "The Clockwork Heart",
+    "description": "architecture+geek+abstract archetype",
+    "trigger_interests": [
+      "architecture",
+      "geek",
+      "abstract"
+    ],
+    "trigger_moods": [
+      "whimsical",
+      "mysterious",
+      "nostalgic",
+      "dreamy"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of mechanisms beautiful enough to be alive. The inside of a clock the size of a cathedral — gears meshing, springs coiling, pendulums swinging in perfect time. A mechanical bird that sings actual songs, its brass feathers catching candlelight. A workshop where a toymaker builds automata that dream of being real. A heart made of clockwork, visible through a glass chest, each tick perfectly timed, occasionally skipping a beat when it sees something beautiful. Brass, glass, spring tension, and the ghost in the machine.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "ocean_deep_abyss",
+    "name": "The Abyssal Deep",
+    "description": "ocean+dark+space archetype",
+    "trigger_interests": [
+      "ocean",
+      "dark",
+      "space"
+    ],
+    "trigger_moods": [
+      "mysterious",
+      "intense",
+      "moody",
+      "dramatic"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of the parts of the ocean nobody has seen. Miles below the surface where the pressure would crush a submarine. Hydrothermal vents pouring black smoke into water so hot it shimmers. Creatures that are 90 percent mouth and 100 percent terrifying, lit only by their own bioluminescence. The Mariana Trench as a landscape — canyons that dwarf the Grand Canyon, in total darkness. Something ancient on the ocean floor that might be a city or might be alive. The abyss gazing back.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "music_metal_cathedral",
+    "name": "The Metal Cathedral",
+    "description": "music+dark archetype",
+    "trigger_interests": [
+      "music",
+      "dark"
+    ],
+    "trigger_moods": [
+      "intense",
+      "epic",
+      "dramatic"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of music as destruction and creation. A guitarist on a cliff edge, amp stack behind them tall as a building, one chord shattering the sky. A mosh pit visualized from above — a human whirlpool. A cathedral where the stained glass vibrates with bass frequencies and the organ has been replaced with a wall of Marshall amplifiers. Drumsticks hitting so hard they leave craters. Album art come to life — skulls and fire and impossible landscapes and a font no one can read but everyone understands.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "music_lofi_rain",
+    "name": "The Lo-Fi Rain",
+    "description": "music+cute archetype",
+    "trigger_interests": [
+      "music",
+      "cute"
+    ],
+    "trigger_moods": [
+      "cozy",
+      "dreamy",
+      "peaceful",
+      "nostalgic"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream in lo-fi beats and rain sounds. A window seat with headphones and a warm drink, rain tracing lines down the glass, the city a blur of soft lights beyond. A record spinning in an empty room at 2am, the crackle between tracks louder than the music. A rooftop at dusk where someone has set up a keyboard and is playing to nobody, pigeons the only audience. A bedroom with fairy lights, vinyl stacked against the wall, a cat on the bed, and the perfect ambient playlist scoring everything.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "ocean_coral_palace",
+    "name": "The Coral Palace",
+    "description": "ocean+architecture+fantasy archetype",
+    "trigger_interests": [
+      "ocean",
+      "architecture",
+      "fantasy"
+    ],
+    "trigger_moods": [
+      "dreamy",
+      "whimsical",
+      "peaceful",
+      "epic"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of underwater architecture. A palace grown from living coral over centuries, every room a different color — pink chambers, purple hallways, golden throne room. Fish swimming through windows that have no glass. A great hall with a ceiling of trapped air, sunlight filtering through the water above casting dancing light patterns on the coral floor. Seahorses as decorative motifs that are also real seahorses. Staircases of giant clamshells. An underwater garden of sea anemones tended by octopus gardeners.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "abstract_synesthesia",
+    "name": "The Synesthesia Dream",
+    "description": "abstract+music archetype",
+    "trigger_interests": [
+      "abstract",
+      "music"
+    ],
+    "trigger_moods": [
+      "dreamy",
+      "whimsical",
+      "playful",
+      "mysterious"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight your senses are crossed. Music you can see — a piano sonata as cascading blue ribbons, a guitar riff as orange sparks, a bass drop as a purple shockwave. Colors you can taste — the yellow of a sunset is lemon, the green of a forest is mint. Sounds that have texture — rain feels like velvet, thunder feels like sandpaper. A world where every sense feeds into every other sense and the result is overwhelming, confusing, and the most beautiful thing you've ever experienced.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "music_festival_euphoria",
+    "name": "The Festival Dreamer",
+    "description": "music+nature archetype",
+    "trigger_interests": [
+      "music",
+      "nature"
+    ],
+    "trigger_moods": [
+      "epic",
+      "playful",
+      "whimsical",
+      "intense"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of the peak festival moment. A massive crowd seen from the stage, arms raised, every phone a light, the bass vibrating the ground. A ferris wheel at sunset, the whole festival visible from the top. Confetti cannons exploding over a main stage, each piece of paper catching laser light. Dancing alone in a tent at 4am, barefoot in grass, the DJ playing something transcendent. Flags and totems above a sea of people. The sun coming up over a field of tents while the last act plays. Pure collective joy.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "travel_lost_city",
+    "name": "The Lost City",
+    "description": "travel+architecture+fantasy archetype",
+    "trigger_interests": [
+      "travel",
+      "architecture",
+      "fantasy"
+    ],
+    "trigger_moods": [
+      "epic",
+      "mysterious",
+      "dramatic",
+      "dreamy"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of discovery. A city no one has seen for a thousand years, visible only when the morning fog lifts at exactly the right angle. Overgrown temples with gold still gleaming under vines. A map that leads to a door in a cliff face that leads to an underground metropolis still lit by whatever powered it millennia ago. The first footstep on a plaza where the last footstep was centuries ago, dust billowing. The feeling of being the first human to see something that was always there, waiting.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "travel_train_journey",
+    "name": "The Night Train",
+    "description": "travel+music archetype",
+    "trigger_interests": [
+      "travel",
+      "music"
+    ],
+    "trigger_moods": [
+      "nostalgic",
+      "dreamy",
+      "peaceful",
+      "cozy"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of journeys without destinations. A sleeper car at night, narrow bed, the rhythmic clack of tracks, landscape sliding past the window — moonlit fields, sleeping villages, crossings where a single car waits. A dining car with white tablecloths and crystal glasses vibrating with the train's pulse. A window fogged by your breath, finger drawing in the condensation. The Orient Express or the Trans-Siberian or a train that doesn't exist running a route that crosses oceans. Getting there is the whole point.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "pride_cosmic_queen",
+    "name": "The Cosmic Queen",
+    "description": "pride+space+fashion archetype",
+    "trigger_interests": [
+      "pride",
+      "space",
+      "fashion"
+    ],
+    "trigger_moods": [
+      "epic",
+      "dramatic",
+      "playful",
+      "whimsical"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of royalty that transcends galaxies. A drag queen whose gown is made of actual nebulae, train stretching across the cosmos. A throne room on a space station where the floor is transparent glass over a planet covered in rainbow aurora. A ball where the guests arrived from every dimension and the dress code is \"more is more.\" Glitter that is actually ground-up stars. Hair that defies gravity because in space, everything does. The fiercest, most fabulous being in any universe.",
+    "flavor_keywords": []
+  },
+  {
+    "key": "cute_animal_kingdom",
+    "name": "The Secret Animal Kingdom",
+    "description": "cute+animals+whimsical archetype",
+    "trigger_interests": [
+      "cute",
+      "animals",
+      "whimsical"
+    ],
+    "trigger_moods": [
+      "whimsical",
+      "cozy",
+      "playful",
+      "dreamy"
+    ],
+    "trigger_personality": [],
+    "trigger_eras": [],
+    "trigger_settings": [],
+    "min_matches": 2,
+    "prompt_context": "Tonight you dream of what animals do when we're not looking. A fox library underground, shelves organized by smell. A bear who paints landscapes but only in winter, because that's when the light is best. A cat parliament debating whether the red dot is a threat or a god. An otter wedding in a river, the rings are smooth stones, the officiant is a heron. Mice running a restaurant inside a wall, five stars, reservation only. Animals living rich, complex lives we'll never know about, rendered in loving detail.",
+    "flavor_keywords": []
+  }
+]
