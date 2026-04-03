@@ -343,7 +343,40 @@ export const MEDIUM_POOL: TaggedOption[] = [{
     text: 'Blue Note jazz album cover, bold graphic shapes, smoky atmosphere, cool tones',
     axes: { realism: 'low', energy: 'low', brightness: 'low', color_warmth: 'low' },
   },
-  // Hyperreal & psychedelic// ── New accessible mediums ──
+  // Famous artists — these route to SDXL and produce stunning painterly results
+  {
+    text: 'Van Gogh Starry Night style, swirling thick brushstrokes, vivid blues and yellows',
+    axes: { realism: 'low', complexity: 'high', energy: 'high', color_warmth: 'high', brightness: 'low' },
+  },
+  {
+    text: 'Monet impressionist, soft water lilies, dappled light, dreamy blur',
+    axes: { realism: 'low', brightness: 'high', energy: 'low', color_warmth: 'high', complexity: 'low' },
+  },
+  {
+    text: 'Frida Kahlo surrealist style, lush flowers, vivid symbolic colors, folk art motifs',
+    axes: { realism: 'low', complexity: 'high', color_warmth: 'high', energy: 'low', brightness: 'high' },
+  },
+  {
+    text: 'Gustav Klimt gold leaf style, ornate patterns, Byzantine mosaic influence',
+    axes: { complexity: 'high', color_warmth: 'high', brightness: 'high', realism: 'low', energy: 'low' },
+  },
+  {
+    text: 'Hokusai Great Wave style, Japanese woodblock, dramatic ocean, bold composition',
+    axes: { realism: 'low', energy: 'high', color_warmth: 'low' },
+  },
+  {
+    text: 'Bob Ross happy little trees, soft landscape, calm mountains, warm and gentle',
+    axes: { realism: 'low', energy: 'low', color_warmth: 'high' },
+  },
+  {
+    text: 'Dalí melting surrealism, desert dreamscape, impossible objects, time bending',
+    axes: { realism: 'low', complexity: 'high', energy: 'low' },
+  },
+  {
+    text: 'Picasso cubist style, fragmented geometric faces, multiple perspectives at once',
+    axes: { realism: 'low', complexity: 'high', energy: 'high', brightness: 'low', color_warmth: 'low' },
+  },
+  // ── New accessible mediums ──
   { text: 'Unreal Engine 5 cinematic render, volumetric lighting, photogrammetry detail', axes: {} },
   { text: 'infrared photography, white trees, dark skies, otherworldly color palette', axes: {} },
   { text: 'double exposure photograph, two images merged into one, ghostly overlay', axes: {} },

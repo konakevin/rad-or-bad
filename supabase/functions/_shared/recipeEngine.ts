@@ -6,7 +6,7 @@
  *                  lib/recipe/utils.ts, lib/recipe/builder.ts
  *
  * DO NOT EDIT DIRECTLY. Run: node scripts/sync-deno-engine.js
- * Generated: 2026-04-03T15:21:01.023Z
+ * Generated: 2026-04-03T15:42:58.266Z
  */
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -609,7 +609,40 @@ export const MEDIUM_POOL: TaggedOption[] = [{
     text: 'Blue Note jazz album cover, bold graphic shapes, smoky atmosphere, cool tones',
     axes: { realism: 'low', energy: 'low', brightness: 'low', color_warmth: 'low' },
   },
-  // Hyperreal & psychedelic// ── New accessible mediums ──
+  // Famous artists — these route to SDXL and produce stunning painterly results
+  {
+    text: 'Van Gogh Starry Night style, swirling thick brushstrokes, vivid blues and yellows',
+    axes: { realism: 'low', complexity: 'high', energy: 'high', color_warmth: 'high', brightness: 'low' },
+  },
+  {
+    text: 'Monet impressionist, soft water lilies, dappled light, dreamy blur',
+    axes: { realism: 'low', brightness: 'high', energy: 'low', color_warmth: 'high', complexity: 'low' },
+  },
+  {
+    text: 'Frida Kahlo surrealist style, lush flowers, vivid symbolic colors, folk art motifs',
+    axes: { realism: 'low', complexity: 'high', color_warmth: 'high', energy: 'low', brightness: 'high' },
+  },
+  {
+    text: 'Gustav Klimt gold leaf style, ornate patterns, Byzantine mosaic influence',
+    axes: { complexity: 'high', color_warmth: 'high', brightness: 'high', realism: 'low', energy: 'low' },
+  },
+  {
+    text: 'Hokusai Great Wave style, Japanese woodblock, dramatic ocean, bold composition',
+    axes: { realism: 'low', energy: 'high', color_warmth: 'low' },
+  },
+  {
+    text: 'Bob Ross happy little trees, soft landscape, calm mountains, warm and gentle',
+    axes: { realism: 'low', energy: 'low', color_warmth: 'high' },
+  },
+  {
+    text: 'Dalí melting surrealism, desert dreamscape, impossible objects, time bending',
+    axes: { realism: 'low', complexity: 'high', energy: 'low' },
+  },
+  {
+    text: 'Picasso cubist style, fragmented geometric faces, multiple perspectives at once',
+    axes: { realism: 'low', complexity: 'high', energy: 'high', brightness: 'low', color_warmth: 'low' },
+  },
+  // ── New accessible mediums ──
   { text: 'Unreal Engine 5 cinematic render, volumetric lighting, photogrammetry detail', axes: {} },
   { text: 'infrared photography, white trees, dark skies, otherworldly color palette', axes: {} },
   { text: 'double exposure photograph, two images merged into one, ghostly overlay', axes: {} },
@@ -2179,7 +2212,7 @@ export function buildPromptInput(recipe: Recipe, archetype?: DreamArchetype): Pr
 
   // SUBJECT layer
   // Usually 1 interest for focused dreams, sometimes 2 for chaos/variety
-  const sampleCount = interests.length >= 2 ? 2 : 1;
+  const sampleCount = Math.random() < 0.3 + chaos * 0.3 ? 2 : 1;
   const shuffledInterests = [...interests].sort(() => Math.random() - 0.5);
   const sampledInterests = shuffledInterests.slice(0, Math.min(sampleCount, interests.length));
   // Only include character actions when energy is high — low energy = scenic/atmospheric
@@ -2318,25 +2351,39 @@ export function buildHaikuPrompt(input: PromptInput): string {
   // Pick a random composition for Haiku to consider
   const comp = pick(COMPOSITIONS);
 
-  return `Dream up a stunning image with rich, saturated, beautiful colors. Use these ingredients however you want — combine them, twist them, surprise us. Drop anything that doesn't fit.
+  return `You are a dream artist creating a single stunning image for someone. Below are ingredients rolled from their taste profile. Your job is NOT to use all of them — pick the 4-5 that work best together and IGNORE the rest. Competing elements make bad images.
 
-Style: ${input.medium}
-Subject: ${input.dreamSubject || input.interests.map(expandInterest).join(' and ')}
-Place: ${input.settingKeywords}, ${input.eraKeywords}
-Mood: ${input.mood}, ${input.lighting}
-${input.colorKeywords ? `Colors: ${input.colorKeywords}` : ''}
-${input.sceneAtmosphere ? `Weather: ${input.sceneAtmosphere}` : ''}
-${input.weirdnessModifier ? `Weirdness: ${input.weirdnessModifier}` : ''}
-${input.scaleModifier ? `Scale: ${input.scaleModifier}` : ''}
-${input.action ? `Action: ${input.action}` : ''}
-${input.sceneType ? `Moment: ${input.sceneType}` : ''}
-${comp ? `Frame: ${comp}` : ''}
-${input.personalityTags.length > 0 ? `Vibe: ${input.personalityTags.join(', ')}` : ''}
-${input.spiritAppears && input.spiritCompanion ? `Hidden easter egg: a tiny ${input.spiritCompanion.replace(/_/g, ' ')}` : ''}
+PRIORITY ORDER (most → least important):
+1. ART MEDIUM (always use this): ${input.medium}
+2. SUBJECT: ${input.dreamSubject || input.interests.map(expandInterest).join(' and ')}
+3. SETTING: ${input.settingKeywords}
+4. MOOD + LIGHTING: ${input.mood}, ${input.lighting}
+5. COLOR PALETTE: ${input.colorKeywords || 'vivid and expressive'}
 
-Write a vivid image prompt (max 50 words). Start with the art style. Be creative — the best dreams are ones nobody has seen before. No photorealistic humans. No portraits of real people. No text or words in the image.
+OPTIONAL — use if they enhance the scene, skip if they clash:
+- Era flavor: ${input.eraKeywords}
+- Weather: ${input.sceneAtmosphere}
+- Personality vibe: ${input.personalityTags.join(', ')}
+- Framing: ${input.scaleModifier}
+${input.weirdnessModifier ? `- Surrealism: ${input.weirdnessModifier}` : ''}
+${input.action ? `- Action: ${input.action}` : ''}
+${input.spiritAppears && input.spiritCompanion ? `- Spirit companion: a ${input.spiritCompanion.replace(/_/g, ' ')} hidden in the scene` : ''}
+${comp ? `- Composition idea: ${comp}` : ''}
+${input.sceneType ? `- Scene type: ${input.sceneType}` : ''}
 
-Output ONLY the prompt.`;
+WRITE a single image prompt (max 60 words). Start with the art style. Describe ONE specific, coherent scene — not a list of ingredients.
+
+RULES:
+- If elements conflict, DROP the lower-priority one. A coherent scene beats a complete checklist.
+- Characters should be stylized, illustrated, or silhouetted — NEVER photorealistic human faces or bodies. If a person appears, they should feel like part of the art style (cartoon, painted, sketched), not a photo of a real person.
+- No nudity or explicit content
+- Be concrete and visual, not poetic or abstract
+- The result should make someone say "that's MY dream bot — it gets me"
+- AVOID AI ART CLICHÉS: no "figure standing with back to camera gazing at vast landscape", no "lone silhouette on cliff edge", no "person looking up at giant glowing thing". These are overused. Be more creative with composition.
+- LEAN INTO THE ART STYLE: if the medium is cartoon, make it LOOK like a cartoon — exaggerated, flat colors, bold outlines. Don't let it default to photorealistic with a filter. The medium should fundamentally change HOW the image looks.
+- NEVER include text, words, letters, speech bubbles, signs with writing, or any readable text in the scene. Images only, no text.
+
+Output ONLY the prompt, nothing else.`;
 }
 
 /** Archetype interface — used by the edge function to pass archetype data */

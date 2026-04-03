@@ -233,23 +233,23 @@ Deno.serve(async (req) => {
 
       if (dreamMode === 'beauty') {
         // BEAUTY MODE: pure visual focus, no narrative, just breathtaking imagery
-        haikuBrief = `Dream up something breathtaking with rich, saturated, beautiful colors.
+        haikuBrief = `Create the most visually breathtaking image possible. Rich, saturated, beautiful colors. This should stop someone mid-scroll.
 
-Style: ${input.medium}
-Subject: ${input.interests.map((i: string) => i).join(' and ')}
-Place: ${input.settingKeywords}, ${input.eraKeywords}
+Medium: ${input.medium}
+Subject: ${input.dreamSubject || input.interests.map((i: string) => i).join(' and ')}
+Setting: ${input.settingKeywords}, ${input.eraKeywords}
 Mood: ${input.mood}, ${input.lighting}
-${input.colorKeywords ? `Colors: ${input.colorKeywords}` : ''}
-${input.sceneAtmosphere ? `Weather: ${input.sceneAtmosphere}` : ''}
+Palette: ${input.colorKeywords || 'vivid and expressive'}
+Weather: ${input.sceneAtmosphere}
 
-Write a vivid image prompt (max 50 words). Start with the art style. Make it beautiful. No photorealistic humans. No text in the image. Output ONLY the prompt.`;
+Write an image prompt (max 50 words). Start with the art medium. Focus on visual impact — color, light, composition, texture, scale. No photorealistic humans. No text in the image. Output ONLY the prompt.`;
       } else {
         // CHORD or ARCHETYPE mode — use the standard Chord template
         haikuBrief = buildHaikuPrompt(input);
 
         // If archetype is active, inject its creative brief so Haiku knows the identity
         if (archetype) {
-          haikuBrief += `\n\nInspiration: ${archetype.name}\n${archetype.prompt_context}`;
+          haikuBrief += `\n\nTONIGHT'S DREAM IDENTITY: ${archetype.name}\n${archetype.prompt_context}\n\nUse the ingredients above but channel them through this identity. The dream should feel like it came from "${archetype.name}."`;
         }
       }
 
