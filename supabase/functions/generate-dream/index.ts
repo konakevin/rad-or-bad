@@ -241,7 +241,7 @@ Setting: ${input.settingKeywords}
 Palette: ${input.colorKeywords || 'vivid and expressive'}
 Atmosphere: ${input.sceneAtmosphere}
 
-Write an image prompt (max 50 words). Start with the art medium. Focus entirely on visual impact — color, light, composition, texture, scale. Make it the prettiest thing anyone has ever seen. Output ONLY the prompt.`;
+Write an image prompt (max 50 words). Start with the art medium. Focus entirely on visual impact — color, light, composition, texture, scale. Make it the prettiest thing anyone has ever seen. NEVER include text, words, letters, or speech bubbles. Output ONLY the prompt.`;
       } else {
         // CHORD or ARCHETYPE mode — use the standard Chord template
         haikuBrief = buildHaikuPrompt(input);

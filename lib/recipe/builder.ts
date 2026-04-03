@@ -331,69 +331,10 @@ RULES:
 Output ONLY the prompt, nothing else.`;
 }
 
-/**
- * Build a "Solo" creative brief — picks ONE ingredient and follows it DEEP.
- * Where buildHaikuPrompt blends 4-5 elements, this narrows to one thread
- * and chases it to its most specific, vivid, surprising conclusion.
- */
+/** Archetype interface — used by the edge function to pass archetype data */
 export interface DreamArchetype {
   key: string;
   name: string;
   prompt_context: string;
   flavor_keywords: string[];
-}
-
-export function buildHaikuPromptDeep(input: PromptInput, recipe?: Recipe, archetype?: DreamArchetype): string {
-  const comp = pick(COMPOSITIONS);
-
-  // If we have a pre-built archetype, use its focused identity
-  if (archetype) {
-    return `${archetype.prompt_context}
-
-Art style: ${input.medium}
-
-Write an image prompt (max 50 words). Start with the art style. Don't describe a static object — describe a SCENE with something happening, a story being told, or a moment that makes you feel something. Surprise me. End the prompt with "Style: ${input.medium}. NOT a photograph." Output ONLY the prompt.`;
-  }
-
-  // Fallback: no archetype available — use the full recipe approach
-  const allInterests = recipe?.interests ?? input.interests;
-  const allMoods = recipe?.selected_moods ?? [];
-  const allPersonality = recipe?.personality_tags ?? input.personalityTags;
-
-  return `This person loves: ${allInterests.join(', ')}. Their personality: ${allPersonality.join(', ')}. Moods: ${allMoods.length > 0 ? allMoods.join(', ') : input.mood}.
-
-Pick ONE interest and dream fully as that version of them. Not a blend — commit.
-
-STYLE:
-- Medium: ${input.medium}
-- Palette: ${input.colorKeywords || 'vivid and expressive'}
-- Light: ${input.lighting}
-${comp ? `- Frame: ${comp}` : ''}
-${input.dreamSubject ? `- Include: ${input.dreamSubject}` : ''}
-${input.action ? `- Action: ${input.action}` : ''}
-${input.spiritAppears && input.spiritCompanion ? `- Spirit animal (tiny hidden easter egg): ${input.spiritCompanion.replace(/_/g, ' ')}` : ''}
-
-Write a prompt (max 80 words). Start with the art medium.
-
-RULES:
-- NO photorealistic humans. Characters must be stylized, illustrated, or non-human.
-- NO nudity. NO single objects on dark backgrounds. NO figure-with-back-to-camera.
-- The art medium MUST visually dominate.
-
-Output ONLY the prompt.`;
-}
-
-/**
- * Dual-path prompt builder — randomly selects Chord (blend) or Solo (deep).
- *
- * Chord (50%): picks 4-5 best elements, weaves into one coherent scene.
- * Solo  (50%): picks ONE thread, follows it deep to a hyper-specific moment.
- *
- * Tune the ratio here — this is the single knob for chord/solo balance.
- */
-export function buildHaikuPromptDual(input: PromptInput, recipe?: Recipe, archetype?: DreamArchetype): string {
-  // TODO: restore to 0.5 after testing Solo path
-  return Math.random() < 0
-    ? buildHaikuPrompt(input)
-    : buildHaikuPromptDeep(input, recipe, archetype);
 }

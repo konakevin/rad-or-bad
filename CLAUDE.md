@@ -273,11 +273,23 @@ The engine builds prompts in 4 layers, each controlling a different aspect:
 - **Spirit companion appears only ~8% of the time** — keeps it rare and special. When it does appear, it's a hidden easter egg, not the focus.
 - **Compositions are random framing directives** — 40+ options including "bird's eye view", "cross-section cutaway", "miniature world inside a teacup", or nothing (pure AI freedom).
 
-### Two Prompt Paths
+### Current Architecture: The Three-Part Song
 
-1. **Haiku-enhanced (primary):** `buildHaikuPrompt()` sends ALL ingredients to Claude Haiku with instructions to pick the BEST 4-5 elements and weave them into ONE coherent 60-word scene. Haiku is told to DROP competing elements rather than use everything. The prompt includes anti-cliche rules ("no figure standing with back to camera", "no lone silhouette on cliff edge").
+The dream engine has three modes, randomly selected per dream. ALL modes use `buildPromptInput()` for ingredient selection and `buildHaikuPrompt()` (the Chord template) as the base. The difference is what gets appended.
 
-2. **Raw fallback:** `buildRawPrompt()` assembles 5 key elements (medium, subject, setting, mood, one spice) into a tight prompt. Used only when Haiku is unavailable. Flux handles short punchy prompts better than walls of text.
+**The Chord (30%)** — Pure unguided engine. `buildHaikuPrompt(input)` sends ingredients to Haiku which picks the BEST 4-5 elements and weaves them into ONE coherent scene. No archetype. Produces unexpected mashups.
+
+**The Solo (50%)** — Archetype-guided. Same `buildHaikuPrompt(input)` PLUS the archetype's `prompt_context` appended as "TONIGHT'S DREAM IDENTITY." The archetype locks which interest and mood feed into the engine. Haiku channels the archetype's identity through the ingredients.
+
+**The Song (20%)** — Pure visual beauty. A separate inline template focused entirely on visual impact. No story, no characters. Just medium + mood + lighting + setting → "make the prettiest thing ever."
+
+**Raw fallback:** `buildRawPrompt()` assembles 5 key elements into a tight prompt. Used only when Haiku is unavailable.
+
+**Dead code removed:** `buildHaikuPromptDeep` and `buildHaikuPromptDual` (the old Solo template) are gone. All paths now use `buildHaikuPrompt` as the base.
+
+**Model routing:** The `pickModel()` function in the edge function scans the final prompt for style keywords. Artistic styles (watercolor, anime, oil painting, etc.) → SDXL. Everything else → Flux Dev. ~60% Flux / ~40% SDXL split.
+
+**No-text rule:** All templates include "NEVER include text, words, letters, speech bubbles."
 
 ### Genetic Dream Fusion (lib/geneticMerge.ts)
 

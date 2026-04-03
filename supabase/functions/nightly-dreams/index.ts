@@ -3,7 +3,7 @@
 // Generates one dream per eligible active user.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { buildPromptInput, buildRawPrompt, buildHaikuPromptDual } from '../_shared/recipeEngine.ts';
+import { buildPromptInput, buildRawPrompt, buildHaikuPrompt } from '../_shared/recipeEngine.ts';
 import type { Recipe } from '../_shared/recipe.ts';
 import { DEFAULT_RECIPE } from '../_shared/recipe.ts';
 
@@ -125,9 +125,9 @@ async function generateDreamForUser(
   // Build prompt — use Haiku if available, fallback to raw
   let prompt: string;
   const haikuBrief = wish
-    ? buildHaikuPromptDual(input, recipe) +
+    ? buildHaikuPrompt(input) +
       `\n\nIMPORTANT: The user wished for "${wish}". Make this the heart of the dream — use their taste profile to style it, but the wish is the subject.`
-    : buildHaikuPromptDual(input, recipe);
+    : buildHaikuPrompt(input);
 
   if (anthropicKey) {
     try {

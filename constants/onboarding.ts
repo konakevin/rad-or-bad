@@ -36,7 +36,7 @@ export const INTEREST_TILES: { key: Interest; label: string; icon: string }[] = 
 export const VIBE_TILES: { key: string; label: string; icon: string }[] = [
   { key: 'cozy', label: 'Cozy & Cottagecore', icon: 'cafe' },
   { key: 'dark', label: 'Dark & Mysterious', icon: 'moon' },
-  { key: 'baddie', label: 'Baddie', icon: 'flame' },
+  { key: 'glamour', label: 'Glamour', icon: 'flame' },
   { key: 'gamer', label: 'Gamer', icon: 'game-controller' },
   { key: 'anime_fantasy', label: 'Anime & Fantasy', icon: 'sparkles' },
   { key: 'beach_ocean', label: 'Beach & Ocean', icon: 'sunny' },
@@ -61,8 +61,9 @@ export const VIBE_ARCHETYPE_MAP: Record<string, string[]> = {
     'dark_haunted_beauty', 'music_jazz_midnight', 'dark_cosmic_horror',
     'cute_crystal_witch', 'nature_botanical_witch', 'fantasy_potion_shop',
     'fantasy_undead_kingdom', 'movies_horror_beautiful',
+    'baddie_vampire_countess', 'moody_dark_gothic_muse', 'baddie_noir_detective',
   ],
-  baddie: [
+  glamour: [
     'intense_fashion_siren', 'intense_sci_fi_huntress', 'moody_dark_gothic_muse',
     'playful_fashion_pinup', 'dramatic_movies_silver_screen',
     'dreamy_ocean_goddess', 'ocean_mermaid_siren',
@@ -79,6 +80,7 @@ export const VIBE_ARCHETYPE_MAP: Record<string, string[]> = {
     'gaming_boss_fight', 'gaming_loot_drop',
     'geek_hacker_den', 'steampunk_airship', 'steampunk_clockwork',
     'movies_blade_runner', 'movies_marvel_hero',
+    'whimsical_cute_anime_dream', 'baddie_samurai_empress',
   ],
   anime_fantasy: [
     'anime_', 'fantasy_', 'ghibli_',
@@ -88,11 +90,13 @@ export const VIBE_ARCHETYPE_MAP: Record<string, string[]> = {
     'fantasy_dragon_rider', 'fantasy_wizard_tower', 'fantasy_elven_kingdom',
     'fantasy_tavern_night', 'fantasy_potion_shop', 'fantasy_floating_islands',
     'fantasy_enchanted_forest', 'fantasy_undead_kingdom', 'fantasy_dragon_hoard',
+    'dramatic_fantasy_enchantress', 'baddie_witch_queen',
   ],
   beach_ocean: [
     'ocean_', 'dreamy_ocean', 'playful_ocean', 'serene_ocean',
     'dreamy_ocean_goddess', 'ocean_mermaid_siren', 'ocean_mermaid_cute',
     'ocean_pirate_captain', 'ocean_coral_palace', 'ocean_deep_abyss',
+    'baddie_jungle_goddess', 'baddie_mermaid_dark', 'baddie_festival_goddess',
   ],
   space_scifi: [
     'space_', 'sci_fi_', 'cosmic_',
@@ -100,6 +104,7 @@ export const VIBE_ARCHETYPE_MAP: Record<string, string[]> = {
     'dark_cosmic_horror',
     'abstract_', 'universal_surreal_mindbend', 'universal_impossible_landscape',
     'abstract_synesthesia', 'abstract_infinity_room',
+    'intense_sci_fi_huntress', 'baddie_space_empress',
   ],
   epic_adventure: [
     'universal_', 'vista_', 'alien_', 'earth_',
@@ -108,12 +113,14 @@ export const VIBE_ARCHETYPE_MAP: Record<string, string[]> = {
     'dark_samurai_ronin', 'dark_viking_saga',
     'travel_lost_city', 'travel_train_journey',
     'nature_mountain_king',
+    'baddie_jungle_goddess', 'epic_sports_athletic_goddess', 'baddie_racing_queen',
   ],
   music_retro: [
     'music_', 'nostalgic_', 'retro_',
     'music_jazz_midnight', 'music_metal_cathedral', 'music_lofi_rain',
     'music_festival_euphoria', 'music_kpop_dreamer',
     'gaming_retro_arcade', 'movies_wes_anderson',
+    'nostalgic_music_jazz_flame', 'baddie_k_pop_idol', 'baddie_festival_goddess', 'baddie_midnight_dancer',
   ],
   whimsical: [
     'whimsical_', 'playful_', 'cute_',
