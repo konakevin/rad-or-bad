@@ -1,9 +1,7 @@
+// AUTO-GENERATED from lib/recipe/ modules — keep in sync
+
 /**
  * Recipe Engine — DEPLOY COPY for Supabase Edge Functions (Deno runtime).
- * SOURCE OF TRUTH: lib/recipeEngine.ts
- * Keep in sync: after modifying lib/recipeEngine.ts, copy it here and fix the imports.
- *
- * Translates a user's recipe into layered prompt constraints.
  *
  * Every attribute the user picks MUST change the output. If it doesn't reach
  * the prompt, it shouldn't be in the onboarding.
@@ -18,8 +16,9 @@
 import type { Recipe } from './recipe.ts';
 import { DEFAULT_RECIPE } from './recipe.ts';
 
-// ── TECHNIQUE: Medium Pool ──────────────────────────────────────────────────
-// Tagged with axes so the engine filters by rolled values.
+// ═══════════════════════════════════════════════════════════════════════════════
+// Types (from lib/recipe/types.ts)
+// ═══════════════════════════════════════════════════════════════════════════════
 
 interface TaggedOption {
   text: string;
@@ -27,6 +26,93 @@ interface TaggedOption {
     Record<'realism' | 'complexity' | 'energy' | 'color_warmth' | 'brightness', 'high' | 'low'>
   >;
 }
+
+export interface PromptInput {
+  // TECHNIQUE layer
+  medium: string;
+  colorKeywords: string;
+  weirdnessModifier: string;
+  scaleModifier: string;
+  // SUBJECT layer
+  interests: string[];
+  action: string;
+  sceneType: string;
+  spiritCompanion: string | null;
+  spiritAppears: boolean;
+  dreamSubject: string;
+  // WORLD layer
+  eraKeywords: string;
+  settingKeywords: string;
+  // ATMOSPHERE layer
+  mood: string;
+  lighting: string;
+  personalityTags: string[];
+  sceneAtmosphere: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Utils (from lib/recipe/utils.ts)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function pick<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function pickWithChaos<T>(preferred: T[], allOptions: T[], chaos: number): T {
+  // chaos 0 = always pick from preferred; chaos 1 = 50/50 preferred vs random
+  // Small preferred sets (1-2 items) get a variety bonus to avoid monotony
+  const varietyBonus = preferred.length <= 2 ? 0.15 : 0;
+  if (preferred.length === 0 || Math.random() < chaos * 0.5 + varietyBonus) {
+    return pick(allOptions);
+  }
+  return pick(preferred);
+}
+
+function rollAxis(value: number): 'high' | 'low' {
+  return Math.random() < value ? 'high' : 'low';
+}
+
+function getModifierByValue(modifiers: string[], value: number): string {
+  const index = Math.min(modifiers.length - 1, Math.floor(value * modifiers.length));
+  return modifiers[index];
+}
+
+function filterPool(
+  pool: TaggedOption[],
+  rolledAxes: Record<string, 'high' | 'low'>,
+  chaos: number = 0.5
+): string {
+  // Score everything first — we use the scores for both normal and wildcard picks
+  const scored = pool.map((opt) => {
+    let score = 0;
+    if (opt.axes) {
+      for (const [axis, val] of Object.entries(opt.axes)) {
+        if (rolledAxes[axis] === val) score += 1;
+        else score -= 0.5;
+      }
+    }
+    return { text: opt.text, score };
+  });
+  scored.sort((a, b) => b.score - a.score);
+
+  // Wildcard chance scales with chaos: 10% at chaos=0, 40% at chaos=1
+  if (Math.random() < 0.1 + chaos * 0.3) {
+    // High chaos (>=0.5): full random from entire pool — anything goes
+    // Low chaos (<0.5): pick from top half — surprising but won't clash
+    const wildcardPool = chaos >= 0.5 ? scored : scored.slice(0, Math.ceil(scored.length / 2));
+    return pick(wildcardPool).text;
+  }
+
+  // Normal pick: top 15 scorers — wide enough for real variety across 90+ mediums
+  return pick(scored.slice(0, 15)).text;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Pools (from lib/recipe/pools.ts)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ── TECHNIQUE: Medium Pool ──────────────────────────────────────────────────
+// Tagged with axes so the engine filters by rolled values.
 
 const MEDIUM_POOL: TaggedOption[] = [
   {
@@ -108,8 +194,12 @@ const MEDIUM_POOL: TaggedOption[] = [
     axes: { realism: 'low', energy: 'high' },
   },
   {
-    text: 'cross-stitch embroidery on fabric, pixel grid texture',
+    text: 'cross-stitch embroidery on fabric, every element stitched in thread, visible grid texture, framed in a hoop',
     axes: { realism: 'low', complexity: 'low' },
+  },
+  {
+    text: 'everything is shiny molded plastic, like toys in a playset — glossy surfaces, seam lines, injection mold marks',
+    axes: { realism: 'low', complexity: 'low', brightness: 'high', color_warmth: 'high' },
   },
   {
     text: 'isometric pixel art, retro game aesthetic, crisp edges',
@@ -117,7 +207,7 @@ const MEDIUM_POOL: TaggedOption[] = [
   },
   // ── Additional styles for variety ──
   {
-    text: 'LEGO brick diorama, plastic minifigures, snap-together studs visible',
+    text: 'entire world built from LEGO bricks, everything is LEGO — ground, sky, characters, trees, water — plastic studs visible everywhere',
     axes: {
       realism: 'low',
       complexity: 'low',
@@ -125,6 +215,10 @@ const MEDIUM_POOL: TaggedOption[] = [
       energy: 'low',
       color_warmth: 'high',
     },
+  },
+  {
+    text: 'LEGO minifigure in a realistic world, tiny plastic character in a real environment',
+    axes: { realism: 'high', complexity: 'low', brightness: 'high', energy: 'low' },
   },
   {
     text: '8-bit pixel art, NES color palette, chunky pixels, retro gaming',
@@ -147,6 +241,10 @@ const MEDIUM_POOL: TaggedOption[] = [
     axes: { realism: 'low', complexity: 'low', color_warmth: 'high' },
   },
   {
+    text: '1960s Pan Am airline advertisement illustration, glamorous jet-age optimism, bold colors',
+    axes: { realism: 'low', brightness: 'high', color_warmth: 'high', energy: 'low' },
+  },
+  {
     text: 'dreamy soft-focus film photography, 35mm grain, light leaks, golden tones',
     axes: { realism: 'high', brightness: 'high', color_warmth: 'high' },
   },
@@ -159,6 +257,18 @@ const MEDIUM_POOL: TaggedOption[] = [
     axes: { realism: 'low', brightness: 'high', energy: 'low' },
   },
   {
+    text: 'Muppet-style felt puppet world, fuzzy textures, googly eyes, Jim Henson whimsy',
+    axes: { realism: 'low', brightness: 'high', energy: 'high', color_warmth: 'high' },
+  },
+  {
+    text: 'LittleBigPlanet craft world, knitted Sackboy characters, cardboard and sticker scenery, buttons and zippers',
+    axes: { realism: 'low', brightness: 'high', energy: 'low', complexity: 'low' },
+  },
+  {
+    text: 'Funko Pop vinyl figure style, oversized head, tiny body, glossy plastic',
+    axes: { realism: 'low', complexity: 'low', brightness: 'high', energy: 'low' },
+  },
+  {
     text: 'mosaic tile artwork, small colorful square tiles, ancient Roman style',
     axes: { realism: 'low', complexity: 'high', color_warmth: 'high' },
   },
@@ -169,6 +279,14 @@ const MEDIUM_POOL: TaggedOption[] = [
   {
     text: 'cyberpunk neon cityscape style, rain-slicked surfaces, holographic ads',
     axes: { realism: 'high', brightness: 'low', energy: 'high' },
+  },
+  {
+    text: 'Spider-Verse animation style, mixed media, comic dots, paint splatters, dynamic angles',
+    axes: { realism: 'low', energy: 'high', brightness: 'high', complexity: 'high' },
+  },
+  {
+    text: 'Tron digital world, glowing neon lines on black, light trails, geometric',
+    axes: { realism: 'low', brightness: 'low', energy: 'high', complexity: 'low' },
   },
   {
     text: "gouache painting, thick opaque paint, matte finish, children's book illustration",
@@ -346,6 +464,141 @@ const MEDIUM_POOL: TaggedOption[] = [
     text: 'Bob Ross happy little trees, soft landscape, calm mountains, cabin',
     axes: { realism: 'low', energy: 'low', color_warmth: 'high' },
   },
+  // Craft & puppet styles
+  {
+    text: 'Rankin/Bass stop-motion, classic Christmas special, felt snow and glitter',
+    axes: { realism: 'low', brightness: 'high', color_warmth: 'high', energy: 'low' },
+  },
+  {
+    text: 'Aardman claymation, Wallace & Gromit smooth clay, expressive faces',
+    axes: { realism: 'low', brightness: 'high', energy: 'low', color_warmth: 'high' },
+  },
+  {
+    text: 'Laika stop-motion, Coraline/Kubo style, dark handcrafted beauty',
+    axes: { realism: 'low', brightness: 'low', complexity: 'high', energy: 'high' },
+  },
+  // Traditional & fine art
+  {
+    text: 'golden age storybook illustration, Beatrix Potter watercolor, gentle linework',
+    axes: { realism: 'low', brightness: 'high', energy: 'low', color_warmth: 'high' },
+  },
+  {
+    text: 'marble sculpture, Michelangelo carved stone, dramatic form',
+    axes: { realism: 'high', complexity: 'high', energy: 'high', brightness: 'high' },
+  },
+  {
+    text: 'charcoal drawing on textured paper, smudged dramatic shadows',
+    axes: { realism: 'high', brightness: 'low', complexity: 'low', energy: 'high' },
+  },
+  {
+    text: 'tarot card illustration, ornate gold borders, mystical symbolism',
+    axes: { realism: 'low', complexity: 'high', brightness: 'low', energy: 'low' },
+  },
+  // Retro & pop
+  {
+    text: 'blacklight poster, psychedelic velvet colors glowing in the dark',
+    axes: { realism: 'low', brightness: 'low', energy: 'high', color_warmth: 'high' },
+  },
+  {
+    text: 'vintage newspaper comic strip, Ben-Day dots, speech bubbles, Calvin & Hobbes warmth',
+    axes: { realism: 'low', complexity: 'low', energy: 'low', color_warmth: 'high' },
+  },
+  {
+    text: "children's chalk drawing on sidewalk, colorful and wobbly, puddle reflections",
+    axes: { realism: 'low', complexity: 'low', brightness: 'high', energy: 'low' },
+  },
+  {
+    text: 'Looney Tunes cartoon, exaggerated squash and stretch, painted backgrounds, slapstick energy',
+    axes: { realism: 'low', energy: 'high', brightness: 'high', color_warmth: 'high' },
+  },
+  {
+    text: '1920s Steamboat Willie style, black and white rubber hose animation, simple shapes',
+    axes: { realism: 'low', complexity: 'low', brightness: 'low', energy: 'high' },
+  },
+  // Art movements
+  {
+    text: 'pointillism, entire image made of tiny colored dots, Seurat style',
+    axes: { realism: 'low', complexity: 'high', energy: 'low', brightness: 'high' },
+  },
+  {
+    text: 'Mondrian De Stijl, bold black grid lines, primary color blocks, geometric abstraction',
+    axes: { realism: 'low', complexity: 'low', energy: 'low', brightness: 'high' },
+  },
+  {
+    text: 'Bauhaus design, clean geometric shapes, primary colors, functional minimalism',
+    axes: { realism: 'low', complexity: 'low', energy: 'low', brightness: 'high' },
+  },
+  {
+    text: 'Soviet Constructivist propaganda poster, bold red and black, angular typography, dramatic composition',
+    axes: { realism: 'low', energy: 'high', brightness: 'low', complexity: 'low' },
+  },
+  {
+    text: 'Art Brut outsider art, raw untrained style, intense emotion, unconventional materials',
+    axes: { realism: 'low', energy: 'high', complexity: 'low', brightness: 'high' },
+  },
+  // Modern aesthetics
+  {
+    text: 'cottagecore aesthetic, wildflowers, linen, honey jars, soft pastoral warmth',
+    axes: { realism: 'high', energy: 'low', brightness: 'high', color_warmth: 'high' },
+  },
+  {
+    text: 'dark academia aesthetic, leather-bound books, candlelit libraries, autumn tones',
+    axes: { realism: 'high', energy: 'low', brightness: 'low', color_warmth: 'high' },
+  },
+  {
+    text: 'solarpunk, lush green futurism, solar panels on organic architecture, optimistic sci-fi',
+    axes: { realism: 'high', energy: 'low', brightness: 'high', color_warmth: 'high' },
+  },
+  {
+    text: 'vaporwave aesthetic, pink and cyan gradients, Greek statues, Windows 95, surreal consumerism',
+    axes: { realism: 'low', energy: 'low', brightness: 'high', color_warmth: 'low' },
+  },
+  // Music-inspired
+  {
+    text: 'lo-fi hip hop album cover, cozy room, warm lighting, anime-inspired chill',
+    axes: { realism: 'low', energy: 'low', brightness: 'low', color_warmth: 'high' },
+  },
+  {
+    text: 'heavy metal album cover, dark fantasy, skulls and fire, intricate detail',
+    axes: { realism: 'low', energy: 'high', brightness: 'low', complexity: 'high' },
+  },
+  {
+    text: 'Blue Note jazz album cover, bold graphic shapes, smoky atmosphere, cool tones',
+    axes: { realism: 'low', energy: 'low', brightness: 'low', color_warmth: 'low' },
+  },
+  // Hyperreal & psychedelic
+  {
+    text: 'hyperrealistic CGI render, impossibly sharp detail, every pore and fiber visible, uncanny perfection',
+    axes: { realism: 'high', complexity: 'high', brightness: 'high', energy: 'low' },
+  },
+  {
+    text: 'kaleidoscope vision, infinite symmetrical reflections, fractal patterns, shifting geometry',
+    axes: { realism: 'low', complexity: 'high', energy: 'high', brightness: 'high' },
+  },
+  {
+    text: 'DMT visionary art, machine elf entities, sacred geometry, infinite recursive patterns, overwhelming color',
+    axes: {
+      realism: 'low',
+      complexity: 'high',
+      energy: 'high',
+      brightness: 'high',
+      color_warmth: 'high',
+    },
+  },
+  {
+    text: 'acid trip visuals, melting surfaces, breathing walls, trails and halos, colors bleeding into each other',
+    axes: { realism: 'low', complexity: 'high', energy: 'high', brightness: 'high' },
+  },
+  {
+    text: 'Alex Grey visionary art, translucent bodies, energy meridians, cosmic consciousness',
+    axes: {
+      realism: 'low',
+      complexity: 'high',
+      energy: 'high',
+      brightness: 'high',
+      color_warmth: 'high',
+    },
+  },
 ];
 
 // ── ATMOSPHERE: Mood Pool ───────────────────────────────────────────────────
@@ -353,6 +606,10 @@ const MEDIUM_POOL: TaggedOption[] = [
 const MOOD_POOL: TaggedOption[] = [
   // ── Calm + Warm ──
   { text: 'cozy and intimate', axes: { energy: 'low', color_warmth: 'high', brightness: 'low' } },
+  {
+    text: 'hygge — warm and safe indoors while a storm rages outside, rain on glass, soft light',
+    axes: { energy: 'low', color_warmth: 'high', brightness: 'low', complexity: 'low' },
+  },
   { text: 'nostalgic and warm', axes: { color_warmth: 'high', energy: 'low', brightness: 'low' } },
   { text: 'tender and gentle', axes: { energy: 'low', color_warmth: 'high', brightness: 'high' } },
   {
@@ -555,6 +812,9 @@ const BONUS_ERAS = [
   '1980s synthwave, VHS tracking lines, palm trees, sunset gradient',
   'wild west frontier, dusty saloons, tumbleweeds, golden desert light',
   'roaring 1960s space age, atomic design, googie architecture',
+  'Pan Am jet age poster, glamorous air travel, exotic destinations, retro illustration',
+  '1950s Americana, chrome bumpers, sock hops, soda fountain',
+  '1960s mod London, Twiggy, op art, Carnaby Street, mini Cooper',
   'Y2K aesthetic, frosted glass, metallic textures, butterfly clips',
   'prehistoric, cave paintings, volcanoes, giant creatures',
   'steampunk Victorian, brass gears, airships, clockwork',
@@ -676,6 +936,14 @@ const BONUS_SETTINGS = [
   'Willy Wonka chocolate room, chocolate waterfall, edible everything',
   'NeverEnding Story Falkor flying through clouds, Ivory Tower in distance',
   'Dark Crystal world, Aughra observatory, crystal shard glowing',
+  'Muppet Theater backstage, Kermit at the curtain, felt chaos everywhere',
+  'LittleBigPlanet level, cardboard platforms, sticker decorations, yarn and buttons',
+  'Land Before Time Great Valley, lush ferns, gentle dinosaurs, golden sunset',
+  'a library where the books whisper and pages flutter on their own',
+  'a night market floating on lantern-lit boats',
+  'inside a giant clockwork mechanism, gears turning slowly',
+  'a greenhouse on the moon, plants growing in low gravity',
+  'an abandoned amusement park being reclaimed by nature',
   'Princess Bride cliffs of insanity, fire swamp, miracle Max cottage',
   'Tron digital grid, glowing blue lines, light cycles',
   'Pandora bioluminescent forest, floating mountains, six-legged creatures',
@@ -882,7 +1150,7 @@ const SCENE_TYPES = [
 // When an interest is sampled, sometimes replace it with a specific pop culture flavor
 const INTEREST_FLAVORS: Record<string, string[]> = {
   gaming: [
-    'Pokémon-style',
+    'Pok\u00e9mon-style',
     'Minecraft blocky',
     'retro arcade',
     'Nintendo',
@@ -894,6 +1162,7 @@ const INTEREST_FLAVORS: Record<string, string[]> = {
     'Pac-Man ghost',
     'Tetris block',
     'Kirby',
+    'LittleBigPlanet Sackboy craft world, knitted and stitched',
   ],
   movies: [
     'Star Wars',
@@ -930,16 +1199,45 @@ const INTEREST_FLAVORS: Record<string, string[]> = {
     "Howl's Moving Castle",
     'Akira neon Tokyo',
     'Ghost in the Shell',
+    'Muppet Show stage, felt characters, backstage chaos',
+    'The Dark Crystal puppetry, mystical Gelflings',
+    'Labyrinth goblin city, Jim Henson puppets',
+    'Fraggle Rock underground, Doozers building',
+    'Land Before Time, Littlefoot and friends, Great Valley, lush prehistoric',
+    'Secret of NIMH, magical rose, brave mice',
+    'Coraline other world, button eyes, too-perfect reality',
+    'Kubo and the Two Strings, origami magic',
+    'Wallace & Gromit, cozy English village, mad inventions',
+    'Fantasia, Disney musical dreamscape',
+    'Who Framed Roger Rabbit, cartoon meets real world',
+    "Pan's Labyrinth, dark fairy tale",
+    'Edward Scissorhands, pastel suburbia meets gothic',
+    'The Iron Giant, gentle metal giant',
+    'Interstellar, wormhole, tesseract, cosmic awe',
+    'ParaNorman, spooky small town, ghosts and misfits',
+    // Retro & classic pop culture
+    'Twilight Zone, black and white surreal, uncanny ordinary',
+    'I Love Lucy, 1950s sitcom, slapstick warmth',
+    'Alfred Hitchcock suspense, dramatic shadows, Vertigo spiral',
+    'James Bond 60s spy style, tuxedo, gadgets, martini',
+    "Breakfast at Tiffany's, little black dress, rain-soaked New York",
+    '2001: A Space Odyssey, monolith, stark white space station',
+    'Planet of the Apes, Statue of Liberty reveal',
+    'Yellow Submarine, Beatles psychedelic cartoon',
+    'Mary Poppins, chalk drawing world, chimney sweep rooftops',
+    'Wizard of Oz, yellow brick road, emerald city, ruby slippers',
+    "Singin' in the Rain, lamppost, puddle splashing, pure joy",
     // Marvel & Comics
     'Marvel superhero landing pose',
     'Spider-Man swinging between buildings',
+    'Spider-Verse multiverse, mixed animation styles colliding, glitch effects',
     'Avengers assembled, dramatic skyline',
     'Wakanda forever, vibranium tech',
     'Gotham rooftop, bat signal',
     'X-Men danger room training',
     'comic book POW ZAP action panel',
     'graphic novel noir detective',
-    'Día de los Muertos sugar skull celebration, marigolds, candles',
+    'D\u00eda de los Muertos sugar skull celebration, marigolds, candles',
     'Stranger Things upside-down, vines, flickering lights',
     'Game of Thrones iron throne room',
     'Squid Game playground',
@@ -1007,7 +1305,7 @@ const INTEREST_FLAVORS: Record<string, string[]> = {
     'anime rooftop confession scene',
     'manga panel layout',
     'Sailor Moon transformation',
-    'Pokémon gym battle',
+    'Pok\u00e9mon gym battle',
     'Studio Ghibli countryside',
     'Jujutsu Kaisen cursed energy',
     'Demon Slayer water breathing',
@@ -1308,9 +1606,31 @@ const DREAM_SUBJECTS = [
   'an enormous clock tower',
   'a tiny boat on a vast ocean',
   'a single candle in infinite darkness',
+  // Puppet & craft characters
+  'a fuzzy felt Muppet-style creature with googly eyes and a wide grin',
+  'a knitted Sackboy-style character exploring a cardboard world',
+  'a gentle long-necked dinosaur in a lush prehistoric valley',
+  'a Funko Pop figure with oversized glossy head and tiny body',
+  'Falkor the luck dragon soaring through clouds, NeverEnding Story',
+  // Insects & botanical
+  'a jewel-colored beetle on a mossy log',
+  'a praying mantis perfectly still among flowers',
+  'a dragonfly with iridescent wings hovering over water',
+  'a carnivorous plant with a tiny world inside its mouth',
+  'an ancient twisted bonsai tree',
+  'a single mushroom glowing in the dark',
+  // Weather as subject
+  'a tornado made of something unexpected',
+  'a single lightning bolt frozen in time',
+  'a cloud formation that looks like something alive',
+  'a Wallace & Gromit-style inventor tinkering with mad contraptions',
+  'a Totoro-sized gentle forest spirit',
+  'a brass automaton winding down in a garden',
+  "a lighthouse keeper's ghost still tending the light",
+  'a whale swimming through the clouds',
+  'a train that runs on starlight between floating islands',
   // Stylized characters (illustrated, not photorealistic faces)
-  'a tiny cloaked wanderer seen from far away',
-  'a silhouette standing at the edge of something vast',
+  'a tiny cloaked wanderer exploring a strange place',
   'a small explorer with a glowing backpack',
   'a masked spirit dancer',
   'a robot child discovering something for the first time',
@@ -1356,95 +1676,73 @@ const ALWAYS_EXPAND = new Set([
   'space',
 ]);
 
-function expandInterest(interest: string): string {
-  const flavors = INTEREST_FLAVORS[interest];
-  if (!flavors) return interest;
-  // Always expand vague interests; 40% chance for concrete ones
-  if (ALWAYS_EXPAND.has(interest) || Math.random() < 0.4) {
-    return pick(flavors);
-  }
-  return interest;
-}
+// ── COMPOSITIONS: Random framing directives ───────────────────────────────
 
-// ── Engine Utilities ────────────────────────────────────────────────────────
+const COMPOSITIONS = [
+  // Angles
+  "Bird's eye view looking straight down.",
+  'Viewed from below looking up at the sky.',
+  "Worm's eye view, everything towers above.",
+  'Dutch angle, slightly tilted and off-kilter.',
+  'Over the shoulder, peeking into the scene.',
+  'Overhead satellite view, like a map.',
+  'Shot from inside something looking out.',
 
-function pick<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
+  // Cropping & framing
+  'Compose as if cropping into a detail of a much larger painting.',
+  'Extreme close-up on one tiny fascinating detail.',
+  'Zoomed way out, subject is a tiny speck in a vast world.',
+  'Off-center composition, lots of empty space on one side.',
+  'Subject cut in half by the frame edge, only partially visible.',
+  'Tightly framed, everything pressed to the edges.',
 
-function pickWithChaos<T>(preferred: T[], allOptions: T[], chaos: number): T {
-  // chaos 0 = always pick from preferred; chaos 1 = 50/50 preferred vs random
-  // Small preferred sets (1-2 items) get a variety bonus to avoid monotony
-  const varietyBonus = preferred.length <= 2 ? 0.15 : 0;
-  if (preferred.length === 0 || Math.random() < chaos * 0.5 + varietyBonus) {
-    return pick(allOptions);
-  }
-  return pick(preferred);
-}
+  // Perspectives
+  'Fisheye lens distortion, everything curves outward.',
+  'Isometric angle, like a cozy video game.',
+  'Cross-section cutaway, like a dollhouse showing inside and outside.',
+  'Reflected in still water, upside-down mirror world.',
+  'Seen through frosted glass, blurry and dreamlike.',
+  'Peering through a keyhole or small opening.',
+  'Multiple overlapping transparent layers.',
 
-function rollAxis(value: number): 'high' | 'low' {
-  return Math.random() < value ? 'high' : 'low';
-}
+  // Layouts
+  'Flat pattern filling the entire frame, like wallpaper, no depth.',
+  'Scattered elements floating in space, no gravity, no horizon.',
+  'Spiral composition, everything swirls toward the center.',
+  'Symmetrical mandala-like arrangement.',
+  'Split screen, two different worlds side by side.',
+  'Collage of different scenes merged into one image.',
+  'Tiled repeating pattern with subtle variations.',
 
-function getModifierByValue(modifiers: string[], value: number): string {
-  const index = Math.min(modifiers.length - 1, Math.floor(value * modifiers.length));
-  return modifiers[index];
-}
+  // Scale play
+  'Miniature world inside something ordinary, like a teacup or book.',
+  'Giant object in a tiny world, scale is wrong.',
+  'Russian nesting dolls, scene within scene within scene.',
+  'Tilt-shift effect making real things look like tiny models.',
 
-function filterPool(
-  pool: TaggedOption[],
-  rolledAxes: Record<string, 'high' | 'low'>,
-  chaos: number = 0.5
-): string {
-  // Score everything first — we use the scores for both normal and wildcard picks
-  const scored = pool.map((opt) => {
-    let score = 0;
-    if (opt.axes) {
-      for (const [axis, val] of Object.entries(opt.axes)) {
-        if (rolledAxes[axis] === val) score += 1;
-        else score -= 0.5;
-      }
-    }
-    return { text: opt.text, score };
-  });
-  scored.sort((a, b) => b.score - a.score);
+  // Micro compositions — tiny intimate spaces
+  'Tiny scene happening on a windowsill.',
+  'Miniature world inside a glass jar.',
+  'Scene unfolding on a cluttered desk among pencils and coffee cups.',
+  'Happening inside a dresser drawer among forgotten things.',
+  'Tiny creatures living in the cracks of a sidewalk.',
+  'A whole world inside a bedroom snow globe.',
+  'Scene tucked into a bookshelf between old books.',
+  'Macro view of something magical happening on a leaf.',
+  'An entire adventure on a kitchen table.',
+  'Hidden world underneath a bed, dust bunnies and lost toys.',
+  'Scene inside a coat pocket, lint and coins.',
+  'Mushroom village at the base of a tree trunk.',
+  'Life inside a raindrop on a window.',
+  'Tiny civilization in a potted plant on a nightstand.',
+  'A secret garden inside a cracked teapot.',
 
-  // Wildcard chance scales with chaos: 10% at chaos=0, 40% at chaos=1
-  if (Math.random() < 0.1 + chaos * 0.3) {
-    // High chaos (>=0.5): full random from entire pool — anything goes
-    // Low chaos (<0.5): pick from top half — surprising but won't clash
-    const wildcardPool = chaos >= 0.5 ? scored : scored.slice(0, Math.ceil(scored.length / 2));
-    return pick(wildcardPool).text;
-  }
-
-  // Normal pick: top 8 scorers — tight enough to filter, wide enough for variety
-  return pick(scored.slice(0, 8)).text;
-}
-
-// ── Public Interface ────────────────────────────────────────────────────────
-
-export interface PromptInput {
-  // TECHNIQUE layer
-  medium: string;
-  colorKeywords: string;
-  weirdnessModifier: string;
-  scaleModifier: string;
-  // SUBJECT layer
-  interests: string[];
-  action: string;
-  sceneType: string;
-  spiritCompanion: string | null;
-  spiritAppears: boolean;
-  dreamSubject: string;
-  // WORLD layer
-  eraKeywords: string;
-  settingKeywords: string;
-  // ATMOSPHERE layer
-  mood: string;
-  lighting: string;
-  personalityTags: string[];
-  sceneAtmosphere: string;
-}
+  // No directive — pure AI freedom
+  '',
+  '',
+  '',
+  '',
+];
 
 // ── Derive complexity from user choices (no UI slider needed) ──────────────
 // High-complexity signals: detailed/ornate/epic interests and moods
@@ -1482,6 +1780,20 @@ const LOW_COMPLEXITY_SIGNALS = new Set([
   'modern',
   'retro',
 ]);
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Builder (from lib/recipe/builder.ts)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function expandInterest(interest: string): string {
+  const flavors = INTEREST_FLAVORS[interest];
+  if (!flavors) return interest;
+  // Always expand vague interests; 40% chance for concrete ones
+  if (ALWAYS_EXPAND.has(interest) || Math.random() < 0.4) {
+    return pick(flavors);
+  }
+  return interest;
+}
 
 function deriveComplexity(recipe: Recipe): number {
   const allChoices = [
@@ -1614,74 +1926,6 @@ export function buildPromptInput(recipe: Recipe): PromptInput {
   };
 }
 
-// ── COMPOSITIONS: Random framing directives ───────────────────────────────
-
-const COMPOSITIONS = [
-  // Angles
-  "Bird's eye view looking straight down.",
-  'Viewed from below looking up at the sky.',
-  "Worm's eye view, everything towers above.",
-  'Dutch angle, slightly tilted and off-kilter.',
-  'Over the shoulder, peeking into the scene.',
-  'Overhead satellite view, like a map.',
-  'Shot from inside something looking out.',
-
-  // Cropping & framing
-  'Compose as if cropping into a detail of a much larger painting.',
-  'Extreme close-up on one tiny fascinating detail.',
-  'Zoomed way out, subject is a tiny speck in a vast world.',
-  'Off-center composition, lots of empty space on one side.',
-  'Subject cut in half by the frame edge, only partially visible.',
-  'Tightly framed, everything pressed to the edges.',
-
-  // Perspectives
-  'Fisheye lens distortion, everything curves outward.',
-  'Isometric angle, like a cozy video game.',
-  'Cross-section cutaway, like a dollhouse showing inside and outside.',
-  'Reflected in still water, upside-down mirror world.',
-  'Seen through frosted glass, blurry and dreamlike.',
-  'Peering through a keyhole or small opening.',
-  'Multiple overlapping transparent layers.',
-
-  // Layouts
-  'Flat pattern filling the entire frame, like wallpaper, no depth.',
-  'Scattered elements floating in space, no gravity, no horizon.',
-  'Spiral composition, everything swirls toward the center.',
-  'Symmetrical mandala-like arrangement.',
-  'Split screen, two different worlds side by side.',
-  'Collage of different scenes merged into one image.',
-  'Tiled repeating pattern with subtle variations.',
-
-  // Scale play
-  'Miniature world inside something ordinary, like a teacup or book.',
-  'Giant object in a tiny world, scale is wrong.',
-  'Russian nesting dolls, scene within scene within scene.',
-  'Tilt-shift effect making real things look like tiny models.',
-
-  // Micro compositions — tiny intimate spaces
-  'Tiny scene happening on a windowsill.',
-  'Miniature world inside a glass jar.',
-  'Scene unfolding on a cluttered desk among pencils and coffee cups.',
-  'Happening inside a dresser drawer among forgotten things.',
-  'Tiny creatures living in the cracks of a sidewalk.',
-  'A whole world inside a bedroom snow globe.',
-  'Scene tucked into a bookshelf between old books.',
-  'Macro view of something magical happening on a leaf.',
-  'An entire adventure on a kitchen table.',
-  'Hidden world underneath a bed, dust bunnies and lost toys.',
-  'Scene inside a coat pocket, lint and coins.',
-  'Mushroom village at the base of a tree trunk.',
-  'Life inside a raindrop on a window.',
-  'Tiny civilization in a potted plant on a nightstand.',
-  'A secret garden inside a cracked teapot.',
-
-  // No directive — pure AI freedom
-  '',
-  '',
-  '',
-  '',
-];
-
 /**
  * Build a lean fallback prompt (used ONLY when Haiku is unavailable).
  * Picks the 5 most impactful elements — medium, subject, setting, mood, framing.
@@ -1763,6 +2007,8 @@ RULES:
 - Attractive, sexy, or glamorous characters welcome — no nudity or explicit content
 - Be concrete and visual, not poetic or abstract
 - The result should make someone say "that's MY dream bot — it gets me"
+- AVOID AI ART CLICHÉS: no "figure standing with back to camera gazing at vast landscape", no "lone silhouette on cliff edge", no "person looking up at giant glowing thing". These are overused. Be more creative with composition.
+- LEAN INTO THE ART STYLE: if the medium is cartoon, make it LOOK like a cartoon — exaggerated, flat colors, bold outlines. Don't let it default to photorealistic with a filter. The medium should fundamentally change HOW the image looks.
 
 Output ONLY the prompt, nothing else.`;
 }

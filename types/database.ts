@@ -946,6 +946,7 @@ export type Database = {
           email: string;
           has_ai_recipe: boolean;
           id: string;
+          last_active_at: string | null;
           needs_rank_recalc: boolean;
           preferred_categories: string[] | null;
           pro_subscription: boolean;
@@ -961,6 +962,7 @@ export type Database = {
           email: string;
           has_ai_recipe?: boolean;
           id: string;
+          last_active_at?: string | null;
           needs_rank_recalc?: boolean;
           preferred_categories?: string[] | null;
           pro_subscription?: boolean;
@@ -976,6 +978,7 @@ export type Database = {
           email?: string;
           has_ai_recipe?: boolean;
           id?: string;
+          last_active_at?: string | null;
           needs_rank_recalc?: boolean;
           preferred_categories?: string[] | null;
           pro_subscription?: boolean;

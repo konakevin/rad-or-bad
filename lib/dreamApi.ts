@@ -41,15 +41,17 @@ interface GenerateDreamResult {
  */
 export async function generateDream(opts: GenerateDreamOpts): Promise<GenerateDreamResult> {
   const t0 = Date.now();
-  console.log(
-    `[dreamApi] Invoking generate-dream (mode=${opts.mode}, persist=${opts.persist ?? false}, skip_enhance=${opts.skip_enhance ?? false})...`
-  );
+  if (__DEV__) {
+    console.log(
+      `[dreamApi] Invoking generate-dream (mode=${opts.mode}, persist=${opts.persist ?? false}, skip_enhance=${opts.skip_enhance ?? false})...`
+    );
+  }
   const { data, error } = await supabase.functions.invoke('generate-dream', {
     body: opts,
   });
 
   if (error) {
-    console.error('[dreamApi] Edge Function error:', JSON.stringify(error));
+    if (__DEV__) console.error('[dreamApi] Edge Function error:', JSON.stringify(error));
     // Try to extract the error message from various formats
     let msg: string;
     if (typeof error === 'object' && error !== null) {
@@ -71,7 +73,9 @@ export async function generateDream(opts: GenerateDreamOpts): Promise<GenerateDr
     throw new Error(msg);
   }
 
-  console.log(`[dreamApi] Response in ${Date.now() - t0}ms:`, JSON.stringify(data).slice(0, 200));
+  if (__DEV__) {
+    console.log(`[dreamApi] Response in ${Date.now() - t0}ms:`, JSON.stringify(data).slice(0, 200));
+  }
 
   if (!data || !data.image_url) {
     throw new Error(data?.error ?? 'No image returned from server');

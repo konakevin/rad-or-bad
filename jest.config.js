@@ -3,6 +3,9 @@ module.exports = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
   },
+  globals: {
+    __DEV__: true,
+  },
   transform: {
     '^.+\\.(ts|tsx|js|jsx)$': ['babel-jest', { caller: { name: 'metro' } }],
   },

@@ -125,8 +125,10 @@ function RealtimeSubscriber() {
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'uploads', filter: `user_id=eq.${user.id}` },
         () => {
-          // New dream generated for this user — refresh feed
-          queryClient.invalidateQueries({ queryKey: ['dreamFeed'] });
+          // New dream generated for this user — refresh all feeds
+          queryClient.invalidateQueries({ queryKey: ['feed'] });
+          queryClient.invalidateQueries({ queryKey: ['friendsFeed'] });
+          queryClient.invalidateQueries({ queryKey: ['followingFeed'] });
           queryClient.invalidateQueries({ queryKey: ['userPosts'] });
         }
       )
@@ -145,10 +147,11 @@ function DataPrefetcher() {
   const activityLogged = useRef(false);
 
   // Track last_active_at for nightly dream eligibility (once per session)
+  // Must write to public.users (not auth.users) — nightly-dreams queries this table
   useEffect(() => {
     if (!user || activityLogged.current) return;
     activityLogged.current = true;
-    supabase.auth.updateUser({ data: { last_active_at: new Date().toISOString() } });
+    supabase.from('users').update({ last_active_at: new Date().toISOString() }).eq('id', user.id);
   }, [user?.id]);
 
   // Refresh all data when app returns from background after 5+ minutes
