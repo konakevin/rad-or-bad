@@ -79,6 +79,9 @@ const MOOD_AXIS_PROFILES: Record<string, { energy: number; brightness: number; w
   whimsical: { energy: 0.5, brightness: 0.7, warmth: 0.6 },
   dramatic: { energy: 0.8, brightness: 0.3, warmth: 0.4 },
   peaceful: { energy: 0.1, brightness: 0.6, warmth: 0.5 },
+  romantic: { energy: 0.3, brightness: 0.7, warmth: 0.8 },
+  spooky: { energy: 0.5, brightness: 0.2, warmth: 0.2 },
+  euphoric: { energy: 0.9, brightness: 0.9, warmth: 0.6 },
 };
 
 export function buildPromptInput(recipe: Recipe, archetype?: DreamArchetype): PromptInput {

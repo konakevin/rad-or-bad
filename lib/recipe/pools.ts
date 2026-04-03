@@ -894,6 +894,13 @@ export const SCENE_ATMOSPHERE_KEYWORDS: Record<string, string> = {
   starry_midnight: 'clear night sky full of stars, milky way, deep blue darkness',
   golden_hour: 'golden hour warm light, long shadows, everything glowing amber',
   aurora_night: 'northern lights in sky, green and purple aurora, snow-covered ground',
+  moonlit: 'bright full moon, silver light on everything, sharp shadows, cool blue glow',
+  autumn_leaves: 'fiery red orange gold leaves falling, crisp air, warm afternoon light through branches',
+  cherry_blossom: 'pink cherry blossom petals drifting like snow, soft spring light, gentle breeze',
+  sunset_fire: 'dramatic sunset, sky on fire with reds purples and golds, silhouettes, last light',
+  overcast: 'soft overcast sky, diffused light with no shadows, cozy grey, gentle and even',
+  tropical_rain: 'warm tropical rain, steam rising from hot ground, lush green, humidity visible',
+  misty_forest: 'mystical mist weaving through trees, green and silver, dappled light, enchanted feeling',
 };
 
 // ── TECHNIQUE: Color palette keywords ───────────────────────────────────────

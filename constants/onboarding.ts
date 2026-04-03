@@ -199,6 +199,9 @@ export const MOOD_TILES: {
   { key: 'whimsical', label: 'Whimsical & Cute', icon: 'sparkles', energy: 0.5, brightness: 0.7, warmth: 0.6 },
   { key: 'dramatic', label: 'Dramatic & Bold', icon: 'flame', energy: 0.8, brightness: 0.3, warmth: 0.4 },
   { key: 'peaceful', label: 'Peaceful & Gentle', icon: 'leaf', energy: 0.1, brightness: 0.6, warmth: 0.5 },
+  { key: 'romantic', label: 'Romantic & Tender', icon: 'heart', energy: 0.3, brightness: 0.7, warmth: 0.8 },
+  { key: 'spooky', label: 'Spooky & Eerie', icon: 'skull', energy: 0.5, brightness: 0.2, warmth: 0.2 },
+  { key: 'euphoric', label: 'Euphoric & Electric', icon: 'flash', energy: 0.9, brightness: 0.9, warmth: 0.6 },
 ];
 
 /** Step 6: Scene atmosphere tiles */
@@ -211,6 +214,13 @@ export const SCENE_ATMOSPHERE_TILES: { key: SceneAtmosphere; label: string; icon
   { key: 'starry_midnight', label: 'Starry Midnight', icon: 'moon' },
   { key: 'golden_hour', label: 'Golden Hour', icon: 'sunny' },
   { key: 'aurora_night', label: 'Aurora Night', icon: 'sparkles' },
+  { key: 'moonlit', label: 'Moonlit', icon: 'moon' },
+  { key: 'autumn_leaves', label: 'Autumn Leaves', icon: 'leaf' },
+  { key: 'cherry_blossom', label: 'Cherry Blossoms', icon: 'flower' },
+  { key: 'sunset_fire', label: 'Fiery Sunset', icon: 'flame' },
+  { key: 'overcast', label: 'Overcast & Cozy', icon: 'cloudy' },
+  { key: 'tropical_rain', label: 'Tropical Downpour', icon: 'rainy' },
+  { key: 'misty_forest', label: 'Misty & Magical', icon: 'leaf' },
 ];
 
 /** Step 7: Color palette options */

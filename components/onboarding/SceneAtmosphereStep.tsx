@@ -16,8 +16,8 @@ export function SceneAtmosphereStep({ onNext, onBack }: Props) {
     <OnboardingTileScreen
       hideChrome
       stepNumber={6}
-      title="Set the scene"
-      subtitle="Pick the weather and time your dreams take place"
+      title="What's the weather?"
+      subtitle="Pick the skies and seasons of your dreams"
       tiles={SCENE_ATMOSPHERE_TILES}
       selected={atmospheres}
       onToggle={(key) => toggle(key as SceneAtmosphere)}

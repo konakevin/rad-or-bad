@@ -127,7 +127,14 @@ export type SceneAtmosphere =
   | 'stormy_twilight'
   | 'starry_midnight'
   | 'golden_hour'
-  | 'aurora_night';
+  | 'aurora_night'
+  | 'moonlit'
+  | 'autumn_leaves'
+  | 'cherry_blossom'
+  | 'sunset_fire'
+  | 'overcast'
+  | 'tropical_rain'
+  | 'misty_forest';
 
 /** Spirit companion — recurring motif in ~30% of images */
 export type SpiritCompanion =
