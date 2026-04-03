@@ -194,8 +194,8 @@ export function buildPromptInput(recipe: Recipe, archetype?: DreamArchetype): Pr
 
   // WORLD layer — sometimes swap in a wild bonus location/era for variety
   let eraKeywordsStr: string;
-  if (Math.random() < chaos * 0.3) {
-    // Bonus era — chaos-gated so adventurous users get more surprises
+  if (Math.random() < 0.15 + chaos * 0.3) {
+    // Bonus era — base 15% + chaos bonus, with 308 options there's tons of variety
     eraKeywordsStr = pick(BONUS_ERAS);
   } else {
     const allEras = Object.keys(ERA_KEYWORDS);
@@ -205,8 +205,8 @@ export function buildPromptInput(recipe: Recipe, archetype?: DreamArchetype): Pr
   }
 
   let settingKeywordsStr: string;
-  if (Math.random() < chaos * 0.3) {
-    // Bonus setting — pop culture / iconic locations
+  if (Math.random() < 0.15 + chaos * 0.3) {
+    // Bonus setting — base 15% + chaos bonus, with 308 options there's tons of variety
     settingKeywordsStr = pick(BONUS_SETTINGS);
   } else {
     const allSettings = Object.keys(SETTING_KEYWORDS);
@@ -333,7 +333,7 @@ RULES:
 - No nudity or explicit content
 - Be concrete and visual, not poetic or abstract
 - The result should make someone say "that's MY dream bot — it gets me"
-- AVOID AI ART CLICHÉS: no "figure standing with back to camera gazing at vast landscape", no "lone silhouette on cliff edge", no "person looking up at giant glowing thing". These are overused. Be more creative with composition.
+- NEVER show a character with their back to the viewer. Characters should ALWAYS face toward us or be shown from the side. No "figure gazing at landscape from behind", no "lone silhouette on cliff edge", no "person looking up at giant glowing thing". These are banned.
 - LEAN INTO THE ART STYLE: if the medium is cartoon, make it LOOK like a cartoon — exaggerated, flat colors, bold outlines. Don't let it default to photorealistic with a filter. The medium should fundamentally change HOW the image looks.
 - NEVER include text, words, letters, speech bubbles, signs with writing, or any readable text in the scene. Images only, no text.
 
