@@ -1478,12 +1478,41 @@ export const INTEREST_FLAVORS: Record<string, string[]> = {
     'kaleidoscope dimension',
   ],
   architecture: [
-    'impossible Escher staircase',
-    'art deco skyscraper',
-    'treehouse city',
-    'ice palace',
-    'underground bunker',
-    'futuristic greenhouse',
+    // Impossible & surreal
+    'a staircase that loops back on itself, going up and arriving where you started, one floor higher',
+    'a building with rooms that are bigger on the inside, each door opens to a space that shouldn\'t fit',
+    'a bridge made entirely of glass spanning a cloud-filled canyon, nothing visible holding it up',
+    'a tower so tall the top floors are above the clouds, frost on the windows, stars visible at noon',
+    // Ancient & monumental
+    'a pyramid being built, thousands of workers, ramps and pulleys, the scale is incomprehensible',
+    'a Roman colosseum at sunset, golden light on travertine, empty seats, ghosts of a crowd',
+    'a Mayan temple erupting from jungle canopy, roots and vines wrapping every carved stone face',
+    'Petra carved into rose-red cliffs, the Treasury appearing through a narrow canyon slot at dawn',
+    // Modern & iconic
+    'a Zaha Hadid building that looks like frozen liquid, curves that shouldn\'t be possible in concrete',
+    'a Brutalist concrete fortress softened by a rooftop garden, wildflowers cracking through every ledge',
+    'a glass skyscraper reflecting an entire sunset, the building disappearing into the sky it mirrors',
+    'a Frank Lloyd Wright house cantilevered over a waterfall, water running under the living room',
+    // Fantasy & dream
+    'a treehouse city connected by rope bridges and ziplines, lanterns in every tree, a whole civilization above the ground',
+    'an ice palace with walls you can see through, frozen waterfalls as columns, aurora light refracting through every surface',
+    'a library that spirals downward underground for fifty floors, each level a different century of books',
+    'a greenhouse the size of a cathedral, glass dome sweating with condensation, jungle inside, snow outside',
+    // Sacred & spiritual
+    'a cathedral with stained glass so vast the entire interior is painted in colored light',
+    'a Japanese torii gate standing alone in the ocean at sunrise, the path to it underwater',
+    'a mosque with geometric tile patterns so intricate they seem to move and breathe',
+    'a stone circle on a hilltop at solstice, the sun threading through a gap that was placed there 5000 years ago',
+    // Abandoned & reclaimed
+    'an abandoned Art Deco theater, velvet seats rotting, chandelier still hanging, pigeons in the balcony',
+    'a Soviet-era apartment block where every balcony has become a tiny jungle, laundry and plants competing for space',
+    'a train station with no trains, glass roof cracked, trees growing through the platform, beautiful decay',
+    'a swimming pool drained and covered in graffiti, skateboard marks on the walls, golden afternoon light',
+    // Futuristic
+    'a space elevator stretching from a tropical island into the stars, glass tube ascending forever',
+    'a floating city of interconnected pods above the ocean, each one a different color, connected by walkways',
+    'a solarpunk neighborhood where every building grows its own food, green walls, beehives on rooftops',
+    'an underwater dome city, fish swimming past apartment windows, coral growing on the exterior, blue light everywhere',
   ],
   fashion: [
     'haute couture aesthetic, fabric textures, elegant design',
