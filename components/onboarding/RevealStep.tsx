@@ -277,7 +277,27 @@ export function RevealStep({ onBack }: Props) {
           <Text style={s.centeredSub}>Tap below to see what it dreams up for you</Text>
           <TouchableOpacity
             style={[s.createButton, { alignSelf: 'stretch', marginTop: 8 }]}
-            onPress={() => generateImage()}
+            onPress={async () => {
+              // Save the recipe before generating the first dream
+              if (user) {
+                try {
+                  await supabase.from('user_recipes').upsert(
+                    {
+                      user_id: user.id,
+                      recipe: recipe as unknown as import('@/types/database').Json,
+                      onboarding_completed: true,
+                      ai_enabled: true,
+                      updated_at: new Date().toISOString(),
+                    },
+                    { onConflict: 'user_id' }
+                  );
+                  await supabase.from('users').update({ has_ai_recipe: true }).eq('id', user.id);
+                } catch {
+                  // Non-critical — will be saved on post
+                }
+              }
+              generateImage();
+            }}
             activeOpacity={0.7}
           >
             <Ionicons name="sparkles" size={20} color="#FFFFFF" />
@@ -383,42 +403,23 @@ export function RevealStep({ onBack }: Props) {
               <ActivityIndicator color="#FFFFFF" />
             ) : (
               <>
-                <Ionicons name="sparkles" size={20} color="#FFFFFF" />
-                <Text style={s.createButtonText}>Create My Dream Bot</Text>
+                <Ionicons name="cloud-upload" size={20} color="#FFFFFF" />
+                <Text style={s.createButtonText}>Post Your First Dream</Text>
               </>
             )}
           </TouchableOpacity>
 
-          <View style={s.secondaryRow}>
-            {canDreamAgain ? (
-              <TouchableOpacity
-                style={s.secondaryButton}
-                onPress={handleDreamAgain}
-                disabled={phase === 'creating' || phase === 'generating'}
-                activeOpacity={0.7}
-              >
-                <Ionicons name="refresh" size={16} color={colors.accent} />
-                <Text style={s.secondaryButtonText}>Dream Again ({dreamsRemaining})</Text>
-              </TouchableOpacity>
-            ) : dreams.length > 1 ? (
-              <View style={s.secondaryButton}>
-                <Ionicons name="swap-horizontal" size={16} color={colors.textSecondary} />
-                <Text style={[s.secondaryButtonText, { color: colors.textSecondary }]}>
-                  Swipe to browse
-                </Text>
-              </View>
-            ) : null}
-
+          {canDreamAgain && (
             <TouchableOpacity
-              style={s.secondaryButton}
-              onPress={onBack}
-              disabled={phase === 'creating'}
+              style={s.dreamAgainButton}
+              onPress={handleDreamAgain}
+              disabled={phase === 'creating' || phase === 'generating'}
               activeOpacity={0.7}
             >
-              <Ionicons name="arrow-back" size={16} color={colors.textSecondary} />
-              <Text style={[s.secondaryButtonText, { color: colors.textSecondary }]}>Go Back</Text>
+              <Ionicons name="refresh" size={18} color={colors.textPrimary} />
+              <Text style={s.dreamAgainButtonText}>Dream Again ({dreamsRemaining})</Text>
             </TouchableOpacity>
-          </View>
+          )}
         </View>
       )}
     </View>
@@ -533,7 +534,16 @@ const s = StyleSheet.create({
     elevation: 8,
   },
   createButtonText: { color: '#FFFFFF', fontSize: 18, fontWeight: '800' },
-  secondaryRow: { flexDirection: 'row', justifyContent: 'center', gap: 28 },
-  secondaryButton: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 8 },
-  secondaryButtonText: { color: colors.accent, fontSize: 14, fontWeight: '600' },
+  dreamAgainButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 14,
+    paddingVertical: 16,
+  },
+  dreamAgainButtonText: { color: colors.textPrimary, fontSize: 17, fontWeight: '700' },
 });
