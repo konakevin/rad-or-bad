@@ -1,0 +1,302 @@
+[
+  {
+    "profile": "Gamer Girl",
+    "dream": 1,
+    "mode": "archetype",
+    "archetype": "scifi_retro_spaceship_cozy",
+    "model": "sdxl",
+    "prompt": "Frida Kahlo surrealist style: A wooden observation deck from a 1970s space station, where a stylized Mario figure in folk-art form stands amid oversized translucent flowers and floating shag carpet. Warm Rembrandt lighting glows through a massive Saturn window, casting lavender and cream shadows across orange velvet chairs and brass fixtures. Glowing pathways of cosmic dust curve through the scene. Dreamlike distortions: gravity-defying blooms, flowers with symbolic heartbeats, wood panels melting into starlight.",
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775226744158.jpg",
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/profile-test-output/01_Gamer_Girl_dream1.jpg"
+  },
+  {
+    "profile": "Gamer Girl",
+    "dream": 2,
+    "mode": "archetype",
+    "archetype": "anime_vaporwave_city",
+    "model": "sdxl",
+    "prompt": "A stylized anime figure stands at a rooftop's edge among glowing water towers, their form reflected infinitely across kaleidoscopic fractal mirrors. Below, a neon-soaked shopping district sprawls in soft lavender and pink haze—closed storefronts, impossible palm trees, and elevated train tracks disappearing into golden-hour fog. Crystalline geometry warps the entire scene into shifting, symmetrical patterns that ripple like heat shimmer.",
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775226762814.jpg",
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/profile-test-output/01_Gamer_Girl_dream2.jpg"
+  },
+  {
+    "profile": "Gamer Girl",
+    "dream": 3,
+    "mode": "chord",
+    "archetype": "none",
+    "model": "black-forest-labs/flux-dev",
+    "prompt": "Alex Grey visionary art style: a translucent octopus rests on a sun-heated asteroid, its energy meridians glowing in electric cyan and hot pink. Surrounding rocks float in a star-filled void, connected by ethereal light threads. Soft cosmic glow bathes the scene; dappled light filters through invisible dimensions, creating luminous edges around every form.",
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775226769737.jpg",
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/profile-test-output/01_Gamer_Girl_dream3.jpg"
+  },
+  {
+    "profile": "Gothic Horror Queen",
+    "dream": 1,
+    "mode": "archetype",
+    "archetype": "universal_ancient_wonder",
+    "model": "sdxl",
+    "prompt": "A Beatrix Potter-style watercolor of an overgrown stone temple half-swallowed by jungle: massive roots twist through crumbling columns, vines drape like tapestries, a tree erupts through the altar. Warm golden light filters through the canopy, illuminating faint glowing hieroglyphics on weathered stone. Pulled back composition shows the full sacred space reclaimed by nature, rendered in gentle linework and earthy ochres with deep shadows—humbling, timeless, alive.",
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775226783096.jpg",
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/profile-test-output/02_Gothic_Horror_Queen_dream1.jpg"
+  },
+  {
+    "profile": "Gothic Horror Queen",
+    "dream": 2,
+    "mode": "archetype",
+    "archetype": "baddie_witch_queen",
+    "model": "black-forest-labs/flux-dev",
+    "prompt": "A LEGO underground cavern marketplace where a witch queen sits enthroned on twisted root-like bricks, surrounded by goblin traders beneath a soaring gothic cathedral made entirely of black and white plastic studs. Glowing mushroom lanterns cast warm, diffused light across crystalline formations and stalactites. Her silhouette dominates the scene—shadow-dress rendered in dark LEGO bricks, crown of thorns visible against dramatic backlighting. Pulled back wide shot reveals the full hidden world of her dominion.",
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775226790318.jpg",
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/profile-test-output/02_Gothic_Horror_Queen_dream2.jpg"
+  },
+  {
+    "profile": "Gothic Horror Queen",
+    "dream": 3,
+    "mode": "chord",
+    "archetype": "none",
+    "model": "sdxl",
+    "prompt": "Ancient Roman mosaic tile artwork depicting a luminous cloud whale descending into an abandoned mine shaft, its ethereal form composed of soft white and pearl tiles contrasting against deep indigo and charcoal stone walls studded with glowing gemstone veins in emerald and sapphire blue, an old rail cart below rendered in weathered bronze tiles, warm lantern light casting gentle shadows across the entire tessellated scene.",
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775226818155.jpg",
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/profile-test-output/02_Gothic_Horror_Queen_dream3.jpg"
+  },
+  {
+    "profile": "Beach Babe",
+    "dream": 1,
+    "mode": "chord",
+    "archetype": "none",
+    "model": "sdxl",
+    "prompt": "Pencil sketch with watercolor splashes: an enchanted gown pooling across a tumbling asteroid, glass slipper catching golden hour backlight among floating space debris. Loose linework silhouettes the figure in soft lavender and cream washes. Scale is deliberately wrong—the gown massive against tiny asteroid field and distant planet rings glowing amber on the horizon.",
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775226854662.jpg",
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/profile-test-output/03_Beach_Babe_dream1.jpg"
+  },
+  {
+    "profile": "Beach Babe",
+    "dream": 2,
+    "mode": "archetype",
+    "archetype": "cute_capybara_zen",
+    "model": "black-forest-labs/flux-dev",
+    "prompt": "8-bit pixel art with NES palette: a peaceful hot spring resort nestled in a canyon at golden hour. Multiple chunky-pixeled capybaras soak in steaming mineral pools, their blocky bodies arranged in serene clusters. Soft amber light filters down canyon walls. Bamboo groves frame the scene. One capybara holds a tiny fruit, perfectly still and content.",
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775226861723.jpg",
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/profile-test-output/03_Beach_Babe_dream2.jpg"
+  },
+  {
+    "profile": "Beach Babe",
+    "dream": 3,
+    "mode": "chord",
+    "archetype": "none",
+    "model": "black-forest-labs/flux-dev",
+    "prompt": "Claymation stop-motion scene: A cluttered artist's studio table scattered with paint tubes and brushes, where a handmade clay mannequin in vintage lace drapes over a palette. Warm Rembrandt sidelighting casts deep shadows across visible fingerprinted clay textures. A tiny clay clownfish rests nearby, slightly oversized proportions, surrounded by paint-splattered wood and crumpled fabric—intimate, tactile, and richly colored.",
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775226870241.jpg",
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/profile-test-output/03_Beach_Babe_dream3.jpg"
+  },
+  {
+    "profile": "Sci-Fi Nerd",
+    "dream": 1,
+    "mode": "chord",
+    "archetype": "none",
+    "model": "black-forest-labs/flux-dev",
+    "prompt": "Cross-stitch embroidery on fabric in wooden hoop: Sackboy character stitched in bright neon thread (hot pink, cyan, lime) crouches in a rain-slicked underground bunker alley, needle-and-thread details visible throughout. Above, a fire escape casts dramatic Rembrandt shadows. Puddle at ground reflects glowing neon stitches. Every element rendered in visible cross-stitch grid texture, mischievous and sneaky in composition.",
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775226879823.jpg",
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/profile-test-output/04_Sci-Fi_Nerd_dream1.jpg"
+  },
+  {
+    "profile": "Sci-Fi Nerd",
+    "dream": 2,
+    "mode": "archetype",
+    "archetype": "scifi_cyborg_fashion_runway",
+    "model": "black-forest-labs/flux-dev",
+    "prompt": "MC Escher tessellations warp a rain-soaked cyberpunk side street into impossible geometry—wet brownstone stoops fold inward, their angles defying physics. A bicycle chained to a railing refracts through layers of neon caustic light (hot pink, cyan, lime green). A silhouetted figure in circuit-pattern clothing stands mid-stride, body parts glowing with holographic augmentations, as rippling light patterns crawl across rain-slicked surfaces like digital skin. Dusk bleeds electric.",
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775226887045.jpg",
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/profile-test-output/04_Sci-Fi_Nerd_dream2.jpg"
+  },
+  {
+    "profile": "Sci-Fi Nerd",
+    "dream": 3,
+    "mode": "archetype",
+    "archetype": "steampunk_clockwork",
+    "model": "black-forest-labs/flux-dev",
+    "prompt": "Ancient Roman mosaic tile artwork depicting a mechanical cockpit interior—brass gears and spring mechanisms rendered in small colorful squares—viewed through a circular porthole window revealing an alien moon's dark surface with a massive gas giant suspended on the horizon, all backlit in dramatic silhouette with deep blacks and vivid jewel-tone accent tiles.",
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775226895085.jpg",
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/profile-test-output/04_Sci-Fi_Nerd_dream3.jpg"
+  },
+  {
+    "profile": "Cottagecore Dreamer",
+    "dream": 1,
+    "mode": "beauty",
+    "archetype": "none",
+    "model": "sdxl",
+    "prompt": "Stained glass window with bold black leading depicting an underground cavern: jewel-tone translucent amber and crimson crystals, glowing mushrooms, stalactites casting long shadows, lava glow from below, golden hour warmth, spooky-cute aesthetic, pure radiant beauty.",
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775226904666.jpg",
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/profile-test-output/05_Cottagecore_Dreamer_dream1.jpg"
+  },
+  {
+    "profile": "Cottagecore Dreamer",
+    "dream": 2,
+    "mode": "beauty",
+    "archetype": "none",
+    "model": "sdxl",
+    "prompt": "Woodcut print: bold carved lines in stark black and white, laser light beams cutting crimson and amber through studio haze, paint-splattered surfaces glowing golden hour, long shadows dancing across textures, pure luminous warmth and contrast.",
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775226914688.jpg",
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/profile-test-output/05_Cottagecore_Dreamer_dream2.jpg"
+  },
+  {
+    "profile": "Cottagecore Dreamer",
+    "dream": 3,
+    "mode": "beauty",
+    "archetype": "none",
+    "model": "black-forest-labs/flux-dev",
+    "prompt": "Dreamy 35mm film photography with golden light leaks and soft grain. Aurora borealis glow illuminates a cozy room—warm amber shelves, crimson cushions, glowing windows. Ethereal bokeh, whimsical light streaks, velvety textures. Pure luminous magic captured in nostalgic film stock.",
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775226922112.jpg",
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/profile-test-output/05_Cottagecore_Dreamer_dream3.jpg"
+  },
+  {
+    "profile": "Anime Superfan",
+    "dream": 1,
+    "mode": "archetype",
+    "archetype": "cute_crystal_witch",
+    "model": "sdxl",
+    "prompt": "Wes Anderson symmetrical dollhouse interior: a tiny witch's parlor with pastel lavender walls, centered black cat perched on a velvet cushion surrounded by lit candles. Crystalline geodes line wooden shelves, casting rainbow refractions across the room. A full moon glows through a rain-streaked window above, its light filtering softly onto tarot cards and dried flowers hanging in perfect rows. Soft bioluminescent shimmer emanates from an open amethyst cluster at the room's heart.",
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775226931769.jpg",
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/profile-test-output/06_Anime_Superfan_dream1.jpg"
+  },
+  {
+    "profile": "Anime Superfan",
+    "dream": 2,
+    "mode": "beauty",
+    "archetype": "none",
+    "model": "black-forest-labs/flux-dev",
+    "prompt": "Wobbly chalk drawing melting into puddle reflections, pastel pink and lavender strokes dancing under firelight shadows. Aurora borealis sweeps overhead in emerald and purple. Snow-covered void fragments drift through cream-toned emptiness, flickering and ethereal.",
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775226938555.jpg",
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/profile-test-output/06_Anime_Superfan_dream2.jpg"
+  },
+  {
+    "profile": "Anime Superfan",
+    "dream": 3,
+    "mode": "archetype",
+    "archetype": "gaming_zelda_wanderer",
+    "model": "black-forest-labs/flux-dev",
+    "prompt": "Origami paper Tetris block folded in crisp white with neon pink and cyan accents, positioned on a translucent paper tree in a spirit realm. Cool blue moonlight illuminates glowing pathways beneath, with distant bell echoes suggested by concentric fold-lines radiating outward. The block catches ethereal light, casting geometric shadows across the dreamlike landscape—a magical artifact waiting to be discovered in an ancient, folded world.",
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775226945308.jpg",
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/profile-test-output/06_Anime_Superfan_dream3.jpg"
+  },
+  {
+    "profile": "Mythology Buff",
+    "dream": 1,
+    "mode": "beauty",
+    "archetype": "none",
+    "model": "black-forest-labs/flux-dev",
+    "prompt": "Wes Anderson symmetrical miniature architecture: pastel dollhouse with impossible gravity-defying staircases spiraling in all directions, deep blacks contrasting vivid jewel tones, purple twilight sky, distant lightning, soft overcast diffuse light illuminating crystalline surfaces, dramatic storm clouds, wind-swept textures, grandiose impossible geometry.",
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775226952330.jpg",
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/profile-test-output/07_Mythology_Buff_dream1.jpg"
+  },
+  {
+    "profile": "Mythology Buff",
+    "dream": 2,
+    "mode": "archetype",
+    "archetype": "architecture_abandoned_amusement",
+    "model": "sdxl",
+    "prompt": "Studio Ghibli watercolor hand-painted cel animation: an abandoned seaside carnival frozen in time. Weathered carousel horses mid-gallop, peeling paint in layers. Rusted Ferris wheel stopped against dawn sky, cabins creaking. Fishing nets drape weathered ticket booths like ghosts. Golden backlight silhouettes the skeletal roller coaster tracks. Seagulls circle overgrown pathways where nature reclaims faded joy.",
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775226963165.jpg",
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/profile-test-output/07_Mythology_Buff_dream2.jpg"
+  },
+  {
+    "profile": "Mythology Buff",
+    "dream": 3,
+    "mode": "archetype",
+    "archetype": "animals_horse_mythical_freedom",
+    "model": "black-forest-labs/flux-dev",
+    "prompt": "Chalk pastel on black paper: a fairy ring of luminous mushrooms glows in soft, smudged pastels as an antlered horse emerges from mist at the ring's edge, silhouetted against upward-flowing rivers of light. The breathing ground ripples beneath its hooves; a faceless cloud leans down to watch. Dramatic backlight halos the creature in vivid golds and ethereal purples, soft edges dissolving into darkness.",
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775226971859.jpg",
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/profile-test-output/07_Mythology_Buff_dream3.jpg"
+  },
+  {
+    "profile": "Glamour Queen",
+    "dream": 1,
+    "mode": "archetype",
+    "archetype": "pride_cosmic_queen",
+    "model": "black-forest-labs/flux-dev",
+    "prompt": "DMT visionary art style: a machine elf entity draped in flowing iridescent fabrics materialized within a void, surrounded by recursive sacred geometry spiraling outward. Deep crimson and orange lava-light emanates from below, illuminating infinite layered textile patterns that fold through dimensional rifts. Vivid, overwhelming color saturation. The elf's silhouette adorned in celestial robes commands the between-worlds space.",
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775226978894.jpg",
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/profile-test-output/08_Glamour_Queen_dream1.jpg"
+  },
+  {
+    "profile": "Glamour Queen",
+    "dream": 2,
+    "mode": "chord",
+    "archetype": "none",
+    "model": "black-forest-labs/flux-dev",
+    "prompt": "Solarpunk illustration: ancient moss-draped stone archway integrated with living vines and bioluminescent flora, solar panel segments woven into organic curves above. Crystal spring flows beneath, reflecting golden autumn light through misty air. Soft green and amber glow emanates from the architecture itself—optimistic decay where nature and technology merge seamlessly.",
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775226985550.jpg",
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/profile-test-output/08_Glamour_Queen_dream2.jpg"
+  },
+  {
+    "profile": "Glamour Queen",
+    "dream": 3,
+    "mode": "archetype",
+    "archetype": "ocean_storm_witness",
+    "model": "sdxl",
+    "prompt": "Golden age storybook illustration in Beatrix Potter's watercolor style: a hilltop village with terracotta roofs clings to cliffs as mountainous waves crash below, their spray backlit silver against a greenish-black sky. A tiny sailboat tilts through towering swells while lightning fractures the sea. A lighthouse beam sweeps across rain-walls. Dramatic, cinematic, quietly terrifying—the moment before the storm devours everything.",
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775226995846.jpg",
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/profile-test-output/08_Glamour_Queen_dream3.jpg"
+  },
+  {
+    "profile": "Tattoo Artist",
+    "dream": 1,
+    "mode": "archetype",
+    "archetype": "travel_food_street_vendor",
+    "model": "sdxl",
+    "prompt": "Lo-fi hip hop album cover style: cozy night market stall with warm steam rising from bubbling pots, anime-illustrated vendor hands folding dumplings, golden lantern glow reflecting off wet pavement, scattered bowls and chopsticks in soft focus, dreamy color shifts between amber and deep indigo, no people visible—only the intimate workspace and the food itself, feeling lived-in and timeless.",
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775227006462.jpg",
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/profile-test-output/09_Tattoo_Artist_dream1.jpg"
+  },
+  {
+    "profile": "Tattoo Artist",
+    "dream": 2,
+    "mode": "archetype",
+    "archetype": "ocean_surfing_dream",
+    "model": "black-forest-labs/flux-dev",
+    "prompt": "Keith Haring style: bold black outlines, stylized dancing robot figures locked in a boxing ring, geometric bodies mid-punch frozen in fluid motion. The ring floats in a starlit void where reality fragments drift—shattered architecture, floating platforms, swirling nebula clouds. High contrast black, deep blue, white. The scene captures endless movement, perpetual flow, the pure freedom of unstoppable momentum.",
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775227017199.jpg",
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/profile-test-output/09_Tattoo_Artist_dream2.jpg"
+  },
+  {
+    "profile": "Tattoo Artist",
+    "dream": 3,
+    "mode": "chord",
+    "archetype": "none",
+    "model": "sdxl",
+    "prompt": "Pointillist rooftop scene at golden hour: a gothic cathedral spire rises from urban skyline, its stone rendered entirely in tiny dots of black, white, and gold. Silhouetted water towers and distant bridge spans punctuate the composition. High contrast shadows fall across weathered roof surfaces. Thick fog curls between buildings, creating dreamlike depth. The entire image shimmers with Seurat-style dotwork, charged with electric atmospheric tension.",
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775227028836.jpg",
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/profile-test-output/09_Tattoo_Artist_dream3.jpg"
+  },
+  {
+    "profile": "Whimsical Kid at Heart",
+    "dream": 1,
+    "mode": "beauty",
+    "archetype": "none",
+    "model": "black-forest-labs/flux-dev",
+    "prompt": "# Image Prompt\n\nFunko Pop figure with massive gleaming head, tiny body, positioned in rain-slicked alley. Electric neon laser beams—hot pink, cyan, lime—slice through luminous haze. Puddle reflections amplify glow. Fire escape casts sharp shadows. Dewy, fresh morning light meets vibrant nighttime neon. Glossy plastic catches every ray. Pure visual spectacle.",
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775227037116.jpg",
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/profile-test-output/10_Whimsical_Kid_at_Heart_dream1.jpg"
+  },
+  {
+    "profile": "Whimsical Kid at Heart",
+    "dream": 2,
+    "mode": "chord",
+    "archetype": "none",
+    "model": "black-forest-labs/flux-dev",
+    "prompt": "Aardman claymation style: A grinning octopus with expressive clay features explores a vibrant coral garden using its eight playful tentacles, surrounded by neon pink and cyan corals glowing softly in cool dawn light. A fishing village harbor sits tilted in the background—wooden boats rock gently, nets drape across weathered docks, and seagulls perch nearby watching the whimsical scene unfold.",
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775227044999.jpg",
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/profile-test-output/10_Whimsical_Kid_at_Heart_dream2.jpg"
+  },
+  {
+    "profile": "Whimsical Kid at Heart",
+    "dream": 3,
+    "mode": "archetype",
+    "archetype": "anime_rival_standoff",
+    "model": "sdxl",
+    "prompt": "Pointillism rendered entirely in soft lavender, cream, and blush dots: two anime-styled figures face each other across a misty enchanted forest clearing at dawn, swords raised in mirror-image tension. Dew clings to oversized forest flowers; long shadows stretch between them. Steam rises like breath in the cool air. A hidden unicorn's silhouette watches from the trees. The scene pulses with Rembrandt chiaroscuro—intimate, inevitable, bittersweet—two rivals frozen in the moment before everything changes.",
+    "image_url": "https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/eab700d8-f11a-4f47-a3a1-addda6fb67ec/1775227065721.jpg",
+    "local_file": "/Users/kevinmchenry/Development/apps/dreambot/scripts/profile-test-output/10_Whimsical_Kid_at_Heart_dream3.jpg"
+  }
+]

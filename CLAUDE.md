@@ -673,7 +673,11 @@ Active functions: `generate-dream`, `nightly-dreams`, `send-push`, `revenuecat-w
 
 **When to deploy:** Any time you change files in `supabase/functions/` (including `_shared/`), deploy the affected functions immediately — don't wait for Kevin to ask. The client app calls these remotely, so local file changes have NO effect until deployed. No Xcode rebuild needed after deploying edge functions.
 
-**The `_shared/recipeEngine.ts` copy:** This is a full inline copy of `lib/recipe/` for the Deno runtime. When you change the recipe engine source files (`lib/recipe/builder.ts`, `pools.ts`, `utils.ts`), you MUST also sync those changes into `supabase/functions/_shared/recipeEngine.ts` and then deploy both `generate-dream` and `nightly-dreams`.
+**The `_shared/recipeEngine.ts` copy:** This is an AUTO-GENERATED file built from `lib/recipe/` source files. **NEVER edit it directly.** When you change any recipe engine source file (`lib/recipe/builder.ts`, `pools.ts`, `utils.ts`, `types.ts`), run:
+```bash
+export NVM_DIR="$HOME/.nvm" && source "$NVM_DIR/nvm.sh" && node scripts/sync-deno-engine.js
+```
+This rebuilds the Deno copy from scratch. Then deploy both edge functions. **NEVER do partial syncs** — they corrupt the file with duplicates.
 
 **Viewing edge function logs:** The Supabase CLI (v2.75.0) does NOT support `supabase functions logs`. To view logs, use the Supabase dashboard: **Dashboard → Functions → [function-name] → Logs**. Or query the `ai_generation_log` table for generation results.
 
