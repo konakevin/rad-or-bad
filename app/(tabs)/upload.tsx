@@ -287,20 +287,22 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
 
   async function post() {
     const currentDream = dreamAlbum[activeIndex];
-    console.log(
-      '[Post] START — dream:',
-      !!currentDream,
-      'user:',
-      !!user,
-      'posting:',
-      posting,
-      'activeIndex:',
-      activeIndex,
-      'albumLen:',
-      dreamAlbum.length
-    );
+    if (__DEV__) {
+      console.log(
+        '[Post] START — dream:',
+        !!currentDream,
+        'user:',
+        !!user,
+        'posting:',
+        posting,
+        'activeIndex:',
+        activeIndex,
+        'albumLen:',
+        dreamAlbum.length
+      );
+    }
     if (!currentDream || !user || posting) {
-      console.log('[Post] SKIPPED — missing dream/user or already posting');
+      if (__DEV__) console.log('[Post] SKIPPED — missing dream/user or already posting');
       return;
     }
     const multiImage = dreamAlbum.length > 1;
@@ -309,27 +311,29 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
     const postUrl = currentDream.url;
     const postPrompt = currentDream.prompt;
     const postWish = currentDream.fromWish;
-    console.log('[Post] URL:', postUrl.slice(0, 80));
-    console.log('[Post] Prompt:', postPrompt.slice(0, 80));
-    console.log('[Post] User ID:', user.id);
-    console.log('[Post] Username:', user.user_metadata?.username ?? '(none)');
+    if (__DEV__) {
+      console.log('[Post] URL:', postUrl.slice(0, 80));
+      console.log('[Post] Prompt:', postPrompt.slice(0, 80));
+      console.log('[Post] User ID:', user.id);
+      console.log('[Post] Username:', user.user_metadata?.username ?? '(none)');
+    }
 
     try {
       // Persist temp Replicate URL to Supabase Storage now that user wants to keep it
-      console.log('[Post] Persisting image...');
+      if (__DEV__) console.log('[Post] Persisting image...');
       const imageUrl = await persistImage(postUrl, user.id);
-      console.log('[Post] Image persisted:', imageUrl.slice(0, 60));
+      if (__DEV__) console.log('[Post] Image persisted:', imageUrl.slice(0, 60));
 
       let recipeId: string | null = null;
       try {
         const recipe = cachedRecipe ?? (await loadRecipe());
         recipeId = await registerRecipe(user.id, recipe);
-        console.log('[Post] Recipe registered:', recipeId);
+        if (__DEV__) console.log('[Post] Recipe registered:', recipeId);
       } catch (recipeErr) {
-        console.warn('[Post] Recipe registration failed (non-critical):', recipeErr);
+        if (__DEV__) console.warn('[Post] Recipe registration failed (non-critical):', recipeErr);
       }
 
-      console.log('[Post] Inserting upload row...');
+      if (__DEV__) console.log('[Post] Inserting upload row...');
       const uploadId = await postDream({
         userId: user.id,
         imageUrl,
@@ -338,7 +342,7 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
         fromWish: postWish,
         twinOf: isTwinMode ? fusionTarget?.postId : null,
       });
-      console.log('[Post] Upload created:', uploadId);
+      if (__DEV__) console.log('[Post] Upload created:', uploadId);
 
       pinToFeed({
         id: uploadId,
@@ -347,7 +351,7 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
         username: user.user_metadata?.username ?? '',
         avatarUrl: user.user_metadata?.avatar_url ?? null,
       });
-      console.log('[Post] Pinned to feed');
+      if (__DEV__) console.log('[Post] Pinned to feed');
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
@@ -364,7 +368,7 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
         setPosting(false);
       }
     } catch (err) {
-      console.warn('[Post] Error:', err);
+      if (__DEV__) console.warn('[Post] Error:', err);
       Toast.show('Failed to post dream', 'close-circle');
       setPosting(false);
       setPhase('reveal');
@@ -391,7 +395,7 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
 
     try {
       const p = fusionTarget.prompt;
-      console.log('[Twin] Generating from prompt:', p.slice(0, 80));
+      if (__DEV__) console.log('[Twin] Generating from prompt:', p.slice(0, 80));
       const result = await generateTwin(p);
       const url = result.image_url;
       setDreamAlbum((prev) => {
@@ -430,7 +434,7 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
   }, [isTwinMode, phase]);
 
   async function justDream() {
-    console.log('[JustDream] START, user:', !!user, 'busy:', busy.current);
+    if (__DEV__) console.log('[JustDream] START, user:', !!user, 'busy:', busy.current);
     if (!user) {
       Toast.show('Not logged in', 'close-circle');
       return;
@@ -441,7 +445,7 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
     }
     busy.current = true;
     setError(null);
-    console.log('[JustDream] Setting phase to dreaming');
+    if (__DEV__) console.log('[JustDream] Setting phase to dreaming');
     if (dreamAlbum.length > 0) {
       setDreaming(true);
     } else {
@@ -452,14 +456,14 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     try {
-      console.log('[JustDream] Loading recipe...');
+      if (__DEV__) console.log('[JustDream] Loading recipe...');
       const recipe = await loadRecipe();
-      console.log('[JustDream] Recipe loaded, generating via Edge Function...');
+      if (__DEV__) console.log('[JustDream] Recipe loaded, generating via Edge Function...');
 
       const result = await generateFromRecipe(recipe);
       const url = result.image_url;
       const p = result.prompt_used;
-      console.log('[JustDream] Image generated:', url.slice(0, 60));
+      if (__DEV__) console.log('[JustDream] Image generated:', url.slice(0, 60));
       setDreamAlbum((prev) => {
         const newIndex = prev.length;
         setActiveIndex(newIndex);
@@ -482,7 +486,7 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
       setDreaming(false);
       setPhase(dreamAlbum.length > 0 ? 'reveal' : 'pick');
     } finally {
-      console.log('[JustDream] DONE, resetting busy');
+      if (__DEV__) console.log('[JustDream] DONE, resetting busy');
       busy.current = false;
     }
   }

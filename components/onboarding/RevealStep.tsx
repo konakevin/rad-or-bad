@@ -117,7 +117,7 @@ export function RevealStep({ onBack }: Props) {
       const result = await generateFromRecipe(recipe, { skipEnhance: true });
       const url = result.image_url;
       const prompt = result.prompt_used;
-      console.log('[Reveal] Got URL:', url?.slice(0, 80));
+      if (__DEV__) console.log('[Reveal] Got URL:', url?.slice(0, 80));
 
       setDreams((prev) => {
         const next = [...prev, { url, prompt }];
@@ -131,7 +131,7 @@ export function RevealStep({ onBack }: Props) {
       setPhase('reveal');
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
-      console.warn('[Reveal] Generation failed:', err);
+      if (__DEV__) console.warn('[Reveal] Generation failed:', err);
       setError('Image generation failed. Tap to try again.');
       setPhase('reveal');
     } finally {
@@ -189,7 +189,7 @@ export function RevealStep({ onBack }: Props) {
         .select('id')
         .single();
 
-      if (uploadError) {
+      if (uploadError && __DEV__) {
         console.warn('[Reveal] Upload error:', uploadError);
       }
 
@@ -210,7 +210,7 @@ export function RevealStep({ onBack }: Props) {
       Toast.show('Your Dream Bot is alive!', 'sparkles');
       router.replace('/(tabs)');
     } catch (err) {
-      console.warn('[Reveal] Create error:', err);
+      if (__DEV__) console.warn('[Reveal] Create error:', err);
       setPhase('reveal');
       Toast.show('Something went wrong', 'close-circle');
     }

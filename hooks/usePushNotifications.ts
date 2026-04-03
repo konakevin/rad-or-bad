@@ -28,7 +28,7 @@ async function registerForPushNotifications(): Promise<string | null> {
   }
 
   if (finalStatus !== 'granted') {
-    console.log('[Push] Permission not granted');
+    if (__DEV__) console.log('[Push] Permission not granted');
     return null;
   }
 
@@ -37,7 +37,7 @@ async function registerForPushNotifications(): Promise<string | null> {
     projectId: '315a034e-ee26-4d53-9dc3-e3c5078b4b3c',
   });
 
-  console.log('[Push] Token:', tokenData);
+  if (__DEV__) console.log('[Push] Token:', tokenData);
   return tokenData;
 }
 
@@ -49,7 +49,7 @@ async function savePushToken(userId: string, token: string) {
       { onConflict: 'user_id,token' }
     );
 
-  if (error) console.warn('[Push] Failed to save token:', error.message);
+  if (error && __DEV__) console.warn('[Push] Failed to save token:', error.message);
 }
 
 export function usePushNotifications() {
@@ -67,7 +67,7 @@ export function usePushNotifications() {
 
     // Handle notification received while app is open (foreground)
     notificationListener.current = Notifications.addNotificationReceivedListener((notification) => {
-      console.log('[Push] Received:', notification.request.content.title);
+      if (__DEV__) console.log('[Push] Received:', notification.request.content.title);
     });
 
     // Handle notification tapped (opens app or brought to foreground)

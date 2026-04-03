@@ -81,8 +81,7 @@ export function FullScreenFeed({
       }
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       Toast.show('Dream deleted', 'checkmark-circle');
-      queryClient.invalidateQueries({ queryKey: ['dreamFeed'] });
-      queryClient.invalidateQueries({ queryKey: ['userUploads'] });
+      queryClient.invalidateQueries({ queryKey: ['feed'] });
       queryClient.invalidateQueries({ queryKey: ['userPosts'] });
       queryClient.invalidateQueries({ queryKey: ['publicProfile'] });
       if (router.canGoBack()) router.back();
