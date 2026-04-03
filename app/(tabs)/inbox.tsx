@@ -52,11 +52,14 @@ function getNotificationText(item: NotificationItem): { action: string; preview:
       return { action: 'accepted your dream request', preview: null };
     case 'post_milestone':
       return { action: 'Your post hit ' + (item.body ?? 'a milestone!'), preview: null };
-    case 'dream_generated':
+    case 'dream_generated': {
+      const isWish = item.body?.startsWith('wish:');
+      const botMsg = item.body?.replace(/^(wish|dream):/, '') || null;
       return {
-        action: item.body?.startsWith('Your wish') ? item.body : 'A new dream has been conjured',
-        preview: null,
+        action: isWish ? 'Your wish has arrived!' : 'Your dream has arrived!',
+        preview: botMsg || null,
       };
+    }
     case 'post_like':
       return { action: 'liked your dream', preview: null };
     case 'post_twin':
@@ -94,6 +97,7 @@ function getNotificationIcon(type: NotificationItem['type']): string {
 function NotificationRow({
   item,
   onPress,
+  onMarkSeen,
   onDelete,
   selectMode,
   isSelected,
@@ -104,6 +108,7 @@ function NotificationRow({
 }: {
   item: NotificationItem;
   onPress: () => void;
+  onMarkSeen: () => void;
   onDelete: () => void;
   selectMode: boolean;
   isSelected: boolean;
@@ -113,11 +118,22 @@ function NotificationRow({
   dreamAccepted?: boolean;
 }) {
   const { action, preview } = getNotificationText(item);
+  const [expanded, setExpanded] = useState(false);
+
+  function handleRowPress() {
+    if (selectMode) { onToggleSelect(); return; }
+    if (!item.isSeen) onMarkSeen();
+    if (preview) {
+      setExpanded(!expanded);
+    } else {
+      onPress();
+    }
+  }
 
   return (
     <TouchableOpacity
       style={[styles.row, !item.isSeen && styles.rowUnseen]}
-      onPress={selectMode ? onToggleSelect : onPress}
+      onPress={handleRowPress}
       onLongPress={
         selectMode
           ? undefined
@@ -173,8 +189,8 @@ function NotificationRow({
           )}
         </Text>
         {preview && (
-          <Text style={styles.preview} numberOfLines={1}>
-            "{preview}"
+          <Text style={styles.preview} numberOfLines={expanded ? undefined : 1}>
+            {preview}
           </Text>
         )}
       </View>
@@ -208,9 +224,11 @@ function NotificationRow({
           </View>
         ) : null)}
 
-      {/* Post thumbnail */}
+      {/* Post thumbnail — tap to navigate */}
       {item.imageUrl && (
-        <Image source={{ uri: item.imageUrl }} style={styles.thumbnail} contentFit="cover" />
+        <TouchableOpacity onPress={() => { if (!item.isSeen) onMarkSeen(); onPress(); }} activeOpacity={0.8}>
+          <Image source={{ uri: item.imageUrl }} style={styles.thumbnail} contentFit="cover" />
+        </TouchableOpacity>
       )}
 
       {/* Time + delete */}
@@ -389,6 +407,7 @@ export default function InboxScreen() {
           <NotificationRow
             item={item}
             onPress={() => handleTap(item)}
+            onMarkSeen={() => markSeen(item.id)}
             onDelete={() => deleteNotification(item.id)}
             selectMode={selectMode}
             isSelected={selected.has(item.id)}
@@ -475,7 +494,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingVertical: 19,
     borderBottomWidth: 0.5,
     borderBottomColor: colors.card,
     gap: 12,
@@ -502,8 +521,8 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   mainLine: {
-    fontSize: 14,
-    lineHeight: 19,
+    fontSize: 15,
+    lineHeight: 20,
   },
   actorName: {
     color: colors.textPrimary,
@@ -515,8 +534,10 @@ const styles = StyleSheet.create({
   },
   preview: {
     color: colors.textSecondary,
-    fontSize: 13,
+    fontSize: 14,
     fontStyle: 'italic',
+    marginTop: 4,
+    lineHeight: 20,
   },
   thumbnail: {
     width: 44,

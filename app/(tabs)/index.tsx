@@ -205,15 +205,18 @@ export default function HomeScreen() {
         pointerEvents="box-none"
       >
         <View style={s.topRow}>
+          <View style={{ flex: 1 }} />
           <FeedTabs active={activeTab} onChange={handleTabChange} />
-          <TouchableOpacity
-            style={s.searchButton}
-            onPress={() => router.push('/search')}
-            activeOpacity={0.7}
-            hitSlop={12}
-          >
-            <Ionicons name="search" size={26} color="rgba(255,255,255,0.8)" />
-          </TouchableOpacity>
+          <View style={{ flex: 1, alignItems: 'flex-end' }}>
+            <TouchableOpacity
+              style={s.searchButton}
+              onPress={() => router.push('/search')}
+              activeOpacity={0.7}
+              hitSlop={12}
+            >
+              <Ionicons name="search" size={26} color="rgba(255,255,255,0.8)" />
+            </TouchableOpacity>
+          </View>
         </View>
       </LinearGradient>
     </View>
@@ -239,5 +242,5 @@ const s = StyleSheet.create({
     paddingHorizontal: 16,
   },
   feedTabs: { flexDirection: 'row', gap: 8 },
-  searchButton: { position: 'absolute', right: 16, padding: 8 },
+  searchButton: { padding: 8 },
 });

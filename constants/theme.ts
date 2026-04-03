@@ -163,8 +163,10 @@ export const ui = StyleSheet.create({
     justifyContent: 'center' as const,
     width: 44,
     paddingVertical: 8,
-    backgroundColor: colors.overlayLight,
-    borderRadius: 22,
+    shadowColor: '#000000',
+    shadowOpacity: 0.6,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 },
   },
   sideCount: {
     color: '#FFFFFF',

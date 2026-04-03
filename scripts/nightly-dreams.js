@@ -16,9 +16,24 @@ const { createClient } = require('@supabase/supabase-js');
 
 // ── Config ──────────────────────────────────────────────────────────────────
 
+// Read keys from env vars first, fall back to .env.local
+function readEnvFile() {
+  try {
+    const lines = require('fs').readFileSync('.env.local', 'utf8').split('\n');
+    const env = {};
+    for (const line of lines) {
+      const eq = line.indexOf('=');
+      if (eq > 0) env[line.slice(0, eq).trim()] = line.slice(eq + 1).trim();
+    }
+    return env;
+  } catch { return {}; }
+}
+const envFile = readEnvFile();
+function getKey(name) { return process.env[name] || envFile[name]; }
+
 const SUPABASE_URL = 'https://jimftynwrinwenonjrlj.supabase.co';
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const REPLICATE_TOKEN = process.env.REPLICATE_API_TOKEN;
+const SUPABASE_KEY = getKey('SUPABASE_SERVICE_ROLE_KEY');
+const REPLICATE_TOKEN = getKey('REPLICATE_API_TOKEN');
 const MAX_BUDGET_CENTS = parseInt(process.argv.find((_, i, a) => a[i - 1] === '--max-budget') ?? '500', 10);
 const BATCH_SIZE = parseInt(process.argv.find((_, i, a) => a[i - 1] === '--batch-size') ?? '5', 10);
 const DRY_RUN = process.argv.includes('--dry-run');
@@ -253,7 +268,7 @@ async function main() {
   const today = new Date().toISOString().slice(0, 10);
   const { data: users, error } = await sb
     .from('user_recipes')
-    .select('user_id, recipe, dream_wish')
+    .select('user_id, recipe, dream_wish, wish_modifiers')
     .eq('onboarding_completed', true)
     .eq('ai_enabled', true);
 
@@ -285,7 +300,16 @@ async function main() {
     const results = await Promise.allSettled(batch.map(async (user) => {
       const recipe = user.recipe;
       const wish = user.dream_wish;
-      const prompt = buildPrompt(recipe, wish);
+      const mods = user.wish_modifiers;
+      let prompt = buildPrompt(recipe, wish);
+
+      // Append wish modifiers as vibe hints
+      if (wish && mods) {
+        const vibeHints = [mods.mood, mods.weather, mods.energy, mods.vibe].filter(Boolean);
+        if (vibeHints.length > 0) {
+          prompt += `, ${vibeHints.join(', ')} vibe`;
+        }
+      }
 
       process.stdout.write(`  ${user.user_id.slice(0, 8)}... `);
 
@@ -334,7 +358,7 @@ async function main() {
 
       // Generate a bot message — a short playful note from the Dream Bot
       let botMessage = null;
-      const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
+      const ANTHROPIC_KEY = getKey('ANTHROPIC_API_KEY');
       if (ANTHROPIC_KEY) {
         try {
           const { data: recentDreams } = await sb
@@ -365,20 +389,19 @@ async function main() {
               max_tokens: 60,
               messages: [{
                 role: 'user',
-                content: `You are a Dream Bot — a small, curious, slightly mischievous creative spirit that lives inside someone's phone and makes dreams for them every night. You ADORE your human. You're not an AI assistant. You're a tiny artist who gets excited about your own work.
+                content: `You are a Dream Bot — a tiny creative spirit living in someone's phone, making dreams nightly. Playful, warm, a little weird. You love your human.
 
 Tonight's dream prompt: "${prompt.slice(0, 200)}"
 
-Write a 1-2 sentence message about tonight's dream.
+Write ONE short reaction to making this dream. 8-15 words max.
 
-VOICE RULES:
-- You're a character, not a service. Have opinions.
-- Be specific. Reference actual elements from the prompt.
-- Vary your energy. Sometimes excited, sometimes chill, sometimes proud, sometimes sheepish about a weird choice.
-- NEVER explain what the dream is. They can see it. React to it instead.
-- Keep it under 20 words. Shorter is better.
-- No emojis. No exclamation marks more than once.
-- NEVER start with "I" — vary your openings.
+CRITICAL RULES:
+- NEVER start with "Okay so" or "Not gonna lie" or "Honestly"
+- NEVER use the phrases "hit different", "chef's kiss", "you're welcome", "no regrets", "trust the process"
+- Every message must have a DIFFERENT opening word/structure
+- Reference ONE specific thing from the prompt — a creature, place, color, or vibe
+- React to the creative choice, don't describe the image
+- No emojis. Max one exclamation mark.
 ${memoryBlock}
 
 Output ONLY the message, nothing else.`,
@@ -389,7 +412,7 @@ Output ONLY the message, nothing else.`,
           if (msgRes.ok) {
             const msgData = await msgRes.json();
             const text = msgData.content?.[0]?.text?.trim() ?? '';
-            if (text.length >= 5 && text.length <= 100) botMessage = text;
+            if (text.length >= 5 && text.length <= 200) botMessage = text;
           }
         } catch {
           // Non-critical
@@ -413,11 +436,9 @@ Output ONLY the message, nothing else.`,
 
       const uploadId = uploadRow?.id;
 
-      // Send notification
-      const BOT_ACCOUNT = user.user_id; // self-notification for system-generated dreams
-      const notifBody = wish
-        ? `Your wish has been granted: "${wish.slice(0, 80)}"`
-        : 'A new dream has been conjured';
+      // Send notification — use bot message if available, fallback to generic
+      const BOT_ACCOUNT = user.user_id;
+      const notifBody = (wish ? 'wish:' : 'dream:') + (botMessage || '');
       try {
         await sb.from('notifications').insert({
           recipient_id: user.user_id,

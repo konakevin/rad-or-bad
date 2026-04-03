@@ -2,6 +2,7 @@
  * DreamWishSheet — fullscreen form for making a dream wish.
  */
 
+import { showAlert } from '@/components/CustomAlert';
 import { useState, useEffect } from 'react';
 import {
   View,
@@ -147,6 +148,14 @@ export function DreamWishSheet({
               : 'Wish set! Your Dream Bot will dream it next';
           Toast.show(msg, 'sparkles', 3500);
           onClose();
+        },
+        onError: (err: Error) => {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+          Toast.show(
+            err.message || "Your wish contains content that can't be dreamed",
+            'close-circle',
+            4000
+          );
         },
       }
     );

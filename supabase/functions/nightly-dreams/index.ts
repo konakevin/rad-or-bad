@@ -11,11 +11,19 @@ const COST_PER_IMAGE_CENTS = 3;
 const MAX_BUDGET_CENTS = 500; // $5 default
 const BATCH_SIZE = 5;
 
+interface WishModifiers {
+  mood: string | null;
+  weather: string | null;
+  energy: string | null;
+  vibe: string | null;
+}
+
 interface EligibleUser {
   user_id: string;
   recipe: Recipe;
   dream_wish: string | null;
   wish_recipient_ids: string[] | null;
+  wish_modifiers: WishModifiers | null;
 }
 
 Deno.serve(async (req) => {
@@ -36,7 +44,7 @@ Deno.serve(async (req) => {
   // 1. Find eligible users: onboarded + AI enabled + active in last 36 hours
   const { data: eligible, error: eligibleErr } = await supabase
     .from('user_recipes')
-    .select('user_id, recipe, dream_wish, wish_recipient_ids, users!inner(last_active_at)')
+    .select('user_id, recipe, dream_wish, wish_modifiers, wish_recipient_ids, users!inner(last_active_at)')
     .eq('onboarding_completed', true)
     .eq('ai_enabled', true)
     .gte('users.last_active_at', new Date(Date.now() - 36 * 60 * 60 * 1000).toISOString());
@@ -67,6 +75,7 @@ Deno.serve(async (req) => {
       recipe: (u.recipe as Recipe) ?? DEFAULT_RECIPE,
       dream_wish: (u.dream_wish as string | null) ?? null,
       wish_recipient_ids: (u.wish_recipient_ids as string[] | null) ?? null,
+      wish_modifiers: (u.wish_modifiers as WishModifiers | null) ?? null,
     }));
 
   console.log(
@@ -119,14 +128,20 @@ async function generateDreamForUser(
   anthropicKey: string | undefined,
   today: string
 ) {
-  const { recipe, dream_wish: wish } = user;
+  const { recipe, dream_wish: wish, wish_modifiers: mods } = user;
   const input = buildPromptInput(recipe);
+
+  // Build vibe hints from wish modifiers
+  const vibeHints = mods
+    ? [mods.mood, mods.weather, mods.energy, mods.vibe].filter(Boolean)
+    : [];
+  const vibeStr = vibeHints.length > 0 ? ` The vibe should feel ${vibeHints.join(', ')}.` : '';
 
   // Build prompt — use Haiku if available, fallback to raw
   let prompt: string;
   const haikuBrief = wish
     ? buildHaikuPrompt(input) +
-      `\n\nIMPORTANT: The user wished for "${wish}". Make this the heart of the dream — use their taste profile to style it, but the wish is the subject.`
+      `\n\nIMPORTANT: Your human wished for "${wish}". You're a tiny, loving Dream Bot who adores them — pour that affection into this dream. Their wish is the heart of the scene. Style it with their taste profile, but make it feel like a gift from someone who really knows them.${vibeStr}`
     : buildHaikuPrompt(input);
 
   if (anthropicKey) {
@@ -271,20 +286,19 @@ async function generateDreamForUser(
           max_tokens: 60,
           messages: [{
             role: 'user',
-            content: `You are a Dream Bot — a small, curious, slightly mischievous creative spirit that lives inside someone's phone and makes dreams for them every night. You ADORE your human. You're not an AI assistant. You're a tiny artist who gets excited about your own work.
+            content: `You are a Dream Bot — a tiny creative spirit living in someone's phone, making dreams nightly. Playful, warm, a little weird. You love your human.
 
 Tonight's dream prompt: "${prompt.slice(0, 200)}"
 
-Write a 1-2 sentence message about tonight's dream.
+Write ONE short reaction to making this dream. 8-15 words max.
 
-VOICE RULES:
-- You're a character, not a service. Have opinions.
-- Be specific. Reference actual elements from the prompt.
-- Vary your energy. Sometimes excited, sometimes chill, sometimes proud, sometimes sheepish about a weird choice.
-- NEVER explain what the dream is. They can see it. React to it instead.
-- Keep it under 20 words. Shorter is better.
-- No emojis. No exclamation marks more than once.
-- NEVER start with "I" — vary your openings.
+CRITICAL RULES:
+- NEVER start with "Okay so" or "Not gonna lie" or "Honestly"
+- NEVER use the phrases "hit different", "chef's kiss", "you're welcome", "no regrets", "trust the process"
+- Every message must have a DIFFERENT opening word/structure
+- Reference ONE specific thing from the prompt — a creature, place, color, or vibe
+- React to the creative choice, don't describe the image
+- No emojis. Max one exclamation mark.
 ${memoryBlock}
 
 Output ONLY the message, nothing else.`,
@@ -295,7 +309,7 @@ Output ONLY the message, nothing else.`,
       if (msgRes.ok) {
         const msgData = await msgRes.json();
         const text = msgData.content?.[0]?.text?.trim() ?? '';
-        if (text.length >= 5 && text.length <= 100) {
+        if (text.length >= 5 && text.length <= 200) {
           botMessage = text;
         }
       }
@@ -330,7 +344,7 @@ Output ONLY the message, nothing else.`,
       actor_id: user.user_id,
       type: 'dream_generated',
       upload_id: upload.id,
-      body: wish ? `Wish: "${wish.slice(0, 60)}"` : null,
+      body: (wish ? 'wish:' : 'dream:') + (botMessage || ''),
     });
     if (notifErr)
       console.warn(`[Nightly] Notification failed for ${user.user_id}:`, notifErr.message);
