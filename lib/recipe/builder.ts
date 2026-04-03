@@ -177,10 +177,12 @@ export function buildPromptInput(recipe: Recipe, archetype?: DreamArchetype): Pr
     if (subjectRoll < 0.3) {
       // 30% — a fantastical creature or character
       dreamSubject = pick(DREAM_SUBJECTS);
-      // 20% chance to pluralize — "a dragon" becomes "a group of dragons"
-      if (Math.random() < 0.2 && dreamSubject.startsWith('a ')) {
+      // 20% chance to pluralize — but never humans
+      const humanWords = ['warrior', 'figure', 'explorer', 'dancer', 'hacker', 'surfer', 'pirate', 'vampire', 'gladiator', 'sorcerer', 'archer', 'alchemist', 'blacksmith', 'captain', 'ninja', 'diver', 'kid', 'witch'];
+      const isHuman = humanWords.some(w => dreamSubject.toLowerCase().includes(w));
+      if (Math.random() < 0.2 && dreamSubject.startsWith('a ') && !isHuman) {
         const groupWords = ['a group of', 'a pack of', 'a flock of', 'a swarm of', 'an army of', 'a parade of', 'a crew of', 'a trio of'];
-        const singular = dreamSubject.slice(2); // remove "a "
+        const singular = dreamSubject.slice(2);
         dreamSubject = `${pick(groupWords)} ${singular}s`;
       }
     } else if (subjectRoll < 0.35) {

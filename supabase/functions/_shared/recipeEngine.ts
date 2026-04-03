@@ -6,7 +6,7 @@
  *                  lib/recipe/utils.ts, lib/recipe/builder.ts
  *
  * DO NOT EDIT DIRECTLY. Run: node scripts/sync-deno-engine.js
- * Generated: 2026-04-03T16:35:27.231Z
+ * Generated: 2026-04-03T17:48:57.315Z
  */
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1719,6 +1719,12 @@ export const INTEREST_FLAVORS: Record<string, string[]> = {
     'a Ponyo ramen bowl so perfect it glows, steam curling, a tiny fish girl watching from the counter',
     'an anime kitchen at dawn, someone making bento boxes with impossible precision and love',
     'a cozy anime apartment filled with plants, fairy lights, a cat on every surface, rain outside',
+    // Alluring anime
+    'an anime girl in a cropped hoodie and cat ears, backlit by a gaming screen glow, controller in hand, looking over her shoulder',
+    'a magical girl powering up, costume barely containing the energy, sparkles and ribbons everywhere, fierce determination',
+    'an anime beach episode moment, girl in a bikini running through shallow waves, sunset, hair flying, pure summer energy',
+    'a kunoichi on a moonlit rooftop, outfit clinging from the rain, katana drawn, city lights below, dangerous and beautiful',
+    'an anime idol on stage, spotlight catching sequins, crowd of glowing lightsticks, mid-dance pose, confidence radiating',
   ],
   horror: [
     'a haunted Victorian mansion where the windows glow different colors on each floor',
@@ -2237,6 +2243,22 @@ export const DREAM_SUBJECTS = [
   'a marketplace appearing in the sky as merchant spirits trade impossible goods',
   'a warrior splitting a meteor with their sword, riding the resulting fragments',
   'a child discovering they can walk on water, leaving flowers blooming in their wake',
+  // Alluring / glamour characters
+  'a sorceress in flowing robes that cling like liquid, casting a spell that lights up her face and the entire forest',
+  'an anime girl with pastel hair sitting on a rooftop at sunset, wind catching her skirt, city lights below, looking right at you',
+  'a mermaid lounging on sun-warmed rocks, iridescent tail glistening, wet hair over bare shoulders, watching a ship pass',
+  'a femme fatale in a sequin dress stepping out of shadows in a neon-soaked alley, rain on her skin, smirk on her lips',
+  'a warrior queen in ornate armor that shows as much as it protects, sword planted, wind in her hair, daring you to approach',
+  'a fox-girl in a hot spring, steam curling around her, ears twitching, blushing, cherry blossoms landing on the water',
+  'a cyberpunk bounty hunter leaning against a rain-soaked wall, neon reflecting off her bodysuit, holographic tattoos pulsing',
+  'a goddess emerging from ocean waves at golden hour, sea foam clinging to curves, hair flowing like kelp, elemental and wild',
+  'a vampire countess in sheer black lace, candlelit chamber, blood-red lips, one shoulder bare, ancient and devastating',
+  'a dancer frozen mid-leap, fabric trailing like wings, every muscle visible, spotlight catching sweat like diamonds',
+  'a magical girl mid-transformation, ribbons of light wrapping around her body, sparkles erupting, power awakening',
+  'a lounge singer in liquid gold sequins, vintage microphone, smoky spotlight, eyes closed mid-note, the room holding its breath',
+  'an elven archer drawing a bow, the string brushing her bare collarbone, forest light dappling across her face',
+  'a surfer walking out of turquoise water at sunset, bikini, salt-kissed skin, water droplets catching light like diamonds',
+  'a desert queen draped in gold chains and sheer silk on a sand dune at sunset, wind pressing fabric against every curve',
 ];
 
 // Interests that are too vague on their own — always expand to a specific flavor
@@ -2628,10 +2650,12 @@ export function buildPromptInput(recipe: Recipe, archetype?: DreamArchetype): Pr
     if (subjectRoll < 0.3) {
       // 30% — a fantastical creature or character
       dreamSubject = pick(DREAM_SUBJECTS);
-      // 20% chance to pluralize — "a dragon" becomes "a group of dragons"
-      if (Math.random() < 0.2 && dreamSubject.startsWith('a ')) {
+      // 20% chance to pluralize — but never humans
+      const humanWords = ['warrior', 'figure', 'explorer', 'dancer', 'hacker', 'surfer', 'pirate', 'vampire', 'gladiator', 'sorcerer', 'archer', 'alchemist', 'blacksmith', 'captain', 'ninja', 'diver', 'kid', 'witch'];
+      const isHuman = humanWords.some(w => dreamSubject.toLowerCase().includes(w));
+      if (Math.random() < 0.2 && dreamSubject.startsWith('a ') && !isHuman) {
         const groupWords = ['a group of', 'a pack of', 'a flock of', 'a swarm of', 'an army of', 'a parade of', 'a crew of', 'a trio of'];
-        const singular = dreamSubject.slice(2); // remove "a "
+        const singular = dreamSubject.slice(2);
         dreamSubject = `${pick(groupWords)} ${singular}s`;
       }
     } else if (subjectRoll < 0.35) {
