@@ -268,4 +268,4 @@ export const LIMITS = {
 } as const;
 
 /** Total steps in the onboarding flow */
-export const TOTAL_STEPS = 12;
+export const TOTAL_STEPS = 11;

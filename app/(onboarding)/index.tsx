@@ -10,7 +10,7 @@ import { WelcomeStep } from '@/components/onboarding/WelcomeStep';
 import { InterestsStep } from '@/components/onboarding/InterestsStep';
 import { VibesStep } from '@/components/onboarding/VibesStep';
 import { SpiritCompanionStep } from '@/components/onboarding/SpiritCompanionStep';
-import { StyleSpectrumStep } from '@/components/onboarding/StyleSpectrumStep';
+// StyleSpectrumStep removed — sliders merged into SurpriseFactorStep
 import { WorldBuilderStep } from '@/components/onboarding/WorldBuilderStep';
 import { SettingsStep } from '@/components/onboarding/SettingsStep';
 import { MoodBoardStep } from '@/components/onboarding/MoodBoardStep';
@@ -35,7 +35,6 @@ const STEPS: StepConfig[] = [
   { key: 'interests', component: InterestsStep },
   { key: 'vibes', component: VibesStep },
   { key: 'spirit', component: SpiritCompanionStep },
-  { key: 'style', component: StyleSpectrumStep },
   { key: 'world', component: WorldBuilderStep },
   { key: 'settings', component: SettingsStep },
   { key: 'mood', component: MoodBoardStep },
