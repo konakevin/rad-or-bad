@@ -8,41 +8,20 @@ import { colors } from '@/constants/theme';
 const SLIDER_WIDTH = 280;
 const THUMB_SIZE = 28;
 
-interface Props {
-  onNext: () => void;
-  onBack: () => void;
-}
+interface Props { onNext: () => void; onBack: () => void; }
 
-// Compress slider 0–1 to 0.10–0.90 so choices feel meaningful but never fully locked
-function toStored(slider: number): number {
-  return 0.1 + slider * 0.8;
-}
-function toSlider(stored: number): number {
-  return Math.max(0, Math.min(1, (stored - 0.1) / 0.8));
-}
-
-function Slider({
-  label,
-  leftLabel,
-  rightLabel,
-  value,
-  onChange,
-}: {
-  label: string;
-  leftLabel: string;
-  rightLabel: string;
-  value: number;
-  onChange: (v: number) => void;
-}) {
-  const [localValue, setLocalValue] = useState(value);
+export function SurpriseFactorStep({ onNext, onBack }: Props) {
+  const chaos = useOnboardingStore((s) => s.recipe.axes.chaos);
+  const setChaos = useOnboardingStore((s) => s.setChaos);
+  const [sliderValue, setSliderValue] = useState(chaos);
   const trackRef = useRef<View>(null);
   const trackLeft = useRef(0);
 
   function measureAndHandle(pageX: number) {
     const relative = pageX - trackLeft.current;
     const clamped = Math.max(0, Math.min(1, relative / SLIDER_WIDTH));
-    setLocalValue(clamped);
-    onChange(clamped);
+    setSliderValue(clamped);
+    setChaos(clamped);
   }
 
   function handleGrant(pageX: number) {
@@ -52,8 +31,8 @@ function Slider({
         trackLeft.current = x;
         const relative = pageX - x;
         const clamped = Math.max(0, Math.min(1, relative / SLIDER_WIDTH));
-        setLocalValue(clamped);
-        onChange(clamped);
+        setSliderValue(clamped);
+        setChaos(clamped);
       });
     }
   }
@@ -62,69 +41,43 @@ function Slider({
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   }
 
-  return (
-    <View style={sliderStyles.container}>
-      <Text style={sliderStyles.label}>{label}</Text>
-      <View style={sliderStyles.labelRow}>
-        <Text style={sliderStyles.endLabel}>{leftLabel}</Text>
-        <Text style={sliderStyles.endLabel}>{rightLabel}</Text>
-      </View>
-      <View
-        style={sliderStyles.hitArea}
-        onStartShouldSetResponder={() => true}
-        onMoveShouldSetResponder={() => true}
-        onResponderGrant={(e) => handleGrant(e.nativeEvent.pageX)}
-        onResponderMove={(e) => measureAndHandle(e.nativeEvent.pageX)}
-        onResponderRelease={handleRelease}
-      >
-        <View ref={trackRef} style={sliderStyles.track}>
-          <View style={[sliderStyles.fill, { width: localValue * SLIDER_WIDTH }]} />
-          <View
-            style={[
-              sliderStyles.thumb,
-              { transform: [{ translateX: localValue * (SLIDER_WIDTH - THUMB_SIZE) }] },
-            ]}
-          />
-        </View>
-      </View>
-    </View>
-  );
-}
+  const label = sliderValue < 0.25 ? 'Very predictable — stay close to my picks'
+    : sliderValue < 0.5 ? 'Mostly on-brand with a few surprises'
+    : sliderValue < 0.75 ? 'Adventurous — surprise me often'
+    : 'Full chaos — go wild, I love surprises';
 
-export function SurpriseFactorStep({ onNext, onBack }: Props) {
-  const recipe = useOnboardingStore((s) => s.recipe);
-  const setChaos = useOnboardingStore((s) => s.setChaos);
-  const setWeirdness = useOnboardingStore((s) => s.setWeirdness);
-  const setScale = useOnboardingStore((s) => s.setScale);
+  const emoji = sliderValue < 0.25 ? '🎯' : sliderValue < 0.5 ? '🌤' : sliderValue < 0.75 ? '🎲' : '🌪';
 
   return (
     <View style={s.root}>
       <View style={s.content}>
-        <Text style={s.title}>Dial it in</Text>
-        <Text style={s.subtitle}>Fine tune how your dreams feel</Text>
+        <Text style={s.title}>How adventurous?</Text>
+        <Text style={s.subtitle}>How much should your AI surprise you?</Text>
 
-        <View style={s.sliders}>
-          <Slider
-            label="How adventurous?"
-            leftLabel="Stay on brand"
-            rightLabel="Surprise me"
-            value={recipe.axes.chaos}
-            onChange={setChaos}
-          />
-          <Slider
-            label="How weird do you dream?"
-            leftLabel="A little"
-            rightLabel="A lot"
-            value={toSlider(recipe.axes.weirdness)}
-            onChange={(v) => setWeirdness(toStored(v))}
-          />
-          <Slider
-            label="How big do you dream?"
-            leftLabel="Close up"
-            rightLabel="Epic vista"
-            value={toSlider(recipe.axes.scale)}
-            onChange={(v) => setScale(toStored(v))}
-          />
+        <View style={s.sliderContainer}>
+          <View style={s.labelRow}>
+            <Text style={s.endLabel}>Predictable</Text>
+            <Text style={s.endLabel}>Surprise Me</Text>
+          </View>
+
+          <View
+            style={s.hitArea}
+            onStartShouldSetResponder={() => true}
+            onMoveShouldSetResponder={() => true}
+            onResponderGrant={(e) => handleGrant(e.nativeEvent.pageX)}
+            onResponderMove={(e) => measureAndHandle(e.nativeEvent.pageX)}
+            onResponderRelease={handleRelease}
+          >
+            <View ref={trackRef} style={s.sliderTrack}>
+              <View style={[s.sliderFill, { width: sliderValue * SLIDER_WIDTH }]} />
+              <View style={[s.sliderThumb, { transform: [{ translateX: sliderValue * (SLIDER_WIDTH - THUMB_SIZE) }] }]} />
+            </View>
+          </View>
+
+          <View style={s.resultRow}>
+            <Text style={s.emoji}>{emoji}</Text>
+            <Text style={s.resultLabel}>{label}</Text>
+          </View>
         </View>
       </View>
 
@@ -134,14 +87,10 @@ export function SurpriseFactorStep({ onNext, onBack }: Props) {
             <Ionicons name="arrow-back" size={18} color="#FFFFFF" />
             <Text style={s.backBtnText}>Back</Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={s.nextButton}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-              onNext();
-            }}
-            activeOpacity={0.7}
-          >
+          <TouchableOpacity style={s.nextButton} onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            onNext();
+          }} activeOpacity={0.7}>
             <Text style={s.nextButtonText}>Next</Text>
             <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
           </TouchableOpacity>
@@ -151,70 +100,43 @@ export function SurpriseFactorStep({ onNext, onBack }: Props) {
   );
 }
 
-const sliderStyles = StyleSheet.create({
-  container: { gap: 10 },
-  label: { color: colors.textPrimary, fontSize: 16, fontWeight: '700' },
-  labelRow: { flexDirection: 'row', justifyContent: 'space-between', width: SLIDER_WIDTH },
-  endLabel: { color: colors.textSecondary, fontSize: 13, fontWeight: '600' },
-  hitArea: { paddingVertical: 16 },
-  track: {
-    width: SLIDER_WIDTH,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.surface,
-    justifyContent: 'center',
-  },
-  fill: {
-    position: 'absolute',
-    left: 0,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.accent,
-  },
-  thumb: {
-    position: 'absolute',
-    width: THUMB_SIZE,
-    height: THUMB_SIZE,
-    borderRadius: THUMB_SIZE / 2,
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 4,
-  },
-});
-
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },
   content: { flex: 1, paddingHorizontal: 20, paddingTop: 4 },
   title: { color: colors.textPrimary, fontSize: 28, fontWeight: '800', marginBottom: 8 },
-  subtitle: { color: colors.textSecondary, fontSize: 16, marginBottom: 36 },
-  sliders: { alignItems: 'center', gap: 28 },
+  subtitle: { color: colors.textSecondary, fontSize: 16, marginBottom: 48 },
+  sliderContainer: { alignItems: 'center', gap: 24 },
+  labelRow: { flexDirection: 'row', justifyContent: 'space-between', width: SLIDER_WIDTH },
+  endLabel: { color: colors.textSecondary, fontSize: 14, fontWeight: '600' },
+  hitArea: { paddingVertical: 16 },
+  sliderTrack: {
+    width: SLIDER_WIDTH, height: 8, borderRadius: 4,
+    backgroundColor: colors.surface, justifyContent: 'center',
+  },
+  sliderFill: {
+    position: 'absolute', left: 0, height: 8, borderRadius: 4, backgroundColor: colors.accent,
+  },
+  sliderThumb: {
+    position: 'absolute', width: THUMB_SIZE, height: THUMB_SIZE, borderRadius: THUMB_SIZE / 2,
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000', shadowOpacity: 0.3, shadowRadius: 4, shadowOffset: { width: 0, height: 2 }, elevation: 4,
+  },
+  resultRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 8 },
+  emoji: { fontSize: 24 },
+  resultLabel: { color: colors.textPrimary, fontSize: 15, fontWeight: '600', flex: 1 },
   footer: { paddingHorizontal: 20, paddingBottom: 16 },
   footerRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   backBtn: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 16,
-    borderRadius: 14,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.accentBorder,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+    paddingVertical: 16, borderRadius: 14,
+    backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.accentBorder,
   },
   backBtnText: { color: '#FFFFFF', fontSize: 15, fontWeight: '600' },
   nextButton: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: colors.accent,
-    borderRadius: 14,
-    paddingVertical: 16,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 8, backgroundColor: colors.accent, borderRadius: 14, paddingVertical: 16,
   },
   nextButtonText: { color: '#FFFFFF', fontSize: 17, fontWeight: '700' },
 });

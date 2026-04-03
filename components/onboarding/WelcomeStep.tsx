@@ -5,21 +5,10 @@ import * as Haptics from 'expo-haptics';
 import { colors } from '@/constants/theme';
 import { MASCOT_URLS } from '@/constants/mascots';
 
-interface Props {
-  onNext: () => void;
-  onBack: () => void;
-}
+interface Props { onNext: () => void; onBack: () => void; }
 
-function StepRow({
-  icon,
-  color,
-  title,
-  subtitle,
-}: {
-  icon: string;
-  color: string;
-  title: string;
-  subtitle: string;
+function StepRow({ icon, color, title, subtitle }: {
+  icon: string; color: string; title: string; subtitle: string;
 }) {
   return (
     <View style={s.stepRow}>
@@ -44,14 +33,17 @@ export function WelcomeStep({ onNext }: Props) {
     <View style={s.root}>
       <View style={s.content}>
         <View style={s.iconStack}>
-          <Image source={{ uri: MASCOT_URLS[0] }} style={s.mascot} contentFit="cover" />
+          <Image
+            source={{ uri: MASCOT_URLS[0] }}
+            style={s.mascot}
+            contentFit="cover"
+          />
         </View>
 
         <Text style={s.title}>Meet your Dream Bot</Text>
 
         <Text style={s.body}>
-          You're about to create your own little Dream Bot — a personal AI that learns your taste
-          and creates stunning art just for you, every single day.
+          You're about to create your own little Dream Bot — a personal AI that learns your taste and creates stunning art just for you, every single day.
         </Text>
 
         <View style={s.steps}>
@@ -59,7 +51,7 @@ export function WelcomeStep({ onNext }: Props) {
             icon="color-palette"
             color={colors.accent}
             title="Teach it your style"
-            subtitle="Tell us what you love and we'll dream it for you"
+            subtitle="Pick your interests, mood, and personality"
           />
           <StepRow
             icon="moon"
@@ -75,7 +67,9 @@ export function WelcomeStep({ onNext }: Props) {
           />
         </View>
 
-        <Text style={s.footnote}>Takes about 30 seconds. You can always change it later.</Text>
+        <Text style={s.footnote}>
+          Takes about 30 seconds. You can always change it later.
+        </Text>
       </View>
 
       <View style={s.footer}>
@@ -97,32 +91,21 @@ const s = StyleSheet.create({
   },
   iconStack: { alignItems: 'center', marginBottom: 28 },
   mascot: {
-    width: 160,
-    height: 160,
-    borderRadius: 32,
+    width: 160, height: 160, borderRadius: 32,
   },
   title: {
-    color: colors.textPrimary,
-    fontSize: 28,
-    fontWeight: '800',
-    textAlign: 'center',
-    marginBottom: 14,
+    color: colors.textPrimary, fontSize: 28, fontWeight: '800',
+    textAlign: 'center', marginBottom: 14,
   },
   body: {
-    color: colors.textSecondary,
-    fontSize: 16,
-    lineHeight: 23,
-    textAlign: 'center',
-    marginBottom: 32,
+    color: colors.textSecondary, fontSize: 16, lineHeight: 23,
+    textAlign: 'center', marginBottom: 32,
   },
   steps: { gap: 18, marginBottom: 28 },
   stepRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   stepIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 44, height: 44, borderRadius: 14,
+    alignItems: 'center', justifyContent: 'center',
   },
   stepText: { flex: 1, gap: 2 },
   stepTitle: { color: colors.textPrimary, fontSize: 16, fontWeight: '700' },
@@ -130,13 +113,8 @@ const s = StyleSheet.create({
   footnote: { color: colors.textSecondary, fontSize: 13, textAlign: 'center' },
   footer: { paddingHorizontal: 20, paddingBottom: 16 },
   startButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: colors.accent,
-    borderRadius: 14,
-    paddingVertical: 16,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 8, backgroundColor: colors.accent, borderRadius: 14, paddingVertical: 16,
   },
   startButtonText: { color: '#FFFFFF', fontSize: 17, fontWeight: '700' },
 });

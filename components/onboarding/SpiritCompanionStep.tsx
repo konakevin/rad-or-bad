@@ -3,10 +3,7 @@ import { SPIRIT_COMPANIONS } from '@/constants/onboarding';
 import { OnboardingTileScreen } from '@/components/OnboardingTileScreen';
 import type { SpiritCompanion } from '@/types/recipe';
 
-interface Props {
-  onNext: () => void;
-  onBack: () => void;
-}
+interface Props { onNext: () => void; onBack: () => void; }
 
 export function SpiritCompanionStep({ onNext, onBack }: Props) {
   const companion = useOnboardingStore((s) => s.recipe.spirit_companion);
@@ -18,15 +15,11 @@ export function SpiritCompanionStep({ onNext, onBack }: Props) {
       stepNumber={2}
       title="Pick your dream companion"
       subtitle="This little friend may appear in your dreams — or skip if you'd rather not"
-      tiles={[{ key: 'none', label: 'No Companion', icon: 'close-circle' }, ...SPIRIT_COMPANIONS]}
-      selected={companion ? [companion] : ['none']}
+      tiles={SPIRIT_COMPANIONS}
+      selected={companion ? [companion] : []}
       onToggle={(key) => {
-        if (key === 'none') {
-          setCompanion(null);
-        } else {
-          const k = key as SpiritCompanion;
-          setCompanion(companion === k ? null : k);
-        }
+        const k = key as SpiritCompanion;
+        setCompanion(companion === k ? null : k);
       }}
       singleSelect
       minRequired={0}

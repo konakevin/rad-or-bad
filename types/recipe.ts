@@ -20,153 +20,54 @@ export interface RecipeAxes {
 
 /** Color palette preference */
 export type ColorPalette =
-  | 'warm_sunset'
-  | 'cool_twilight'
-  | 'earthy_natural'
-  | 'soft_pastel'
-  | 'dark_bold'
-  | 'monochrome'
-  | 'neon'
-  | 'ocean_blues'
-  | 'jewel_tones';
+  | 'warm_sunset'     // 🟡🟠🔴
+  | 'cool_twilight'   // 🔵🟣💜
+  | 'earthy_natural'  // 🌿🍃💚
+  | 'soft_pastel'     // 🌸💗🤍
+  | 'dark_bold'       // ⚫🔴🟡
+  | 'monochrome'      // ⬛⬜
+  | 'sepia'           // 📜
+  | 'neon'            // 💡
+  | 'candy'           // 🍬
+  | 'everything';     // 🌈 random
 
 /** Interest categories the user selected */
 export type Interest =
-  | 'animals'
-  | 'nature'
-  | 'fantasy'
-  | 'sci_fi'
-  | 'architecture'
-  | 'fashion'
-  | 'food'
-  | 'abstract'
-  | 'dark'
-  | 'cute'
-  | 'ocean'
-  | 'space'
-  | 'whimsical'
-  | 'gaming'
-  | 'movies'
-  | 'anime'
-  | 'geek'
-  | 'horror'
-  | 'tattoo_art'
-  | 'mythology'
-  | 'travel'
-  | 'pride';
+  | 'animals' | 'nature' | 'fantasy' | 'sci_fi'
+  | 'architecture' | 'fashion' | 'food' | 'abstract'
+  | 'dark' | 'cute' | 'ocean' | 'space' | 'whimsical'
+  | 'gaming' | 'movies' | 'music' | 'geek' | 'sports' | 'travel' | 'pride';
 
 /** Personality trait tags — injected as adjectives into prompts */
 export type PersonalityTag =
-  | 'dreamy'
-  | 'adventurous'
-  | 'cozy'
-  | 'edgy'
-  | 'romantic'
-  | 'mysterious'
-  | 'playful'
-  | 'fierce'
-  | 'peaceful'
-  | 'chaotic'
-  | 'nostalgic'
-  | 'futuristic'
-  | 'elegant'
-  | 'raw'
-  | 'whimsical'
-  | 'bold'
-  | 'gentle'
-  | 'wild';
+  | 'dreamy' | 'adventurous' | 'cozy' | 'edgy'
+  | 'romantic' | 'mysterious' | 'playful' | 'fierce'
+  | 'peaceful' | 'chaotic' | 'nostalgic' | 'futuristic'
+  | 'elegant' | 'raw' | 'whimsical' | 'bold'
+  | 'gentle' | 'wild';
 
 /** Era / time period — controls the WORLD layer */
 export type Era =
-  | 'ancient'
-  | 'medieval'
-  | 'victorian'
-  | 'retro'
-  | 'modern'
-  | 'far_future'
-  | 'prehistoric'
-  | 'steampunk'
-  | 'art_deco'
-  | 'synthwave'
-  | 'y2k'
-  | 'wild_west'
-  | 'mythological'
-  | 'fairy_tale'
-  | 'post_apocalyptic'
-  | 'tropical'
-  | 'cyberpunk'
-  | 'pirate'
-  | 'ancient_egypt'
-  | 'samurai'
-  | 'underwater_kingdom'
-  | 'haunted'
-  | 'celestial'
-  | 'arctic';
+  | 'ancient' | 'medieval' | 'victorian'
+  | 'retro' | 'modern' | 'far_future'
+  | 'prehistoric' | 'steampunk' | 'art_deco' | 'synthwave';
 
 /** Setting — controls the WORLD layer */
 export type Setting =
-  | 'cozy_indoors'
-  | 'wild_outdoors'
-  | 'city_streets'
-  | 'otherworldly'
-  | 'beach_tropical'
-  | 'mountains'
-  | 'underground'
-  | 'space'
-  | 'village'
-  | 'underwater';
+  | 'cozy_indoors' | 'wild_outdoors' | 'city_streets' | 'otherworldly'
+  | 'beach_tropical' | 'mountains' | 'underground' | 'space' | 'village' | 'underwater';
 
 /** Scene atmosphere — weather/season/time combos */
 export type SceneAtmosphere =
-  | 'sunny_morning'
-  | 'rainy_afternoon'
-  | 'snowy_night'
-  | 'foggy_dawn'
-  | 'stormy_twilight'
-  | 'starry_midnight'
-  | 'golden_hour'
-  | 'aurora_night'
-  | 'moonlit'
-  | 'autumn_leaves'
-  | 'cherry_blossom'
-  | 'sunset_fire'
-  | 'overcast'
-  | 'tropical_rain'
-  | 'misty_forest';
+  | 'sunny_morning' | 'rainy_afternoon' | 'snowy_night'
+  | 'foggy_dawn' | 'stormy_twilight' | 'starry_midnight'
+  | 'golden_hour' | 'aurora_night';
 
 /** Spirit companion — recurring motif in ~30% of images */
 export type SpiritCompanion =
-  | 'fox'
-  | 'cat'
-  | 'owl'
-  | 'dragon'
-  | 'rabbit'
-  | 'wolf'
-  | 'jellyfish'
-  | 'deer'
-  | 'butterfly'
-  | 'robot'
-  | 'ghost'
-  | 'mushroom_creature'
-  | 'dog'
-  | 'bird'
-  | 'octopus'
-  | 'phoenix'
-  | 'snake'
-  | 'bear'
-  | 'whale'
-  | 'crow'
-  | 'turtle'
-  | 'horse'
-  | 'koi'
-  | 'lion'
-  | 'penguin'
-  | 'bee'
-  | 'tiger'
-  | 'fairy'
-  | 'unicorn'
-  | 'mermaid'
-  | 'narwhal';
+  | 'fox' | 'cat' | 'owl' | 'dragon' | 'rabbit'
+  | 'wolf' | 'jellyfish' | 'deer' | 'butterfly'
+  | 'robot' | 'ghost' | 'mushroom_creature';
 
 /** The complete taste recipe stored in user_recipes.recipe JSONB */
 export interface Recipe {
@@ -178,10 +79,6 @@ export interface Recipe {
   settings: Setting[];
   scene_atmospheres: SceneAtmosphere[];
   spirit_companion: SpiritCompanion | null;
-  /** Mood keys selected during onboarding — sampled per-dream for axis variety */
-  selected_moods?: string[];
-  /** Vibe keys selected during onboarding — maps to curated archetype bundles */
-  selected_vibes?: string[];
 }
 
 /** Default recipe — all axes at 0.5 (neutral), no selections */

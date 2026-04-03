@@ -3,10 +3,7 @@ import { INTEREST_TILES, LIMITS } from '@/constants/onboarding';
 import { OnboardingTileScreen } from '@/components/OnboardingTileScreen';
 import type { Interest } from '@/types/recipe';
 
-interface Props {
-  onNext: () => void;
-  onBack: () => void;
-}
+interface Props { onNext: () => void; onBack: () => void; }
 
 export function InterestsStep({ onNext, onBack }: Props) {
   const interests = useOnboardingStore((s) => s.recipe.interests);
@@ -17,7 +14,7 @@ export function InterestsStep({ onNext, onBack }: Props) {
       hideChrome
       stepNumber={1}
       title="What do you love?"
-      subtitle="These shape what shows up in your dreams"
+      subtitle="Pick at least 3 things that interest you"
       tiles={INTEREST_TILES}
       selected={interests}
       onToggle={(key) => toggleInterest(key as Interest)}

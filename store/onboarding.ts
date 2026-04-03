@@ -1,14 +1,7 @@
 import { create } from 'zustand';
 import type {
-  Recipe,
-  RecipeAxes,
-  Interest,
-  ColorPalette,
-  PersonalityTag,
-  Era,
-  Setting,
-  SceneAtmosphere,
-  SpiritCompanion,
+  Recipe, RecipeAxes, Interest, ColorPalette, PersonalityTag,
+  Era, Setting, SceneAtmosphere, SpiritCompanion,
 } from '@/types/recipe';
 import { DEFAULT_RECIPE } from '@/types/recipe';
 import { MOOD_TILES } from '@/constants/onboarding';
@@ -26,8 +19,6 @@ interface OnboardingStore {
   selectedMoods: string[];
   toggleMood: (key: string) => void;
 
-  selectedVibes: string[];
-  toggleVibe: (key: string) => void;
   toggleInterest: (interest: Interest) => void;
   setRealism: (value: number) => void;
   setMoodPosition: (energy: number, brightness: number) => void;
@@ -58,78 +49,32 @@ export const useOnboardingStore = create<OnboardingStore>((set) => ({
   toggleMood: (key) =>
     set((s) => {
       const current = s.selectedMoods;
-      const next = current.includes(key) ? current.filter((k) => k !== key) : [...current, key];
+      const next = current.includes(key)
+        ? current.filter((k) => k !== key)
+        : [...current, key];
       // Compute average energy/brightness/warmth from selected moods
       const selectedData = MOOD_TILES.filter((m) => next.includes(m.key));
       if (selectedData.length > 0) {
         const avgEnergy = selectedData.reduce((sum, m) => sum + m.energy, 0) / selectedData.length;
-        const avgBrightness =
-          selectedData.reduce((sum, m) => sum + m.brightness, 0) / selectedData.length;
+        const avgBrightness = selectedData.reduce((sum, m) => sum + m.brightness, 0) / selectedData.length;
         const avgWarmth = selectedData.reduce((sum, m) => sum + m.warmth, 0) / selectedData.length;
         return {
           selectedMoods: next,
           recipe: {
             ...s.recipe,
-            selected_moods: next,
-            axes: {
-              ...s.recipe.axes,
-              energy: clamp(avgEnergy),
-              brightness: clamp(avgBrightness),
-              color_warmth: clamp(avgWarmth),
-            },
+            axes: { ...s.recipe.axes, energy: clamp(avgEnergy), brightness: clamp(avgBrightness), color_warmth: clamp(avgWarmth) },
           },
         };
       }
       return { selectedMoods: next };
     }),
 
-  selectedVibes: [],
-  toggleVibe: (key) =>
-    set((s) => {
-      const current = s.selectedVibes;
-      const next = current.includes(key) ? current.filter((k) => k !== key) : [...current, key];
-      // Vibes also inject associated interests for the Chord engine
-      const VIBE_INTERESTS: Record<string, string[]> = {
-        cozy: ['nature', 'food', 'animals'],
-        dark: ['dark'],
-        glamour: ['fashion'],
-        gamer: ['gaming', 'geek'],
-        anime_fantasy: ['fantasy', 'gaming', 'anime'],
-        beach_ocean: ['ocean', 'nature'],
-        space_scifi: ['space', 'sci_fi'],
-        epic_adventure: ['sports', 'travel', 'nature'],
-        whimsical: ['whimsical', 'cute'],
-      };
-      // Merge vibe-implied interests with manually picked interests
-      const vibeInterests = new Set<string>(s.recipe.interests);
-      for (const v of next) {
-        for (const i of (VIBE_INTERESTS[v] ?? [])) {
-          vibeInterests.add(i);
-        }
-      }
-      return {
-        selectedVibes: next,
-        recipe: {
-          ...s.recipe,
-          selected_vibes: next,
-          interests: [...vibeInterests] as typeof s.recipe.interests,
-        },
-      };
-    }),
-
   toggleInterest: (interest) =>
     set((s) => {
       const current = s.recipe.interests;
-      let next = current.includes(interest)
+      const next = current.includes(interest)
         ? current.filter((i) => i !== interest)
         : [...current, interest];
-      // Sci-Fi & Space are merged on UI — picking sci_fi also adds space
-      if (interest === 'sci_fi' && next.includes('sci_fi') && !next.includes('space' as typeof interest)) {
-        next = [...next, 'space' as typeof interest];
-      }
-      if (interest === 'sci_fi' && !next.includes('sci_fi')) {
-        next = next.filter((i) => i !== ('space' as typeof interest));
-      }
       return { recipe: { ...s.recipe, interests: next } };
     }),
 
@@ -158,7 +103,9 @@ export const useOnboardingStore = create<OnboardingStore>((set) => ({
   togglePersonalityTag: (tag) =>
     set((s) => {
       const current = s.recipe.personality_tags;
-      const next = current.includes(tag) ? current.filter((t) => t !== tag) : [...current, tag];
+      const next = current.includes(tag)
+        ? current.filter((t) => t !== tag)
+        : [...current, tag];
       return { recipe: { ...s.recipe, personality_tags: next } };
     }),
 
@@ -180,7 +127,9 @@ export const useOnboardingStore = create<OnboardingStore>((set) => ({
   toggleEra: (era) =>
     set((s) => {
       const current = s.recipe.eras;
-      const next = current.includes(era) ? current.filter((e) => e !== era) : [...current, era];
+      const next = current.includes(era)
+        ? current.filter((e) => e !== era)
+        : [...current, era];
       return { recipe: { ...s.recipe, eras: next } };
     }),
 
@@ -215,5 +164,5 @@ export const useOnboardingStore = create<OnboardingStore>((set) => ({
 
   isEditing: false,
   setIsEditing: (v) => set({ isEditing: v }),
-  reset: () => set({ step: 1, isEditing: false, selectedMoods: [], selectedVibes: [], recipe: { ...DEFAULT_RECIPE } }),
+  reset: () => set({ step: 1, isEditing: false, selectedMoods: [], recipe: { ...DEFAULT_RECIPE } }),
 }));

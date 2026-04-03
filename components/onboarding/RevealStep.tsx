@@ -1,29 +1,16 @@
 import { useState, useRef, useCallback } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
-  Dimensions,
-  ScrollView,
-} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Dimensions, ScrollView } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  runOnJS,
-} from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming, runOnJS } from 'react-native-reanimated';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useOnboardingStore } from '@/store/onboarding';
 import { useAuthStore } from '@/store/auth';
 import { useFeedStore } from '@/store/feed';
 import { supabase } from '@/lib/supabase';
-import { generateFromRecipe } from '@/lib/dreamApi';
+import { buildPromptInput, buildRawPrompt } from '@/lib/recipeEngine';
 import { colors } from '@/constants/theme';
 import { MASCOT_URLS } from '@/constants/mascots';
 import { Toast } from '@/components/Toast';
@@ -31,7 +18,7 @@ import { Toast } from '@/components/Toast';
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 // Balanced resolution: sharper than 512, cheaper than 768
 const GEN_WIDTH = 640;
-const GEN_HEIGHT = Math.round(((SCREEN_HEIGHT / SCREEN_WIDTH) * GEN_WIDTH) / 8) * 8; // round to nearest 8
+const GEN_HEIGHT = Math.round((SCREEN_HEIGHT / SCREEN_WIDTH) * GEN_WIDTH / 8) * 8; // round to nearest 8
 const IMAGE_WIDTH = SCREEN_WIDTH - 48;
 const IMAGE_HEIGHT = Math.min(IMAGE_WIDTH * (SCREEN_HEIGHT / SCREEN_WIDTH), 380);
 const MAX_DREAMS = 5;
@@ -43,10 +30,7 @@ interface Dream {
   prompt: string;
 }
 
-interface Props {
-  onNext: () => void;
-  onBack: () => void;
-}
+interface Props { onNext: () => void; onBack: () => void; }
 
 export function RevealStep({ onBack }: Props) {
   const recipe = useOnboardingStore((s) => s.recipe);
@@ -113,11 +97,11 @@ export function RevealStep({ onBack }: Props) {
     setError(null);
 
     try {
-      // Server builds prompt from recipe, generates via Flux (skip Haiku for speed)
-      const result = await generateFromRecipe(recipe, { skipEnhance: true });
-      const url = result.image_url;
-      const prompt = result.prompt_used;
-      if (__DEV__) console.log('[Reveal] Got URL:', url?.slice(0, 80));
+      const input = buildPromptInput(recipe);
+      const prompt = buildRawPrompt(input);
+      console.log('[Reveal] Prompt:', prompt);
+      const url = await generateFluxImage(prompt);
+      console.log('[Reveal] Got URL:', url?.slice(0, 80));
 
       setDreams((prev) => {
         const next = [...prev, { url, prompt }];
@@ -131,7 +115,7 @@ export function RevealStep({ onBack }: Props) {
       setPhase('reveal');
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
-      if (__DEV__) console.warn('[Reveal] Generation failed:', err);
+      console.warn('[Reveal] Generation failed:', err);
       setError('Image generation failed. Tap to try again.');
       setPhase('reveal');
     } finally {
@@ -139,21 +123,81 @@ export function RevealStep({ onBack }: Props) {
     }
   }
 
+  async function generateFluxImage(prompt: string): Promise<string> {
+    const replicateToken = '***REMOVED***';
+
+    // Submit prediction
+    const submitResponse = await fetch('https://api.replicate.com/v1/models/black-forest-labs/flux-dev/predictions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${replicateToken}`,
+      },
+      body: JSON.stringify({
+        input: {
+          prompt,
+          aspect_ratio: '9:16',
+          num_outputs: 1,
+          output_format: 'jpg',
+        },
+      }),
+    });
+
+    if (submitResponse.status === 429) {
+      // Rate limited — wait and retry once
+      const errBody = await submitResponse.text();
+      const retryAfter = JSON.parse(errBody).retry_after ?? 6;
+      console.log('[Reveal] Rate limited, retrying in', retryAfter, 's');
+      await new Promise((r) => setTimeout(r, retryAfter * 1000));
+      return generateFluxImage(prompt);
+    }
+
+    if (!submitResponse.ok) {
+      const errBody = await submitResponse.text();
+      console.warn('[Reveal] Replicate submit error:', submitResponse.status, errBody);
+      throw new Error(`Replicate submit error: ${submitResponse.status}`);
+    }
+
+    const prediction = await submitResponse.json();
+    console.log('[Reveal] Replicate prediction:', prediction.id);
+
+    // Poll for result
+    let attempts = 0;
+    while (attempts < 60) {
+      await new Promise((r) => setTimeout(r, 1500));
+      attempts++;
+
+      const pollResponse = await fetch(`https://api.replicate.com/v1/predictions/${prediction.id}`, {
+        headers: { 'Authorization': `Bearer ${replicateToken}` },
+      });
+      const pollData = await pollResponse.json();
+
+      if (pollData.status === 'succeeded') {
+        const url = pollData.output?.[0];
+        if (!url) throw new Error('No image URL in result');
+        console.log('[Reveal] Got URL:', url.slice(0, 80));
+        return url;
+      }
+
+      if (pollData.status === 'failed' || pollData.status === 'canceled') {
+        throw new Error(`Replicate generation ${pollData.status}: ${pollData.error ?? 'unknown'}`);
+      }
+    }
+    throw new Error('Generation timed out');
+  }
+
   function handleDreamAgain() {
     if (!canDreamAgain) return;
     generateImage();
   }
 
-  const handleScrollEnd = useCallback(
-    (e: { nativeEvent: { contentOffset: { x: number } } }) => {
-      const idx = Math.round(e.nativeEvent.contentOffset.x / IMAGE_WIDTH);
-      if (idx >= 0 && idx < dreams.length && idx !== activeIndex) {
-        setActiveIndex(idx);
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      }
-    },
-    [dreams.length, activeIndex]
-  );
+  const handleScrollEnd = useCallback((e: { nativeEvent: { contentOffset: { x: number } } }) => {
+    const idx = Math.round(e.nativeEvent.contentOffset.x / IMAGE_WIDTH);
+    if (idx >= 0 && idx < dreams.length && idx !== activeIndex) {
+      setActiveIndex(idx);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+  }, [dreams.length, activeIndex]);
 
   async function handleCreateBot() {
     if (!user || !activeDream) return;
@@ -161,86 +205,28 @@ export function RevealStep({ onBack }: Props) {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
 
     try {
-      await supabase.from('user_recipes').upsert(
-        {
-          user_id: user.id,
-          recipe: recipe as unknown as import('@/types/database').Json,
-          onboarding_completed: true,
-          ai_enabled: true,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'user_id' }
-      );
+      await supabase.from('user_recipes').upsert({
+        user_id: user.id,
+        recipe: JSON.parse(JSON.stringify(recipe)),
+        onboarding_completed: true,
+        ai_enabled: true,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'user_id' });
 
       await supabase.from('users').update({ has_ai_recipe: true }).eq('id', user.id);
 
-      // Match dream archetypes: interest×mood matching + vibe bundle injection
-      try {
-        const userInterests = new Set<string>(recipe.interests ?? []);
-        const userMoods = new Set<string>(recipe.selected_moods ?? []);
-        const userVibes: string[] = (recipe as unknown as Record<string, unknown>).selected_vibes as string[] ?? [];
+      const { data: insertedRow, error: uploadError } = await supabase.from('uploads').insert({
+        user_id: user.id,
+        categories: ['fantasy'],
+        image_url: activeDream.url,
+        media_type: 'image',
+        caption: null,
+        is_ai_generated: true,
+        ai_prompt: activeDream.prompt || null,
+        is_approved: true,
+      }).select('id').single();
 
-        // Fetch all active archetypes (table not in generated types, cast needed)
-        const { data: archs } = await (supabase as unknown as { from: (t: string) => { select: (s: string) => { eq: (k: string, v: unknown) => Promise<{ data: { id: string; key: string; trigger_interests: string[]; trigger_moods: string[] }[] | null }> } } }).from('dream_archetypes')
-          .select('id, key, trigger_interests, trigger_moods')
-          .eq('is_active', true);
-
-        if (archs) {
-          const matchedIds = new Set<string>();
-
-          // 1. Interest × mood matching (original algorithm)
-          for (const a of archs) {
-            if (
-              a.trigger_interests.some((i) => userInterests.has(i as string)) &&
-              a.trigger_moods.some((m) => userMoods.has(m as string))
-            ) {
-              matchedIds.add(a.id);
-            }
-          }
-
-          // 2. Vibe bundle injection
-          const { VIBE_ARCHETYPE_MAP } = await import('@/constants/onboarding');
-          for (const vibe of userVibes) {
-            const patterns = VIBE_ARCHETYPE_MAP[vibe] ?? [];
-            for (const a of archs) {
-              for (const pattern of patterns) {
-                if (pattern.endsWith('_') ? a.key.startsWith(pattern) : a.key === pattern) {
-                  matchedIds.add(a.id);
-                  break;
-                }
-              }
-            }
-          }
-
-          if (matchedIds.size > 0) {
-            // user_archetypes not in generated types either
-            const ua = supabase as unknown as { from: (t: string) => { delete: () => { eq: (k: string, v: string) => Promise<unknown> }; insert: (rows: unknown[]) => Promise<unknown> } };
-            await ua.from('user_archetypes').delete().eq('user_id', user.id);
-            await ua.from('user_archetypes').insert(
-              [...matchedIds].map((id) => ({ user_id: user.id, archetype_id: id }))
-            );
-          }
-        }
-      } catch {
-        // Non-critical — dreams still work without archetypes
-      }
-
-      const { data: insertedRow, error: uploadError } = await supabase
-        .from('uploads')
-        .insert({
-          user_id: user.id,
-          categories: ['fantasy'],
-          image_url: activeDream.url,
-          media_type: 'image',
-          caption: null,
-          is_ai_generated: true,
-          ai_prompt: activeDream.prompt || null,
-          is_approved: true,
-        })
-        .select('id')
-        .single();
-
-      if (uploadError && __DEV__) {
+      if (uploadError) {
         console.warn('[Reveal] Upload error:', uploadError);
       }
 
@@ -261,7 +247,7 @@ export function RevealStep({ onBack }: Props) {
       Toast.show('Your Dream Bot is alive!', 'sparkles');
       router.replace('/(tabs)');
     } catch (err) {
-      if (__DEV__) console.warn('[Reveal] Create error:', err);
+      console.warn('[Reveal] Create error:', err);
       setPhase('reveal');
       Toast.show('Something went wrong', 'close-circle');
     }
@@ -272,32 +258,16 @@ export function RevealStep({ onBack }: Props) {
     return (
       <View style={s.root}>
         <View style={s.centeredContent}>
-          <Image source={{ uri: MASCOT_URLS[1] }} style={s.idleMascot} contentFit="cover" />
+          <Image
+            source={{ uri: MASCOT_URLS[1] }}
+            style={s.idleMascot}
+            contentFit="cover"
+          />
           <Text style={s.bigTitle}>Your Dream Bot is ready</Text>
           <Text style={s.centeredSub}>Tap below to see what it dreams up for you</Text>
           <TouchableOpacity
             style={[s.createButton, { alignSelf: 'stretch', marginTop: 8 }]}
-            onPress={async () => {
-              // Save the recipe before generating the first dream
-              if (user) {
-                try {
-                  await supabase.from('user_recipes').upsert(
-                    {
-                      user_id: user.id,
-                      recipe: recipe as unknown as import('@/types/database').Json,
-                      onboarding_completed: true,
-                      ai_enabled: true,
-                      updated_at: new Date().toISOString(),
-                    },
-                    { onConflict: 'user_id' }
-                  );
-                  await supabase.from('users').update({ has_ai_recipe: true }).eq('id', user.id);
-                } catch {
-                  // Non-critical — will be saved on post
-                }
-              }
-              generateImage();
-            }}
+            onPress={() => generateImage()}
             activeOpacity={0.7}
           >
             <Ionicons name="sparkles" size={20} color="#FFFFFF" />
@@ -313,7 +283,11 @@ export function RevealStep({ onBack }: Props) {
     return (
       <View style={s.root}>
         <View style={s.centeredContent}>
-          <Image source={{ uri: MASCOT_URLS[2] }} style={s.idleMascot} contentFit="cover" />
+          <Image
+            source={{ uri: MASCOT_URLS[2] }}
+            style={s.idleMascot}
+            contentFit="cover"
+          />
           <Text style={s.bigTitle}>Dreaming...</Text>
           <Text style={s.centeredSub}>Your Dream Bot is creating a dream for you</Text>
           <ActivityIndicator size="small" color={colors.accent} />
@@ -403,23 +377,40 @@ export function RevealStep({ onBack }: Props) {
               <ActivityIndicator color="#FFFFFF" />
             ) : (
               <>
-                <Ionicons name="cloud-upload" size={20} color="#FFFFFF" />
-                <Text style={s.createButtonText}>Post Your First Dream</Text>
+                <Ionicons name="sparkles" size={20} color="#FFFFFF" />
+                <Text style={s.createButtonText}>Create My Dream Bot</Text>
               </>
             )}
           </TouchableOpacity>
 
-          {canDreamAgain && (
+          <View style={s.secondaryRow}>
+            {canDreamAgain ? (
+              <TouchableOpacity
+                style={s.secondaryButton}
+                onPress={handleDreamAgain}
+                disabled={phase === 'creating' || phase === 'generating'}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="refresh" size={16} color={colors.accent} />
+                <Text style={s.secondaryButtonText}>Dream Again ({dreamsRemaining})</Text>
+              </TouchableOpacity>
+            ) : dreams.length > 1 ? (
+              <View style={s.secondaryButton}>
+                <Ionicons name="swap-horizontal" size={16} color={colors.textSecondary} />
+                <Text style={[s.secondaryButtonText, { color: colors.textSecondary }]}>Swipe to browse</Text>
+              </View>
+            ) : null}
+
             <TouchableOpacity
-              style={s.dreamAgainButton}
-              onPress={handleDreamAgain}
-              disabled={phase === 'creating' || phase === 'generating'}
+              style={s.secondaryButton}
+              onPress={onBack}
+              disabled={phase === 'creating'}
               activeOpacity={0.7}
             >
-              <Ionicons name="refresh" size={18} color={colors.textPrimary} />
-              <Text style={s.dreamAgainButtonText}>Dream Again ({dreamsRemaining})</Text>
+              <Ionicons name="arrow-back" size={16} color={colors.textSecondary} />
+              <Text style={[s.secondaryButtonText, { color: colors.textSecondary }]}>Go Back</Text>
             </TouchableOpacity>
-          )}
+          </View>
         </View>
       )}
     </View>
@@ -429,90 +420,53 @@ export function RevealStep({ onBack }: Props) {
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },
 
-  centeredContent: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 16,
-    paddingHorizontal: 32,
-  },
+  centeredContent: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16, paddingHorizontal: 32 },
   idleMascot: {
-    width: 140,
-    height: 140,
-    borderRadius: 28,
-    marginBottom: 8,
+    width: 140, height: 140, borderRadius: 28, marginBottom: 8,
   },
   bigTitle: { color: colors.textPrimary, fontSize: 22, fontWeight: '800', textAlign: 'center' },
   centeredSub: { color: colors.textSecondary, fontSize: 15, textAlign: 'center' },
 
   content: { flex: 1, paddingTop: 4, alignItems: 'center' },
   heading: {
-    color: colors.textPrimary,
-    fontSize: 20,
-    fontWeight: '800',
-    textAlign: 'center',
-    marginBottom: 6,
-    paddingHorizontal: 20,
+    color: colors.textPrimary, fontSize: 20, fontWeight: '800',
+    textAlign: 'center', marginBottom: 6, paddingHorizontal: 20,
   },
   subheading: {
-    color: colors.textSecondary,
-    fontSize: 13,
-    textAlign: 'center',
-    marginBottom: 16,
-    paddingHorizontal: 24,
-    lineHeight: 19,
+    color: colors.textSecondary, fontSize: 13, textAlign: 'center',
+    marginBottom: 16, paddingHorizontal: 24, lineHeight: 19,
   },
 
   imageWrap: {
-    width: IMAGE_WIDTH,
-    height: IMAGE_HEIGHT,
-    borderRadius: 20,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: colors.border,
+    width: IMAGE_WIDTH, height: IMAGE_HEIGHT,
+    borderRadius: 20, overflow: 'hidden',
+    borderWidth: 1, borderColor: colors.border,
   },
   imageSlide: {
-    width: IMAGE_WIDTH,
-    height: IMAGE_HEIGHT,
+    width: IMAGE_WIDTH, height: IMAGE_HEIGHT,
   },
   imageLoader: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
     zIndex: 0,
   },
   image: {
-    width: IMAGE_WIDTH,
-    height: IMAGE_HEIGHT,
-    zIndex: 1,
+    width: IMAGE_WIDTH, height: IMAGE_HEIGHT, zIndex: 1,
   },
   generatingOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.7)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
+    alignItems: 'center', justifyContent: 'center', gap: 12,
   },
   generatingText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
 
   dots: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 8,
-    marginTop: 14,
+    flexDirection: 'row', justifyContent: 'center', gap: 8, marginTop: 14,
   },
   dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.border,
+    width: 8, height: 8, borderRadius: 4, backgroundColor: colors.border,
   },
   dotActive: {
-    width: 20,
-    borderRadius: 4,
-    backgroundColor: colors.accent,
+    width: 20, borderRadius: 4, backgroundColor: colors.accent,
   },
 
   errorContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
@@ -520,30 +474,13 @@ const s = StyleSheet.create({
 
   footer: { paddingHorizontal: 20, paddingBottom: 16, gap: 12 },
   createButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    backgroundColor: colors.accent,
-    borderRadius: 14,
-    paddingVertical: 18,
-    shadowColor: colors.accent,
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 8,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 10, backgroundColor: colors.accent, borderRadius: 14, paddingVertical: 18,
+    shadowColor: colors.accent, shadowOpacity: 0.4, shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 }, elevation: 8,
   },
   createButtonText: { color: '#FFFFFF', fontSize: 18, fontWeight: '800' },
-  dreamAgainButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 14,
-    paddingVertical: 16,
-  },
-  dreamAgainButtonText: { color: colors.textPrimary, fontSize: 17, fontWeight: '700' },
+  secondaryRow: { flexDirection: 'row', justifyContent: 'center', gap: 28 },
+  secondaryButton: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 8 },
+  secondaryButtonText: { color: colors.accent, fontSize: 14, fontWeight: '600' },
 });

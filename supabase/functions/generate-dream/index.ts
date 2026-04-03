@@ -16,6 +16,134 @@ import type { Recipe } from '../_shared/recipe.ts';
 
 const MAX_DAILY_GENERATIONS = 50;
 
+// Curated + engine pool merged — all mediums in one place per model
+const CURATED_FLUX_STYLES = [
+  // Kevin's handpicked
+  'Bob Ross happy little trees, soft landscape, calm mountains, warm and gentle',
+  'Faded vintage photograph, slightly overexposed, warm nostalgic tones',
+  'Ornate embossed leather book cover style',
+  'Miniature tilt-shift photograph, toy-like depth of field, vivid saturated',
+  'Cottagecore illustrated, wildflowers, linen, soft pastoral warmth',
+  'Solarpunk, lush green futurism, solar panels on organic architecture',
+  'Cute 3D character render, soft rounded shapes, vibrant colors',
+  'DMT visionary art style, sacred geometry, infinite recursive patterns, overwhelming color',
+  'Spider-Verse mixed media, comic dots, paint splatters, dynamic angles',
+  'A whimsical chalk drawing on sidewalk, colorful and wobbly',
+  '1960s Pan Am advertisement illustration style, glamorous jet-age optimism, bold colors',
+  'Vaporwave aesthetic, pink and cyan gradients, Greek statues, surreal consumerism',
+  'A blacklight poster, psychedelic velvet colors glowing in the dark',
+  'Acid trip visuals, melting surfaces, breathing walls, colors bleeding into each other',
+  'Art nouveau, Alphonse Mucha style, flowing organic lines',
+  'Gustav Klimt gold-leaf Byzantine mosaic, ornate patterns',
+  'Adorable chibi kawaii illustration, pastel watercolors, big sparkly eyes',
+  'Pixar-style 3D render, soft rounded shapes, vibrant colors',
+  'Dreamworks animation style, expressive characters, cinematic lighting',
+  'A knitted Sackboy character, LittleBigPlanet craft world, buttons and zippers',
+  'Aardman claymation, Wallace & Gromit smooth clay, expressive faces',
+  'Soft shoujo manga claymation stop-motion, visible fingerprint textures in clay',
+  'K-pop album cover aesthetic, glossy, soft lighting, pastel gradients',
+  'Tim Burton gothic illustration, spindly limbs, spiral shapes, dark whimsy',
+  'LEGO brick diorama, everything built from LEGO, plastic studs visible',
+  'Comic book panel, bold ink outlines, halftone dots',
+  'Monet impressionist, soft water lilies, dappled light, dreamy blur',
+  'LEGO minifigure in a realistic world, tiny plastic character',
+  'Muppet-style felt puppet world, fuzzy textures, googly eyes, Jim Henson whimsy',
+  'LittleBigPlanet craft world, knitted characters, cardboard and sticker scenery',
+  'Oil painting style, visible brushstrokes, rich colors',
+  'Digital painting, cinematic lighting, vivid colors',
+  'Digital illustration, clean lines, vibrant composition',
+  'Fantasy illustration, lush detail, dramatic lighting',
+  'Papercraft diorama, handmade paper cutouts, miniature world',
+  'Ultra-realistic photograph, DSLR, 8K detail',
+  'Picasso cubist style, fragmented geometric faces, multiple perspectives',
+  // From engine pool
+  'oil painting on canvas, visible brushstrokes, impressionist',
+  'vintage Disney animation cel, 1950s hand-drawn style',
+  'ukiyo-e Japanese woodblock print, flat color, bold outlines',
+  'chalk pastel on black paper, soft edges, dramatic contrast',
+  'claymation stop-motion, visible fingerprint textures in clay',
+  'retro 1980s airbrush illustration, chrome and gradients',
+  'botanical scientific illustration, ink linework with watercolor',
+  'stained glass window, bold black leading, jewel-tone translucent color',
+  'neon sign art, glowing tube lights on dark brick wall',
+  'low-poly geometric 3D render, faceted surfaces',
+  'pencil sketch with watercolor splashes, loose linework',
+  'fantasy book cover illustration, lush detail, dramatic lighting',
+  'cross-stitch embroidery on fabric, every element stitched in thread, visible grid texture',
+  'everything is shiny molded plastic, like toys in a playset — glossy surfaces, seam lines',
+  'entire world built from LEGO bricks, everything is LEGO — plastic studs visible everywhere',
+  'classic Disney 2D animation, clean ink outlines, cel-shaded, 1990s era',
+  'Wes Anderson symmetrical composition, pastel color palette, dollhouse miniature',
+  'vintage travel poster, bold flat shapes, limited color palette, art deco lettering',
+  'dreamy soft-focus film photography, 35mm grain, light leaks, golden tones',
+  'felt and fabric diorama, stitched textures, button eyes, handmade craft',
+  'Funko Pop vinyl figure style, oversized head, tiny body, glossy plastic',
+  'mosaic tile artwork, small colorful square tiles, ancient Roman style',
+  'pop art screen print, bold primary colors, Andy Warhol style',
+  'cyberpunk neon cityscape style, rain-slicked surfaces, holographic ads',
+  'Tron digital world, glowing neon lines on black, light trails, geometric',
+  'gouache painting, thick opaque paint, matte finish, children\'s book illustration',
+  'origami paper sculpture, crisp folds, white paper with colored accents',
+  'woodcut print, bold carved lines, high contrast black and white with one accent color',
+  'shadow puppet theater, silhouettes against warm backlit screen',
+  'Japanese ink sumi-e, minimal brushstrokes, zen simplicity, negative space',
+  'voxel 3D art, chunky isometric blocks, Minecraft meets cute',
+  'Frida Kahlo surrealist style, lush flowers, vivid symbolic colors, folk art motifs',
+  'Banksy street art, stencil graffiti, political irony, concrete wall',
+  'Edward Hopper lonely realism, empty diners, long shadows, isolation',
+  'Keith Haring bold outlines, dancing figures, primary colors, street art',
+  'MC Escher impossible architecture, tessellations, mind-bending perspective',
+  'Basquiat neo-expressionist, raw, crown motif, scrawled text, street',
+  'Hokusai Great Wave style, Japanese woodblock, dramatic ocean, Mount Fuji',
+  'Rothko color field, massive blocks of bleeding color, meditative',
+  'Dalí melting clocks surrealism, desert dreamscape, impossible objects',
+  'Warhol repeated screen print, bold flat pop art colors, celebrity style',
+  'Rankin/Bass stop-motion, classic Christmas special, felt snow and glitter',
+  'Laika stop-motion, Coraline/Kubo style, dark handcrafted beauty',
+  'golden age storybook illustration, Beatrix Potter watercolor, gentle linework',
+  'marble sculpture, Michelangelo carved stone, dramatic form',
+  'charcoal drawing on textured paper, smudged dramatic shadows',
+  'tarot card illustration, ornate gold borders, mystical symbolism',
+  'vintage newspaper comic strip, Ben-Day dots, speech bubbles, Calvin & Hobbes warmth',
+  'Looney Tunes cartoon, exaggerated squash and stretch, painted backgrounds, slapstick energy',
+  '1920s Steamboat Willie style, black and white rubber hose animation, simple shapes',
+  'pointillism, entire image made of tiny colored dots, Seurat style',
+  'Mondrian De Stijl, bold black grid lines, primary color blocks, geometric abstraction',
+  'Bauhaus design, clean geometric shapes, primary colors, functional minimalism',
+  'Soviet Constructivist propaganda poster, bold red and black, angular typography',
+  'Art Brut outsider art, raw untrained style, intense emotion, unconventional materials',
+  'dark academia aesthetic, leather-bound books, candlelit libraries, autumn tones',
+  'heavy metal album cover, dark fantasy, skulls and fire, intricate detail',
+  'Blue Note jazz album cover, bold graphic shapes, smoky atmosphere, cool tones',
+  'hyperrealistic CGI render, impossibly sharp detail, every pore and fiber visible',
+  'kaleidoscope vision, infinite symmetrical reflections, fractal patterns, shifting geometry',
+  'Alex Grey visionary art, translucent bodies, energy meridians, cosmic consciousness',
+  'Retro sci-fi pulp magazine cover, 1950s ray guns and rockets, bold lettering',
+  'Pop surrealism, Mark Ryden style, big-eyed figures, unsettling cute, candy colors',
+  'Colorful steampunk illustration, brass gears, copper pipes, Victorian machinery',
+];
+
+const CURATED_SDXL_STYLES = [
+  // Kevin's handpicked
+  '8-bit pixel art, NES color palette, chunky pixels, retro gaming',
+  'Retro anime VHS aesthetic, 1990s cel animation, warm grain, scanlines',
+  'Digital illustration, anime style, clean lines, vibrant colors',
+  'Studio Ghibli anime watercolor, hand-painted cel animation',
+  'Anime illustration, expressive eyes, dynamic composition',
+  'Manga panel, detailed ink work, dramatic shading',
+  'Van Gogh swirling brushstrokes, vivid blues and yellows, thick impasto',
+  'Lo-fi anime dreamscape, cozy room, warm lighting, chill vibes',
+  'Makoto Shinkai style with photorealistic anime backgrounds, dramatic sky',
+  'Soft shoujo manga illustration, sparkly eyes, flower petals, gentle pastels',
+  'A whimsical cottagecore illustration, gentle linework, pastoral',
+  // From engine pool
+  'shonen manga action scene, speed lines, dramatic angles, high energy',
+  'isometric pixel art, retro game aesthetic, crisp edges',
+  'lo-fi hip hop album cover, cozy room, warm lighting, anime-inspired chill',
+  'Cel-shaded video game cutscene, Zelda Breath of the Wild style',
+  'Webtoon digital comic style, clean lines, soft gradients, vertical panel',
+];
+
 interface RequestBody {
   /** Which Flux model to use */
   mode: 'flux-dev' | 'flux-kontext';
@@ -201,8 +329,13 @@ Deno.serve(async (req) => {
       } catch { /* non-critical — falls back to chord path */ }
     }
 
-    // Build ingredients — archetype focuses the interest + mood, Chord does the rest
-    const input = buildPromptInput(recipe, archetype);
+    // Build ingredients — archetype identity injected into Haiku brief, not the engine
+    const input = buildPromptInput(recipe);
+
+    // Pick a random style from the full pot (Flux + SDXL), route accordingly
+    const allStyles = [...CURATED_FLUX_STYLES, ...CURATED_SDXL_STYLES];
+    input.medium = allStyles[Math.floor(Math.random() * allStyles.length)];
+
     logAxes = {
       medium: input.medium,
       mood: input.mood,
@@ -384,9 +517,16 @@ function pickModel(mode: string, prompt: string): { model: string; inputOverride
 
   const p = prompt.toLowerCase();
 
-  // SDXL for anime/manga only — these render better on SDXL
+  // SDXL for anime/manga, pixel art, and select painterly styles
   if (p.includes('anime') || p.includes('manga') || p.includes('cel animation') ||
-      p.includes('shonen') || p.includes('shoujo') || p.includes('shinkai')) {
+      p.includes('shonen') || p.includes('shoujo') || p.includes('shinkai') ||
+      p.includes('pixel art') || p.includes('8-bit') || p.includes('16-bit') ||
+      p.includes('ghibli') || p.includes('lo-fi') || p.includes('lofi') ||
+      p.includes('vhs') || p.includes('retro anime') ||
+      p.includes('van gogh') || p.includes('swirling brushstroke') ||
+      p.includes('cottagecore illustration') ||
+      p.includes('cel-shaded') || p.includes('cel shaded') ||
+      p.includes('webtoon')) {
     return {
       model: 'sdxl',
       inputOverrides: { width: 768, height: 1344, num_inference_steps: 30, guidance_scale: 7.5 },

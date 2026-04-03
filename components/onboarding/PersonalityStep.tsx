@@ -3,10 +3,7 @@ import { PERSONALITY_TAGS, LIMITS } from '@/constants/onboarding';
 import { OnboardingTileScreen } from '@/components/OnboardingTileScreen';
 import type { PersonalityTag } from '@/types/recipe';
 
-interface Props {
-  onNext: () => void;
-  onBack: () => void;
-}
+interface Props { onNext: () => void; onBack: () => void; }
 
 export function PersonalityStep({ onNext, onBack }: Props) {
   const tags = useOnboardingStore((s) => s.recipe.personality_tags);

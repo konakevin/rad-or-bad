@@ -189,6 +189,11 @@ Our engine provides ingredients and inspiration. Haiku and Flux express them cre
 - Overly specific archetype instructions ("channel this identity") → rigid, predictable
 - Art school mediums (Mondrian, Rothko, Banksy, etc.) → abstract art, not dreams
 - Too many competing subjects in one prompt → Flux picks random pieces, ignores rest
+- **Pool bloat** — tripling pools (100+ mediums, 308 bonus settings, 14-38 interest flavors) diluted average quality. Not every entry is equally good. Tight curation beats volume.
+- **Derived complexity** — overriding axis values the user didn't set caused unpredictable medium selection
+- **Mood sampling** — randomly picking one mood per dream instead of stable averaged axes caused volatile, inconsistent results
+- **Too many onboarding options** — more interests/eras/companions = more mediocre combinations. The old 20/10/12 set outperformed the expanded 22/24/30 set.
+- **CRITICAL LESSON (2026-04-03):** We expanded everything — pools, rules, options, derived values — and the engine got progressively worse. Reverted to the simpler engine from 2026-04-02 and quality improved immediately. **Curation beats volume. Simplicity beats complexity. Always.**
 
 **WHAT MAKES THE ENGINE SING:**
 - Rich, vivid archetype briefs as inspiration (not instructions)

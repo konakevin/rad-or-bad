@@ -8,15 +8,13 @@ import { colors } from '@/constants/theme';
 
 import { WelcomeStep } from '@/components/onboarding/WelcomeStep';
 import { InterestsStep } from '@/components/onboarding/InterestsStep';
-import { VibesStep } from '@/components/onboarding/VibesStep';
 import { SpiritCompanionStep } from '@/components/onboarding/SpiritCompanionStep';
-// StyleSpectrumStep removed — sliders merged into SurpriseFactorStep
+import { StyleSpectrumStep } from '@/components/onboarding/StyleSpectrumStep';
 import { WorldBuilderStep } from '@/components/onboarding/WorldBuilderStep';
-import { SettingsStep } from '@/components/onboarding/SettingsStep';
 import { MoodBoardStep } from '@/components/onboarding/MoodBoardStep';
 import { SceneAtmosphereStep } from '@/components/onboarding/SceneAtmosphereStep';
 import { ColorPaletteStep } from '@/components/onboarding/ColorPaletteStep';
-// PersonalityStep removed — overlaps with moods + vibes
+import { PersonalityStep } from '@/components/onboarding/PersonalityStep';
 import { SurpriseFactorStep } from '@/components/onboarding/SurpriseFactorStep';
 import { RevealStep } from '@/components/onboarding/RevealStep';
 
@@ -33,13 +31,13 @@ interface StepConfig {
 const STEPS: StepConfig[] = [
   { key: 'welcome', component: WelcomeStep, skipInEdit: true },
   { key: 'interests', component: InterestsStep },
-  { key: 'vibes', component: VibesStep },
   { key: 'spirit', component: SpiritCompanionStep },
+  { key: 'style', component: StyleSpectrumStep },
   { key: 'world', component: WorldBuilderStep },
-  { key: 'settings', component: SettingsStep },
   { key: 'mood', component: MoodBoardStep },
   { key: 'atmosphere', component: SceneAtmosphereStep },
   { key: 'palette', component: ColorPaletteStep },
+  { key: 'personality', component: PersonalityStep },
   { key: 'surprise', component: SurpriseFactorStep },
   { key: 'reveal', component: RevealStep },
 ];
@@ -50,20 +48,16 @@ export default function OnboardingPager() {
   const setStep = useOnboardingStore((s) => s.setStep);
   const listRef = useRef<FlatList>(null);
 
-  const steps = useMemo(
-    () => (isEditing ? STEPS.filter((s) => !s.skipInEdit) : STEPS),
-    [isEditing]
-  );
+  const steps = useMemo(() =>
+    isEditing ? STEPS.filter((s) => !s.skipInEdit) : STEPS,
+  [isEditing]);
 
-  const goTo = useCallback(
-    (index: number) => {
-      if (index >= 0 && index < steps.length) {
-        setStep(index + 1);
-        listRef.current?.scrollToIndex({ index, animated: true });
-      }
-    },
-    [steps.length, setStep]
-  );
+  const goTo = useCallback((index: number) => {
+    if (index >= 0 && index < steps.length) {
+      setStep(index + 1);
+      listRef.current?.scrollToIndex({ index, animated: true });
+    }
+  }, [steps.length, setStep]);
 
   const goNext = useCallback(() => goTo(step), [step, goTo]);
 
@@ -92,14 +86,13 @@ export default function OnboardingPager() {
         showsHorizontalScrollIndicator={false}
         scrollEnabled={false}
         keyExtractor={(item) => item.key}
-        getItemLayout={(_, index) => ({
-          length: SCREEN_WIDTH,
-          offset: SCREEN_WIDTH * index,
-          index,
-        })}
+        getItemLayout={(_, index) => ({ length: SCREEN_WIDTH, offset: SCREEN_WIDTH * index, index })}
         renderItem={({ item, index }) => (
           <View style={s.page}>
-            <item.component onNext={goNext} onBack={index > 0 ? goBack : () => {}} />
+            <item.component
+              onNext={goNext}
+              onBack={index > 0 ? goBack : () => {}}
+            />
           </View>
         )}
       />

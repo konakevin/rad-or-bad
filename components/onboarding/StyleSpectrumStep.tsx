@@ -7,23 +7,10 @@ import { colors } from '@/constants/theme';
 
 const SLIDER_WIDTH = 280;
 const THUMB_SIZE = 28;
-interface Props {
-  onNext: () => void;
-  onBack: () => void;
-}
+interface Props { onNext: () => void; onBack: () => void; }
 
-function Slider({
-  label,
-  leftLabel,
-  rightLabel,
-  value,
-  onChange,
-}: {
-  label: string;
-  leftLabel: string;
-  rightLabel: string;
-  value: number;
-  onChange: (v: number) => void;
+function Slider({ label, leftLabel, rightLabel, value, onChange }: {
+  label: string; leftLabel: string; rightLabel: string; value: number; onChange: (v: number) => void;
 }) {
   const [localValue, setLocalValue] = useState(value);
   const trackRef = useRef<View>(null);
@@ -71,12 +58,7 @@ function Slider({
       >
         <View ref={trackRef} style={sliderStyles.track}>
           <View style={[sliderStyles.fill, { width: localValue * SLIDER_WIDTH }]} />
-          <View
-            style={[
-              sliderStyles.thumb,
-              { transform: [{ translateX: localValue * (SLIDER_WIDTH - THUMB_SIZE) }] },
-            ]}
-          />
+          <View style={[sliderStyles.thumb, { transform: [{ translateX: localValue * (SLIDER_WIDTH - THUMB_SIZE) }] }]} />
         </View>
       </View>
     </View>
@@ -85,10 +67,10 @@ function Slider({
 
 // Compress slider 0–1 to 0.10–0.90 so choices feel meaningful but never fully locked
 function toStored(slider: number): number {
-  return 0.1 + slider * 0.8;
+  return 0.10 + slider * 0.80;
 }
 function toSlider(stored: number): number {
-  return Math.max(0, Math.min(1, (stored - 0.1) / 0.8));
+  return Math.max(0, Math.min(1, (stored - 0.10) / 0.80));
 }
 
 export function StyleSpectrumStep({ onNext, onBack }: Props) {
@@ -100,23 +82,28 @@ export function StyleSpectrumStep({ onNext, onBack }: Props) {
   return (
     <View style={s.root}>
       <View style={s.content}>
-        <Text style={s.title}>Fine tune</Text>
-        <Text style={s.subtitle}>
-          These set the range — your bot will mix it up within your preferences
-        </Text>
+        <Text style={s.title}>Tune your style</Text>
+        <Text style={s.subtitle}>Your dreams will tend this direction, but your bot will still surprise you</Text>
 
         <View style={s.sliders}>
           <Slider
-            label="How weird do you dream?"
-            leftLabel="A little"
-            rightLabel="A lot"
+            label="Visual Style"
+            leftLabel="Artistic"
+            rightLabel="Photorealistic"
+            value={toSlider(recipe.axes.realism)}
+            onChange={(v) => setRealism(toStored(v))}
+          />
+          <Slider
+            label="Weirdness"
+            leftLabel="Normal"
+            rightLabel="Surreal"
             value={toSlider(recipe.axes.weirdness)}
             onChange={(v) => setWeirdness(toStored(v))}
           />
           <Slider
-            label="How big do you dream?"
-            leftLabel="Close up"
-            rightLabel="Epic vista"
+            label="Scale"
+            leftLabel="Intimate Close-up"
+            rightLabel="Epic Vista"
             value={toSlider(recipe.axes.scale)}
             onChange={(v) => setScale(toStored(v))}
           />
@@ -155,30 +142,16 @@ const sliderStyles = StyleSheet.create({
     paddingVertical: 16,
   },
   track: {
-    width: SLIDER_WIDTH,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.surface,
-    justifyContent: 'center',
+    width: SLIDER_WIDTH, height: 8, borderRadius: 4,
+    backgroundColor: colors.surface, justifyContent: 'center',
   },
   fill: {
-    position: 'absolute',
-    left: 0,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.accent,
+    position: 'absolute', left: 0, height: 8, borderRadius: 4, backgroundColor: colors.accent,
   },
   thumb: {
-    position: 'absolute',
-    width: THUMB_SIZE,
-    height: THUMB_SIZE,
-    borderRadius: THUMB_SIZE / 2,
+    position: 'absolute', width: THUMB_SIZE, height: THUMB_SIZE, borderRadius: THUMB_SIZE / 2,
     backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 4,
+    shadowColor: '#000', shadowOpacity: 0.3, shadowRadius: 4, shadowOffset: { width: 0, height: 2 }, elevation: 4,
   },
 });
 
@@ -192,26 +165,15 @@ const s = StyleSheet.create({
   footerRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   backBtn: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 16,
-    borderRadius: 14,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.accentBorder,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+    paddingVertical: 16, borderRadius: 14,
+    backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.accentBorder,
   },
   backBtnText: { color: '#FFFFFF', fontSize: 15, fontWeight: '600' },
   nextButton: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: colors.accent,
-    borderRadius: 14,
-    paddingVertical: 16,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 8, backgroundColor: colors.accent, borderRadius: 14, paddingVertical: 16,
   },
   nextButtonText: { color: '#FFFFFF', fontSize: 17, fontWeight: '700' },
 });
