@@ -766,6 +766,7 @@ export type Database = {
         Row: {
           ai_prompt: string | null;
           bad_votes: number;
+          bot_message: string | null;
           caption: string | null;
           categories: string[];
           comment_count: number;
@@ -795,6 +796,7 @@ export type Database = {
         Insert: {
           ai_prompt?: string | null;
           bad_votes?: number;
+          bot_message?: string | null;
           caption?: string | null;
           categories?: string[];
           comment_count?: number;
@@ -824,6 +826,7 @@ export type Database = {
         Update: {
           ai_prompt?: string | null;
           bad_votes?: number;
+          bot_message?: string | null;
           caption?: string | null;
           categories?: string[];
           comment_count?: number;
