@@ -328,8 +328,7 @@ Deno.serve(async (req) => {
     // THREE-PART SONG: roll which dream type this is
     // 50% archetype (focused narrative), 30% chord (pure blend), 20% beauty (pure visual)
     const dreamRoll = Math.random();
-    // TESTING: 100% beauty mode
-    const dreamMode = 'beauty';
+    const dreamMode = dreamRoll < 0.5 ? 'archetype' : dreamRoll < 0.8 ? 'chord' : 'beauty';
 
     let archetype: { key: string; name: string; prompt_context: string; flavor_keywords: string[]; trigger_interests?: string[]; trigger_moods?: string[] } | undefined;
     if (dreamMode === 'archetype') {
