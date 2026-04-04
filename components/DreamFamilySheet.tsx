@@ -34,7 +34,7 @@ import type { DreamPostItem } from '@/components/DreamCard';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const THUMB_HEIGHT = Math.round(SCREEN_HEIGHT * 0.28);
-const THUMB_WIDTH = Math.round(THUMB_HEIGHT * 9 / 16);
+const THUMB_WIDTH = Math.round((THUMB_HEIGHT * 9) / 16);
 const THUMB_MARGIN_TOP = 8;
 const GRID_GAP = 2;
 const TILE_SIZE = (SCREEN_WIDTH - 48 - GRID_GAP) / 2;
@@ -166,7 +166,9 @@ export function DreamFamilySheet({
   }));
 
   const paneStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: interpolate(progress.value, [0, 1], [SCREEN_HEIGHT, 0]) + dragY.value }],
+    transform: [
+      { translateY: interpolate(progress.value, [0, 1], [SCREEN_HEIGHT, 0]) + dragY.value },
+    ],
   }));
 
   const metaStyle = useAnimatedStyle(() => ({
@@ -199,19 +201,23 @@ export function DreamFamilySheet({
 
         {/* Username + close below thumbnail */}
         <Animated.View
-          style={[s.thumbMeta, { top: insets.top + THUMB_MARGIN_TOP + THUMB_HEIGHT + 8 }, metaStyle]}
+          style={[
+            s.thumbMeta,
+            { top: insets.top + THUMB_MARGIN_TOP + THUMB_HEIGHT + 8 },
+            metaStyle,
+          ]}
         >
           <View style={s.thumbUserRow}>
             {post.avatar_url ? (
               <Image source={{ uri: post.avatar_url }} style={s.thumbAvatar} />
             ) : (
               <View style={s.thumbAvatarFallback}>
-                <Text style={s.thumbAvatarText}>
-                  {(post.username || '?')[0].toUpperCase()}
-                </Text>
+                <Text style={s.thumbAvatarText}>{(post.username || '?')[0].toUpperCase()}</Text>
               </View>
             )}
-            <Text style={s.thumbUsername} numberOfLines={1}>{post.username}</Text>
+            <Text style={s.thumbUsername} numberOfLines={1}>
+              {post.username}
+            </Text>
             <Text style={s.thumbLabel}>Dream Family</Text>
           </View>
           <TouchableOpacity onPress={dismiss} hitSlop={12}>

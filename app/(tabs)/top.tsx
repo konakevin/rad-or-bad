@@ -43,7 +43,8 @@ function useCategoryDreams(category: DreamCategory) {
       return (data ?? [])
         .filter((row: Record<string, unknown>) => {
           if (keywords.length === 0) return true; // "All" category
-          const text = `${row.caption ?? ''} ${row.ai_prompt ?? ''} ${row.bot_message ?? ''}`.toLowerCase();
+          const text =
+            `${row.caption ?? ''} ${row.ai_prompt ?? ''} ${row.bot_message ?? ''}`.toLowerCase();
           return keywords.some((kw) => text.includes(kw));
         })
         .map((row: Record<string, unknown>) => ({

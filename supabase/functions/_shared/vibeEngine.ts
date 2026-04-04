@@ -13,32 +13,45 @@ interface PromptModeConfig {
 
 const PROMPT_MODE_CONFIGS: Record<PromptMode, PromptModeConfig> = {
   dream_me: {
-    userWeight: 0.7, spiceWeight: 0.3,
+    userWeight: 0.7,
+    spiceWeight: 0.3,
     directive: 'Create a personalized dream that feels like it was made just for this person.',
   },
   chaos: {
-    userWeight: 0.3, spiceWeight: 0.7,
-    directive: 'Go wild. Use their taste as a launchpad but take it somewhere unexpected and bizarre. Surprise them.',
+    userWeight: 0.3,
+    spiceWeight: 0.7,
+    directive:
+      'Go wild. Use their taste as a launchpad but take it somewhere unexpected and bizarre. Surprise them.',
   },
   cinematic_poster: {
-    userWeight: 0.7, spiceWeight: 0.3,
-    directive: 'Frame this as a cinematic movie poster. Dramatic lighting, strong focal point, epic scale. Anamorphic lens, dramatic angle.',
+    userWeight: 0.7,
+    spiceWeight: 0.3,
+    directive:
+      'Frame this as a cinematic movie poster. Dramatic lighting, strong focal point, epic scale. Anamorphic lens, dramatic angle.',
   },
   minimal_mood: {
-    userWeight: 0.8, spiceWeight: 0.2,
-    directive: 'Strip everything to essentials: ONE subject, ONE color mood, ONE emotion. Negative space. Less is more.',
+    userWeight: 0.8,
+    spiceWeight: 0.2,
+    directive:
+      'Strip everything to essentials: ONE subject, ONE color mood, ONE emotion. Negative space. Less is more.',
   },
   nature_escape: {
-    userWeight: 0.6, spiceWeight: 0.4,
-    directive: 'Create a breathtaking landscape with NO characters. Pure place. Light, texture, depth.',
+    userWeight: 0.6,
+    spiceWeight: 0.4,
+    directive:
+      'Create a breathtaking landscape with NO characters. Pure place. Light, texture, depth.',
   },
   character_study: {
-    userWeight: 0.7, spiceWeight: 0.3,
-    directive: 'Focus on a single character or creature. Give them personality through pose and detail.',
+    userWeight: 0.7,
+    spiceWeight: 0.3,
+    directive:
+      'Focus on a single character or creature. Give them personality through pose and detail.',
   },
   nostalgia_trip: {
-    userWeight: 0.8, spiceWeight: 0.2,
-    directive: 'Lean heavily into their era and personal anchors. Warm memory. Golden tones, soft focus, familiar objects.',
+    userWeight: 0.8,
+    spiceWeight: 0.2,
+    directive:
+      'Lean heavily into their era and personal anchors. Warm memory. Golden tones, soft focus, familiar objects.',
   },
 };
 
@@ -62,26 +75,30 @@ function describeMoods(moods: MoodAxes): string {
 export function buildConceptPrompt(
   profile: VibeProfile,
   mode: PromptMode = 'dream_me',
-  seed: number = Math.random(),
+  seed: number = Math.random()
 ): string {
   const config = PROMPT_MODE_CONFIGS[mode];
 
-  const spiritHint = profile.spirit_companion && seed < 0.2
-    ? `\nTheir spirit companion is a ${profile.spirit_companion.replace(/_/g, ' ')} — consider weaving it into the scene.`
-    : '';
+  const spiritHint =
+    profile.spirit_companion && seed < 0.2
+      ? `\nTheir spirit companion is a ${profile.spirit_companion.replace(/_/g, ' ')} — consider weaving it into the scene.`
+      : '';
 
   const anchorLines: string[] = [];
-  if (profile.personal_anchors.place && Math.random() < 0.4) anchorLines.push(`- Places they love: "${profile.personal_anchors.place}"`);
-  if (profile.personal_anchors.object && Math.random() < 0.4) anchorLines.push(`- Objects they love: "${profile.personal_anchors.object}"`);
-  if (profile.personal_anchors.era && Math.random() < 0.4) anchorLines.push(`- Eras they vibe with: "${profile.personal_anchors.era}"`);
-  if (profile.personal_anchors.dream_vibe) anchorLines.push(`- Their dream vibe: "${profile.personal_anchors.dream_vibe}"`);
-  const anchorsBlock = anchorLines.length > 0
-    ? `\nPERSONAL ANCHORS (weave in naturally when they fit — don't force them):\n${anchorLines.join('\n')}`
-    : '';
+  if (profile.personal_anchors.place && Math.random() < 0.4)
+    anchorLines.push(`- Places they love: "${profile.personal_anchors.place}"`);
+  if (profile.personal_anchors.object && Math.random() < 0.4)
+    anchorLines.push(`- Objects they love: "${profile.personal_anchors.object}"`);
+  if (profile.personal_anchors.era && Math.random() < 0.4)
+    anchorLines.push(`- Eras they vibe with: "${profile.personal_anchors.era}"`);
+  if (profile.personal_anchors.dream_vibe)
+    anchorLines.push(`- Their dream vibe: "${profile.personal_anchors.dream_vibe}"`);
+  const anchorsBlock =
+    anchorLines.length > 0
+      ? `\nPERSONAL ANCHORS (weave in naturally when they fit — don't force them):\n${anchorLines.join('\n')}`
+      : '';
 
-  const avoidBlock = profile.avoid.length > 0
-    ? `\nNEVER INCLUDE: ${profile.avoid.join(', ')}`
-    : '';
+  const avoidBlock = profile.avoid.length > 0 ? `\nNEVER INCLUDE: ${profile.avoid.join(', ')}` : '';
 
   return `You are a concept artist designing a single dream image for someone. Output a structured JSON concept recipe.
 
@@ -140,9 +157,16 @@ Output ONLY the prompt text.`;
 
 export function buildFallbackConcept(profile: VibeProfile): ConceptRecipe {
   const pick = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
-  const style = profile.art_styles.length > 0 ? pick(profile.art_styles).replace(/_/g, ' ') : 'digital painting';
-  const interest = profile.interests.length > 0 ? pick(profile.interests).replace(/_/g, ' ') : 'mysterious landscape';
-  const aesthetic = profile.aesthetics.length > 0 ? pick(profile.aesthetics).replace(/_/g, ' ') : 'dreamy';
+  const style =
+    profile.art_styles.length > 0
+      ? pick(profile.art_styles).replace(/_/g, ' ')
+      : 'digital painting';
+  const interest =
+    profile.interests.length > 0
+      ? pick(profile.interests).replace(/_/g, ' ')
+      : 'mysterious landscape';
+  const aesthetic =
+    profile.aesthetics.length > 0 ? pick(profile.aesthetics).replace(/_/g, ' ') : 'dreamy';
   const isSurreal = profile.moods.realistic_surreal > 0.5;
   const isDark = profile.moods.cute_terrifying > 0.5;
 
@@ -161,11 +185,19 @@ export function buildFallbackConcept(profile: VibeProfile): ConceptRecipe {
 
 export function buildFallbackFluxPrompt(concept: ConceptRecipe): string {
   return [
-    concept.style, concept.subject, concept.environment,
-    concept.lighting, concept.palette + ' color palette',
-    concept.twist, concept.camera, concept.composition,
-    concept.mood + ' atmosphere', 'hyper detailed, gorgeous lighting',
-  ].filter(Boolean).join(', ');
+    concept.style,
+    concept.subject,
+    concept.environment,
+    concept.lighting,
+    concept.palette + ' color palette',
+    concept.twist,
+    concept.camera,
+    concept.composition,
+    concept.mood + ' atmosphere',
+    'hyper detailed, gorgeous lighting',
+  ]
+    .filter(Boolean)
+    .join(', ');
 }
 
 export function parseConceptJson(raw: string): ConceptRecipe {

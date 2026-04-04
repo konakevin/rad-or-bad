@@ -157,7 +157,8 @@ function DataPrefetcher() {
       .update({ last_active_at: new Date().toISOString() })
       .eq('id', user.id)
       .then(({ error }) => {
-        if (error && __DEV__) console.warn('[DataPrefetcher] last_active_at update failed:', error.message);
+        if (error && __DEV__)
+          console.warn('[DataPrefetcher] last_active_at update failed:', error.message);
       });
   }, [user?.id]);
 

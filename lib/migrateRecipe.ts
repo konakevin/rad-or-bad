@@ -4,7 +4,13 @@
  */
 
 import type { Recipe } from '@/types/recipe';
-import type { VibeProfile, Aesthetic, ArtStyle, SubjectInterest, MoodAxes } from '@/types/vibeProfile';
+import type {
+  VibeProfile,
+  Aesthetic,
+  ArtStyle,
+  SubjectInterest,
+  MoodAxes,
+} from '@/types/vibeProfile';
 
 const TAG_TO_AESTHETIC: Record<string, Aesthetic> = {
   dreamy: 'dreamy',
@@ -86,9 +92,16 @@ export function migrateRecipeToVibeProfile(recipe: Recipe): VibeProfile {
 }
 
 export function isVibeProfile(data: unknown): data is VibeProfile {
-  return typeof data === 'object' && data !== null && (data as Record<string, unknown>).version === 2;
+  return (
+    typeof data === 'object' && data !== null && (data as Record<string, unknown>).version === 2
+  );
 }
 
 export function isLegacyRecipe(data: unknown): data is Recipe {
-  return typeof data === 'object' && data !== null && 'axes' in (data as Record<string, unknown>) && !('version' in (data as Record<string, unknown>));
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'axes' in (data as Record<string, unknown>) &&
+    !('version' in (data as Record<string, unknown>))
+  );
 }

@@ -149,7 +149,11 @@ export function CharacterSheet({ userId }: CharacterSheetProps) {
           <Text style={styles.alignmentPrefix}>Alignment </Text>
           <Text style={[styles.alignmentValue, { color: alignmentColor }]}>{alignment}</Text>
         </View>
-        <Text style={styles.flavor}>{'"'}{flavor}{'"'}</Text>
+        <Text style={styles.flavor}>
+          {'"'}
+          {flavor}
+          {'"'}
+        </Text>
 
         {/* Top 3 stats */}
         <View style={styles.topStatsDivider} />

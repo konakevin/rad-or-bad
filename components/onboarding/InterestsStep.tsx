@@ -3,7 +3,10 @@ import { INTEREST_TILES, LIMITS } from '@/constants/onboarding';
 import { OnboardingTileScreen } from '@/components/OnboardingTileScreen';
 import type { SubjectInterest } from '@/types/vibeProfile';
 
-interface Props { onNext: () => void; onBack: () => void; }
+interface Props {
+  onNext: () => void;
+  onBack: () => void;
+}
 
 export function InterestsStep({ onNext, onBack }: Props) {
   const interests = useOnboardingStore((s) => s.profile.interests);

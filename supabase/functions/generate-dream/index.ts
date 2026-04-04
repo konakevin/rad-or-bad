@@ -14,7 +14,13 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { buildPromptInput, buildRawPrompt, buildHaikuPrompt } from '../_shared/recipeEngine.ts';
 import type { Recipe } from '../_shared/recipe.ts';
 import type { VibeProfile, PromptMode, ConceptRecipe } from '../_shared/vibeProfile.ts';
-import { buildConceptPrompt, buildPolisherPrompt, buildFallbackConcept, buildFallbackFluxPrompt, parseConceptJson } from '../_shared/vibeEngine.ts';
+import {
+  buildConceptPrompt,
+  buildPolisherPrompt,
+  buildFallbackConcept,
+  buildFallbackFluxPrompt,
+  parseConceptJson,
+} from '../_shared/vibeEngine.ts';
 
 const MAX_DAILY_GENERATIONS = 50;
 
@@ -84,7 +90,7 @@ const CURATED_FLUX_STYLES = [
   'pop art screen print, bold primary colors, Andy Warhol style',
   'cyberpunk neon cityscape style, rain-slicked surfaces, holographic ads',
   'Tron digital world, glowing neon lines on black, light trails, geometric',
-  'gouache painting, thick opaque paint, matte finish, children\'s book illustration',
+  "gouache painting, thick opaque paint, matte finish, children's book illustration",
   'origami paper sculpture, crisp folds, white paper with colored accents',
   'woodcut print, bold carved lines, high contrast black and white with one accent color',
   'shadow puppet theater, silhouettes against warm backlit screen',
@@ -287,9 +293,12 @@ Deno.serve(async (req) => {
   }
 
   if (!recipe && !rawPrompt && !haiku_brief && !vibe_profile) {
-    return new Response(JSON.stringify({ error: 'Must provide recipe, vibe_profile, prompt, or haiku_brief' }), {
-      status: 400,
-    });
+    return new Response(
+      JSON.stringify({ error: 'Must provide recipe, vibe_profile, prompt, or haiku_brief' }),
+      {
+        status: 400,
+      }
+    );
   }
 
   // ── Timing ─────────────────────────────────────────────────────────────────
@@ -372,7 +381,16 @@ Deno.serve(async (req) => {
     const dreamRoll = Math.random();
     const dreamMode = dreamRoll < 0.5 ? 'archetype' : dreamRoll < 0.8 ? 'chord' : 'beauty';
 
-    let archetype: { key: string; name: string; prompt_context: string; flavor_keywords: string[]; trigger_interests?: string[]; trigger_moods?: string[] } | undefined;
+    let archetype:
+      | {
+          key: string;
+          name: string;
+          prompt_context: string;
+          flavor_keywords: string[];
+          trigger_interests?: string[];
+          trigger_moods?: string[];
+        }
+      | undefined;
     if (dreamMode === 'archetype') {
       try {
         const { data: userArchs } = await supabase
@@ -388,7 +406,9 @@ Deno.serve(async (req) => {
             .single();
           if (arch) archetype = arch;
         }
-      } catch { /* non-critical — falls back to chord path */ }
+      } catch {
+        /* non-critical — falls back to chord path */
+      }
     }
 
     // Build ingredients — archetype identity injected into Haiku brief, not the engine
@@ -574,7 +594,10 @@ async function enhanceViaHaiku(
 }
 
 // Route to the best model based on the medium/prompt content
-function pickModel(mode: string, prompt: string): { model: string; inputOverrides: Record<string, unknown> } {
+function pickModel(
+  mode: string,
+  prompt: string
+): { model: string; inputOverrides: Record<string, unknown> } {
   if (mode === 'flux-kontext') {
     return { model: 'black-forest-labs/flux-kontext-pro', inputOverrides: {} };
   }
@@ -582,18 +605,33 @@ function pickModel(mode: string, prompt: string): { model: string; inputOverride
   const p = prompt.toLowerCase();
 
   // SDXL for anime/manga, pixel art, and select painterly styles
-  if (p.includes('anime') || p.includes('manga') || p.includes('cel animation') ||
-      p.includes('shonen') || p.includes('shoujo') || p.includes('shinkai') ||
-      p.includes('pixel art') || p.includes('8-bit') || p.includes('16-bit') ||
-      p.includes('ghibli') || p.includes('lo-fi') || p.includes('lofi') ||
-      p.includes('vhs') || p.includes('retro anime') ||
-      p.includes('van gogh') || p.includes('swirling brushstroke') ||
-      p.includes('cottagecore illustration') ||
-      p.includes('cel-shaded') || p.includes('cel shaded') ||
-      p.includes('webtoon') ||
-      p.includes('japanese illustration') || p.includes('impressionism') ||
-      p.includes('plein air') || p.includes('marker illustration') ||
-      p.includes('copic marker')) {
+  if (
+    p.includes('anime') ||
+    p.includes('manga') ||
+    p.includes('cel animation') ||
+    p.includes('shonen') ||
+    p.includes('shoujo') ||
+    p.includes('shinkai') ||
+    p.includes('pixel art') ||
+    p.includes('8-bit') ||
+    p.includes('16-bit') ||
+    p.includes('ghibli') ||
+    p.includes('lo-fi') ||
+    p.includes('lofi') ||
+    p.includes('vhs') ||
+    p.includes('retro anime') ||
+    p.includes('van gogh') ||
+    p.includes('swirling brushstroke') ||
+    p.includes('cottagecore illustration') ||
+    p.includes('cel-shaded') ||
+    p.includes('cel shaded') ||
+    p.includes('webtoon') ||
+    p.includes('japanese illustration') ||
+    p.includes('impressionism') ||
+    p.includes('plein air') ||
+    p.includes('marker illustration') ||
+    p.includes('copic marker')
+  ) {
     return {
       model: 'sdxl',
       inputOverrides: { width: 768, height: 1344, num_inference_steps: 30, guidance_scale: 7.5 },
@@ -616,15 +654,17 @@ async function generateImage(
 
   const input: Record<string, unknown> = {
     prompt,
-    ...(!isSDXL ? {
-      aspect_ratio: '9:16',
-      num_outputs: 1,
-      output_format: 'jpg',
-    } : {
-      width: 768,
-      height: 1344,
-      num_outputs: 1,
-    }),
+    ...(!isSDXL
+      ? {
+          aspect_ratio: '9:16',
+          num_outputs: 1,
+          output_format: 'jpg',
+        }
+      : {
+          width: 768,
+          height: 1344,
+          num_outputs: 1,
+        }),
     ...inputOverrides,
   };
 
@@ -637,9 +677,7 @@ async function generateImage(
   const url = isSDXL
     ? 'https://api.replicate.com/v1/predictions'
     : `https://api.replicate.com/v1/models/${model}/predictions`;
-  const body = isSDXL
-    ? { version: SDXL_VERSION, input }
-    : { input };
+  const body = isSDXL ? { version: SDXL_VERSION, input } : { input };
 
   const res = await fetch(url, {
     method: 'POST',

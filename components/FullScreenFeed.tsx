@@ -199,7 +199,11 @@ export function FullScreenFeed({
         )}
       />
       {commentPost && (
-        <CommentOverlay post={commentPost} onClose={() => setCommentPost(null)} hideTabBar={hideTabBar} />
+        <CommentOverlay
+          post={commentPost}
+          onClose={() => setCommentPost(null)}
+          hideTabBar={hideTabBar}
+        />
       )}
       {familyPost && (
         <DreamFamilySheet

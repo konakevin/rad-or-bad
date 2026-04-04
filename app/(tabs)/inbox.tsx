@@ -57,7 +57,11 @@ function getNotificationText(item: NotificationItem): { action: string; preview:
       const isWelcome = item.body?.startsWith('welcome:');
       const botMsg = item.body?.replace(/^(wish|dream|welcome):/, '') || null;
       return {
-        action: isWelcome ? 'Welcome to DreamBot :)' : isWish ? 'Your wish has arrived!' : 'Your dream has arrived!',
+        action: isWelcome
+          ? 'Welcome to DreamBot :)'
+          : isWish
+            ? 'Your wish has arrived!'
+            : 'Your dream has arrived!',
         preview: botMsg || null,
       };
     }
@@ -122,7 +126,10 @@ function NotificationRow({
   const [expanded, setExpanded] = useState(false);
 
   function handleRowPress() {
-    if (selectMode) { onToggleSelect(); return; }
+    if (selectMode) {
+      onToggleSelect();
+      return;
+    }
     if (!item.isSeen) onMarkSeen();
     if (preview) {
       setExpanded(!expanded);
@@ -227,7 +234,13 @@ function NotificationRow({
 
       {/* Post thumbnail — tap to navigate */}
       {item.imageUrl && (
-        <TouchableOpacity onPress={() => { if (!item.isSeen) onMarkSeen(); onPress(); }} activeOpacity={0.8}>
+        <TouchableOpacity
+          onPress={() => {
+            if (!item.isSeen) onMarkSeen();
+            onPress();
+          }}
+          activeOpacity={0.8}
+        >
           <Image source={{ uri: item.imageUrl }} style={styles.thumbnail} contentFit="cover" />
         </TouchableOpacity>
       )}

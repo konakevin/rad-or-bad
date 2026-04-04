@@ -7,26 +7,79 @@
  * 5% chance of random mutation (a trait neither parent has).
  */
 
-import type { Recipe, RecipeAxes, Interest, ColorPalette, PersonalityTag, Era, Setting, SceneAtmosphere, SpiritCompanion } from '@/types/recipe';
+import type {
+  Recipe,
+  RecipeAxes,
+  Interest,
+  ColorPalette,
+  PersonalityTag,
+  Era,
+  Setting,
+  SceneAtmosphere,
+  SpiritCompanion,
+} from '@/types/recipe';
 import { DEFAULT_RECIPE } from '@/types/recipe';
 
 // All possible values for mutation injection
 const ALL_INTERESTS: Interest[] = [
-  'animals', 'nature', 'fantasy', 'sci_fi', 'architecture', 'fashion', 'food',
-  'abstract', 'dark', 'cute', 'ocean', 'space', 'whimsical', 'gaming', 'movies',
-  'music', 'geek', 'sports', 'travel', 'pride',
+  'animals',
+  'nature',
+  'fantasy',
+  'sci_fi',
+  'architecture',
+  'fashion',
+  'food',
+  'abstract',
+  'dark',
+  'cute',
+  'ocean',
+  'space',
+  'whimsical',
+  'gaming',
+  'movies',
+  'music',
+  'geek',
+  'sports',
+  'travel',
+  'pride',
 ];
 const ALL_ERAS: Era[] = [
-  'ancient', 'medieval', 'victorian', 'retro', 'modern', 'far_future',
-  'prehistoric', 'steampunk', 'art_deco', 'synthwave',
+  'ancient',
+  'medieval',
+  'victorian',
+  'retro',
+  'modern',
+  'far_future',
+  'prehistoric',
+  'steampunk',
+  'art_deco',
+  'synthwave',
 ];
 const ALL_SETTINGS: Setting[] = [
-  'cozy_indoors', 'wild_outdoors', 'city_streets', 'otherworldly',
-  'beach_tropical', 'mountains', 'underground', 'space', 'village', 'underwater',
+  'cozy_indoors',
+  'wild_outdoors',
+  'city_streets',
+  'otherworldly',
+  'beach_tropical',
+  'mountains',
+  'underground',
+  'space',
+  'village',
+  'underwater',
 ];
 const ALL_COMPANIONS: SpiritCompanion[] = [
-  'fox', 'cat', 'owl', 'dragon', 'rabbit', 'wolf', 'jellyfish', 'deer',
-  'butterfly', 'robot', 'ghost', 'mushroom_creature',
+  'fox',
+  'cat',
+  'owl',
+  'dragon',
+  'rabbit',
+  'wolf',
+  'jellyfish',
+  'deer',
+  'butterfly',
+  'robot',
+  'ghost',
+  'mushroom_creature',
 ];
 
 function clamp(v: number, min: number, max: number): number {
@@ -62,10 +115,7 @@ function mergeArrays<T>(parentA: T[], parentB: T[], aWeight: number): T[] {
   const aCount = Math.max(1, Math.round(parentA.length * aWeight));
   const bCount = Math.max(1, Math.round(parentB.length * (1 - aWeight)));
 
-  return dedupe([
-    ...shuffle(parentA).slice(0, aCount),
-    ...shuffle(parentB).slice(0, bCount),
-  ]);
+  return dedupe([...shuffle(parentA).slice(0, aCount), ...shuffle(parentB).slice(0, bCount)]);
 }
 
 /**
@@ -102,8 +152,14 @@ export function fuseRecipes(parentA: Recipe, parentB: Recipe, blend: number): Re
 
   // Merge all 8 axes
   const axisKeys: (keyof RecipeAxes)[] = [
-    'color_warmth', 'complexity', 'realism', 'energy',
-    'brightness', 'chaos', 'weirdness', 'scale',
+    'color_warmth',
+    'complexity',
+    'realism',
+    'energy',
+    'brightness',
+    'chaos',
+    'weirdness',
+    'scale',
   ];
   const axes: RecipeAxes = { ...DEFAULT_RECIPE.axes };
   for (const key of axisKeys) {
@@ -113,15 +169,21 @@ export function fuseRecipes(parentA: Recipe, parentB: Recipe, blend: number): Re
   // Merge discrete arrays
   const interests = mergeArrays(a.interests, b.interests, aWeight) as Interest[];
   const color_palettes = mergeArrays(a.color_palettes, b.color_palettes, aWeight) as ColorPalette[];
-  const personality_tags = mergeArrays(a.personality_tags, b.personality_tags, aWeight) as PersonalityTag[];
+  const personality_tags = mergeArrays(
+    a.personality_tags,
+    b.personality_tags,
+    aWeight
+  ) as PersonalityTag[];
   const eras = mergeArrays(a.eras, b.eras, aWeight) as Era[];
   const settings = mergeArrays(a.settings, b.settings, aWeight) as Setting[];
-  const scene_atmospheres = mergeArrays(a.scene_atmospheres, b.scene_atmospheres, aWeight) as SceneAtmosphere[];
+  const scene_atmospheres = mergeArrays(
+    a.scene_atmospheres,
+    b.scene_atmospheres,
+    aWeight
+  ) as SceneAtmosphere[];
 
   // Spirit companion: weighted coin flip
-  const spirit_companion = Math.random() < aWeight
-    ? a.spirit_companion
-    : b.spirit_companion;
+  const spirit_companion = Math.random() < aWeight ? a.spirit_companion : b.spirit_companion;
 
   // 5% chance of random mutation — inject a trait neither parent has
   if (Math.random() < 0.05) {

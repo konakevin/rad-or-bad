@@ -93,7 +93,7 @@ export default function DreamScreen() {
   // Save current controls to the active dream before switching
   function saveControlsToActiveDream() {
     setDreamAlbum((prev) =>
-      prev.map((d, i) => i === activeIndex ? { ...d, controlState: makeControlState() } : d)
+      prev.map((d, i) => (i === activeIndex ? { ...d, controlState: makeControlState() } : d))
     );
   }
 
@@ -172,10 +172,14 @@ export default function DreamScreen() {
   /** Try to spend 1 sparkle. Returns true if spent, false if insufficient (shows alert). */
   async function trySpendSparkle(reason: string): Promise<boolean> {
     if (sparkleBalance < 1) {
-      showAlert('Not enough sparkles', 'You need 1 sparkle to dream. Get more sparkles to keep dreaming!', [
-        { text: 'Get Sparkles', onPress: () => router.push('/sparkleStore') },
-        { text: 'Cancel', style: 'cancel' },
-      ]);
+      showAlert(
+        'Not enough sparkles',
+        'You need 1 sparkle to dream. Get more sparkles to keep dreaming!',
+        [
+          { text: 'Get Sparkles', onPress: () => router.push('/sparkleStore') },
+          { text: 'Cancel', style: 'cancel' },
+        ]
+      );
       return false;
     }
     try {
@@ -201,7 +205,10 @@ export default function DreamScreen() {
     transform: [{ scale: imgScale.value }],
   }));
 
-  async function loadProfile(): Promise<{ recipe: Recipe | null; vibeProfile: VibeProfile | null }> {
+  async function loadProfile(): Promise<{
+    recipe: Recipe | null;
+    vibeProfile: VibeProfile | null;
+  }> {
     if (cachedVibeProfile) return { recipe: null, vibeProfile: cachedVibeProfile };
     if (cachedRecipe) return { recipe: cachedRecipe, vibeProfile: null };
     if (!user) return { recipe: DEFAULT_RECIPE, vibeProfile: null };
@@ -235,7 +242,7 @@ export default function DreamScreen() {
       setPhase('preview');
       setDreamAlbum([]);
       setActiveIndex(0);
-        setUserHint('');
+      setUserHint('');
       imgOpacity.value = 0;
       imgScale.value = 0.85;
     } catch {
@@ -292,7 +299,9 @@ export default function DreamScreen() {
           // Legacy recipe path
           const recipe = loadedRecipe ?? DEFAULT_RECIPE;
           const input = buildPromptInput(recipe);
-          const style = [input.mood, input.lighting, input.colorKeywords].filter(Boolean).join(', ');
+          const style = [input.mood, input.lighting, input.colorKeywords]
+            .filter(Boolean)
+            .join(', ');
           const fallback = `Reimagine this image as ${input.medium}. Transform into a fantastical dream scene, ${style}. No filters, full creative reimagining.`;
           result = await generateDream({
             mode: 'flux-kontext',
@@ -310,7 +319,22 @@ export default function DreamScreen() {
         const newIndex = prev.length;
         setActiveIndex(newIndex);
         setTimeout(() => albumRef.current?.scrollToIndex({ index: newIndex, animated: true }), 100);
-        return [...prev, { url, prompt: p, fromWish: null, fromUpload: photoFromUpload.current, dreamMode: (result as unknown as Record<string, unknown>).dream_mode as string | undefined, archetype: (result as unknown as Record<string, unknown>).archetype as string | undefined, controlState: makeControlState() }];
+        return [
+          ...prev,
+          {
+            url,
+            prompt: p,
+            fromWish: null,
+            fromUpload: photoFromUpload.current,
+            dreamMode: (result as unknown as Record<string, unknown>).dream_mode as
+              | string
+              | undefined,
+            archetype: (result as unknown as Record<string, unknown>).archetype as
+              | string
+              | undefined,
+            controlState: makeControlState(),
+          },
+        ];
       });
       setDreaming(false);
       setPhase('reveal');
@@ -451,7 +475,22 @@ export default function DreamScreen() {
         const newIndex = prev.length;
         setActiveIndex(newIndex);
         setTimeout(() => albumRef.current?.scrollToIndex({ index: newIndex, animated: true }), 100);
-        return [...prev, { url, prompt: p, fromWish: null, fromUpload: photoFromUpload.current, dreamMode: (result as unknown as Record<string, unknown>).dream_mode as string | undefined, archetype: (result as unknown as Record<string, unknown>).archetype as string | undefined, controlState: makeControlState() }];
+        return [
+          ...prev,
+          {
+            url,
+            prompt: p,
+            fromWish: null,
+            fromUpload: photoFromUpload.current,
+            dreamMode: (result as unknown as Record<string, unknown>).dream_mode as
+              | string
+              | undefined,
+            archetype: (result as unknown as Record<string, unknown>).archetype as
+              | string
+              | undefined,
+            controlState: makeControlState(),
+          },
+        ];
       });
       setDreaming(false);
       setPhase('reveal');
@@ -512,7 +551,8 @@ export default function DreamScreen() {
         // Custom prompt — send directly to Flux
         if (__DEV__) console.log('[JustDream] Custom prompt:', customPrompt.trim().slice(0, 60));
         const modResult = await moderateText(customPrompt.trim());
-        if (!modResult.passed) throw new Error(modResult.reason ?? 'Prompt contains inappropriate content');
+        if (!modResult.passed)
+          throw new Error(modResult.reason ?? 'Prompt contains inappropriate content');
         result = await generateDream({ mode: 'flux-dev', prompt: customPrompt.trim() });
       } else {
         if (__DEV__) console.log('[JustDream] Loading profile...');
@@ -529,7 +569,22 @@ export default function DreamScreen() {
         const newIndex = prev.length;
         setActiveIndex(newIndex);
         setTimeout(() => albumRef.current?.scrollToIndex({ index: newIndex, animated: true }), 100);
-        return [...prev, { url, prompt: p, fromWish: null, fromUpload: photoFromUpload.current, dreamMode: (result as unknown as Record<string, unknown>).dream_mode as string | undefined, archetype: (result as unknown as Record<string, unknown>).archetype as string | undefined, controlState: makeControlState() }];
+        return [
+          ...prev,
+          {
+            url,
+            prompt: p,
+            fromWish: null,
+            fromUpload: photoFromUpload.current,
+            dreamMode: (result as unknown as Record<string, unknown>).dream_mode as
+              | string
+              | undefined,
+            archetype: (result as unknown as Record<string, unknown>).archetype as
+              | string
+              | undefined,
+            controlState: makeControlState(),
+          },
+        ];
       });
       setDreaming(false);
       setPhase('reveal');
@@ -574,7 +629,11 @@ export default function DreamScreen() {
       <SafeAreaView style={s.root}>
         <View style={s.center}>
           <Image source={{ uri: mascotUrl }} style={s.mascot} contentFit="cover" />
-          <TouchableOpacity style={s.sparklePill} onPress={() => router.push('/sparkleStore')} activeOpacity={0.7}>
+          <TouchableOpacity
+            style={s.sparklePill}
+            onPress={() => router.push('/sparkleStore')}
+            activeOpacity={0.7}
+          >
             <Ionicons name="sparkles" size={16} color={colors.accent} />
             <Text style={s.sparklePillText}>{sparkleBalance}</Text>
           </TouchableOpacity>
@@ -622,7 +681,11 @@ export default function DreamScreen() {
               multiline
             />
             {customPrompt.length > 0 && (
-              <TouchableOpacity onPress={() => setCustomPrompt('')} hitSlop={8} style={s.customPromptClear}>
+              <TouchableOpacity
+                onPress={() => setCustomPrompt('')}
+                hitSlop={8}
+                style={s.customPromptClear}
+              >
                 <Ionicons name="close-circle" size={18} color={colors.textSecondary} />
               </TouchableOpacity>
             )}
@@ -632,9 +695,15 @@ export default function DreamScreen() {
               <Ionicons name="images" size={18} color={colors.textPrimary} />
               <Text style={s.ctaSecondaryText}>Dream a Photo</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[s.ctaHalf, { backgroundColor: colors.accent }]} onPress={justDream} activeOpacity={0.7}>
+            <TouchableOpacity
+              style={[s.ctaHalf, { backgroundColor: colors.accent }]}
+              onPress={justDream}
+              activeOpacity={0.7}
+            >
               <Ionicons name="sparkles" size={18} color="#FFF" />
-              <Text style={[s.ctaSecondaryText, { color: '#FFFFFF' }]}>{customPrompt.trim() ? 'Dream This' : 'Dream'}</Text>
+              <Text style={[s.ctaSecondaryText, { color: '#FFFFFF' }]}>
+                {customPrompt.trim() ? 'Dream This' : 'Dream'}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -652,7 +721,11 @@ export default function DreamScreen() {
             <Ionicons name="close" size={28} color={colors.textSecondary} />
           </TouchableOpacity>
           <Text style={s.headerTitle}>Dream this</Text>
-          <TouchableOpacity style={s.sparklePill} onPress={() => router.push('/sparkleStore')} activeOpacity={0.7}>
+          <TouchableOpacity
+            style={s.sparklePill}
+            onPress={() => router.push('/sparkleStore')}
+            activeOpacity={0.7}
+          >
             <Ionicons name="sparkles" size={14} color={colors.accent} />
             <Text style={s.sparklePillText}>{sparkleBalance}</Text>
           </TouchableOpacity>
@@ -672,7 +745,11 @@ export default function DreamScreen() {
               multiline
             />
             {userHint.length > 0 && (
-              <TouchableOpacity onPress={() => setUserHint('')} hitSlop={8} style={s.customPromptClear}>
+              <TouchableOpacity
+                onPress={() => setUserHint('')}
+                hitSlop={8}
+                style={s.customPromptClear}
+              >
                 <Ionicons name="close-circle" size={18} color={colors.textSecondary} />
               </TouchableOpacity>
             )}
@@ -758,7 +835,11 @@ export default function DreamScreen() {
             <Ionicons name="close" size={28} color={colors.textSecondary} />
           </TouchableOpacity>
           <Text style={s.headerTitle}>Your dream</Text>
-          <TouchableOpacity style={s.sparklePill} onPress={() => router.push('/sparkleStore')} activeOpacity={0.7}>
+          <TouchableOpacity
+            style={s.sparklePill}
+            onPress={() => router.push('/sparkleStore')}
+            activeOpacity={0.7}
+          >
             <Ionicons name="sparkles" size={14} color={colors.accent} />
             <Text style={s.sparklePillText}>{sparkleBalance}</Text>
           </TouchableOpacity>
@@ -931,7 +1012,11 @@ export default function DreamScreen() {
               multiline
             />
             {customPrompt.length > 0 && (
-              <TouchableOpacity onPress={() => setCustomPrompt('')} hitSlop={8} style={s.customPromptClear}>
+              <TouchableOpacity
+                onPress={() => setCustomPrompt('')}
+                hitSlop={8}
+                style={s.customPromptClear}
+              >
                 <Ionicons name="close-circle" size={18} color={colors.textSecondary} />
               </TouchableOpacity>
             )}
@@ -957,23 +1042,23 @@ export default function DreamScreen() {
                 } catch {
                   Toast.show('Could not load image', 'close-circle');
                 }
-              }
-              else if (reusePhoto && photoUri) dream();
+              } else if (reusePhoto && photoUri) dream();
               else justDream();
             }}
             activeOpacity={0.7}
             disabled={posting || dreaming}
           >
-            <Ionicons
-              name={isTwinMode ? 'dice-outline' : 'sparkles'}
-              size={20}
-              color="#FFF"
-            />
-            <Text style={s.ctaText}>{isTwinMode ? 'Twin Again' : customPrompt.trim() ? 'Dream This' : 'Dream'}</Text>
+            <Ionicons name={isTwinMode ? 'dice-outline' : 'sparkles'} size={20} color="#FFF" />
+            <Text style={s.ctaText}>
+              {isTwinMode ? 'Twin Again' : customPrompt.trim() ? 'Dream This' : 'Dream'}
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={s.reuseRow}
-            onPress={() => { setReDreamCurrent(!reDreamCurrent); if (!reDreamCurrent) setReusePhoto(false); }}
+            onPress={() => {
+              setReDreamCurrent(!reDreamCurrent);
+              if (!reDreamCurrent) setReusePhoto(false);
+            }}
             activeOpacity={0.7}
           >
             <Ionicons
@@ -988,7 +1073,10 @@ export default function DreamScreen() {
           {dreamAlbum[activeIndex]?.fromUpload && (
             <TouchableOpacity
               style={s.reuseRow}
-              onPress={() => { setReusePhoto(!reusePhoto); if (!reusePhoto) setReDreamCurrent(false); }}
+              onPress={() => {
+                setReusePhoto(!reusePhoto);
+                if (!reusePhoto) setReDreamCurrent(false);
+              }}
               activeOpacity={0.7}
             >
               <Ionicons
@@ -1062,21 +1150,38 @@ const s = StyleSheet.create({
   modeScroll: { flexGrow: 0, marginBottom: 16 },
   modeRow: { gap: 8, paddingHorizontal: 4 },
   modePill: {
-    flexDirection: 'row', alignItems: 'center', gap: 5,
-    paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20,
-    backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   modePillActive: { backgroundColor: colors.accent, borderColor: colors.accent },
   modePillText: { color: colors.textSecondary, fontSize: 13, fontWeight: '600' },
   modePillTextActive: { color: '#FFFFFF' },
   sparklePill: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
-    backgroundColor: colors.surface, borderRadius: 14,
-    paddingHorizontal: 10, paddingVertical: 5,
-    borderWidth: 1, borderColor: colors.border,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: colors.surface,
+    borderRadius: 14,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   sparklePillText: { color: colors.accent, fontSize: 15, fontWeight: '700' },
-  modeHint: { color: colors.textSecondary, fontSize: 13, textAlign: 'center', marginBottom: 12, paddingHorizontal: 20 },
+  modeHint: {
+    color: colors.textSecondary,
+    fontSize: 13,
+    textAlign: 'center',
+    marginBottom: 12,
+    paddingHorizontal: 20,
+  },
   customPromptWrap: {
     flexDirection: 'row',
     alignItems: 'center',

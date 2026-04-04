@@ -1,9 +1,24 @@
 import { useState, useRef, useCallback } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Dimensions, ScrollView, Modal, StatusBar } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  Dimensions,
+  ScrollView,
+  Modal,
+  StatusBar,
+} from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
-import Animated, { useSharedValue, useAnimatedStyle, withTiming, runOnJS } from 'react-native-reanimated';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  runOnJS,
+} from 'react-native-reanimated';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useOnboardingStore } from '@/store/onboarding';
@@ -18,7 +33,7 @@ import { Toast } from '@/components/Toast';
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 // Balanced resolution: sharper than 512, cheaper than 768
 const GEN_WIDTH = 640;
-const GEN_HEIGHT = Math.round((SCREEN_HEIGHT / SCREEN_WIDTH) * GEN_WIDTH / 8) * 8; // round to nearest 8
+const GEN_HEIGHT = Math.round(((SCREEN_HEIGHT / SCREEN_WIDTH) * GEN_WIDTH) / 8) * 8; // round to nearest 8
 const IMAGE_WIDTH = SCREEN_WIDTH - 48;
 const IMAGE_HEIGHT = Math.min(IMAGE_WIDTH * (SCREEN_HEIGHT / SCREEN_WIDTH), 380);
 const MAX_DREAMS = 5;
@@ -30,7 +45,10 @@ interface Dream {
   prompt: string;
 }
 
-interface Props { onNext: () => void; onBack: () => void; }
+interface Props {
+  onNext: () => void;
+  onBack: () => void;
+}
 
 export function RevealStep({ onBack }: Props) {
   const profile = useOnboardingStore((s) => s.profile);
@@ -136,20 +154,41 @@ export function RevealStep({ onBack }: Props) {
     try {
       // Save the profile immediately so it's persisted even if they don't post
       if (user) {
-        await supabase.from('user_recipes').upsert({
-          user_id: user.id,
-          recipe: JSON.parse(JSON.stringify(profile)),
-          onboarding_completed: true,
-          ai_enabled: true,
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'user_id' });
+        await supabase.from('user_recipes').upsert(
+          {
+            user_id: user.id,
+            recipe: JSON.parse(JSON.stringify(profile)),
+            onboarding_completed: true,
+            ai_enabled: true,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: 'user_id' }
+        );
         await supabase.from('users').update({ has_ai_recipe: true }).eq('id', user.id);
       }
 
       // Build a quick preview prompt from the vibe profile
-      const style = profile.art_styles.length > 0 ? profile.art_styles[Math.floor(Math.random() * profile.art_styles.length)].replace(/_/g, ' ') : 'digital painting';
-      const interest = profile.interests.length > 0 ? profile.interests[Math.floor(Math.random() * profile.interests.length)].replace(/_/g, ' ') : 'dreamy landscape';
-      const aesthetic = profile.aesthetics.length > 0 ? profile.aesthetics[Math.floor(Math.random() * profile.aesthetics.length)].replace(/_/g, ' ') : 'dreamy';
+      const style =
+        profile.art_styles.length > 0
+          ? profile.art_styles[Math.floor(Math.random() * profile.art_styles.length)].replace(
+              /_/g,
+              ' '
+            )
+          : 'digital painting';
+      const interest =
+        profile.interests.length > 0
+          ? profile.interests[Math.floor(Math.random() * profile.interests.length)].replace(
+              /_/g,
+              ' '
+            )
+          : 'dreamy landscape';
+      const aesthetic =
+        profile.aesthetics.length > 0
+          ? profile.aesthetics[Math.floor(Math.random() * profile.aesthetics.length)].replace(
+              /_/g,
+              ' '
+            )
+          : 'dreamy';
       const prompt = `${style}, a stunning ${interest} scene, ${aesthetic} aesthetic, gorgeous lighting, hyper detailed, cinematic composition`;
       if (__DEV__) console.log('[Reveal] Prompt:', prompt);
       const url = await generateFluxImage(prompt);
@@ -177,24 +216,23 @@ export function RevealStep({ onBack }: Props) {
 
   async function generateFluxImage(prompt: string): Promise<string> {
     // Route through the generate-dream edge function (no client-side API keys)
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     if (!session?.access_token) throw new Error('Not authenticated');
 
-    const res = await fetch(
-      `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/generate-dream`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          mode: 'flux-dev',
-          prompt,
-          persist: false,
-        }),
-      }
-    );
+    const res = await fetch(`${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/generate-dream`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({
+        mode: 'flux-dev',
+        prompt,
+        persist: false,
+      }),
+    });
 
     if (!res.ok) {
       const errBody = await res.text();
@@ -213,13 +251,16 @@ export function RevealStep({ onBack }: Props) {
     generateImage();
   }
 
-  const handleScrollEnd = useCallback((e: { nativeEvent: { contentOffset: { x: number } } }) => {
-    const idx = Math.round(e.nativeEvent.contentOffset.x / IMAGE_WIDTH);
-    if (idx >= 0 && idx < dreams.length && idx !== activeIndex) {
-      setActiveIndex(idx);
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
-  }, [dreams.length, activeIndex]);
+  const handleScrollEnd = useCallback(
+    (e: { nativeEvent: { contentOffset: { x: number } } }) => {
+      const idx = Math.round(e.nativeEvent.contentOffset.x / IMAGE_WIDTH);
+      if (idx >= 0 && idx < dreams.length && idx !== activeIndex) {
+        setActiveIndex(idx);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
+    },
+    [dreams.length, activeIndex]
+  );
 
   async function handleCreateBot() {
     if (!user || !activeDream) return;
@@ -227,26 +268,33 @@ export function RevealStep({ onBack }: Props) {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
 
     try {
-      await supabase.from('user_recipes').upsert({
-        user_id: user.id,
-        recipe: JSON.parse(JSON.stringify(profile)),
-        onboarding_completed: true,
-        ai_enabled: true,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'user_id' });
+      await supabase.from('user_recipes').upsert(
+        {
+          user_id: user.id,
+          recipe: JSON.parse(JSON.stringify(profile)),
+          onboarding_completed: true,
+          ai_enabled: true,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'user_id' }
+      );
 
       await supabase.from('users').update({ has_ai_recipe: true }).eq('id', user.id);
 
-      const { data: insertedRow, error: uploadError } = await supabase.from('uploads').insert({
-        user_id: user.id,
-        categories: ['fantasy'],
-        image_url: activeDream.url,
-        media_type: 'image',
-        caption: null,
-        is_ai_generated: true,
-        ai_prompt: activeDream.prompt || null,
-        is_approved: true,
-      }).select('id').single();
+      const { data: insertedRow, error: uploadError } = await supabase
+        .from('uploads')
+        .insert({
+          user_id: user.id,
+          categories: ['fantasy'],
+          image_url: activeDream.url,
+          media_type: 'image',
+          caption: null,
+          is_ai_generated: true,
+          ai_prompt: activeDream.prompt || null,
+          is_approved: true,
+        })
+        .select('id')
+        .single();
 
       if (uploadError) {
         if (__DEV__) console.warn('[Reveal] Upload error:', uploadError);
@@ -272,7 +320,11 @@ export function RevealStep({ onBack }: Props) {
         .eq('id', user.id)
         .single();
       if ((balanceCheck?.sparkle_balance ?? 0) < 25) {
-        await supabase.rpc('grant_sparkles', { p_user_id: user.id, p_amount: 25, p_reason: 'welcome_bonus' });
+        await supabase.rpc('grant_sparkles', {
+          p_user_id: user.id,
+          p_amount: 25,
+          p_reason: 'welcome_bonus',
+        });
       }
 
       // Send welcome notification from DreamBot
@@ -281,7 +333,7 @@ export function RevealStep({ onBack }: Props) {
         actor_id: user.id,
         type: 'dream_generated',
         upload_id: insertedRow?.id ?? null,
-        body: 'welcome:Hello 🤖✨ I\'m DreamBot, your new AI buddy. Here\'s 25 Sparkles to help you get dreaming. Sweet Dreams! 🌙',
+        body: "welcome:Hello 🤖✨ I'm DreamBot, your new AI buddy. Here's 25 Sparkles to help you get dreaming. Sweet Dreams! 🌙",
       });
 
       reset();
@@ -301,20 +353,21 @@ export function RevealStep({ onBack }: Props) {
           <Text style={{ fontSize: 64, marginBottom: 8 }}>✨</Text>
           <Text style={s.bigTitle}>25 Sparkles!</Text>
           <Text style={[s.centeredSub, { marginBottom: 24, lineHeight: 22 }]}>
-            Welcome to DreamBot! We gave you 25 sparkles to get started.
-            Each sparkle lets you create one dream — try different modes,
-            re-dream your photos, go wild with Chaos mode.
+            Welcome to DreamBot! We gave you 25 sparkles to get started. Each sparkle lets you
+            create one dream — try different modes, re-dream your photos, go wild with Chaos mode.
           </Text>
 
-          <View style={{
-            backgroundColor: colors.surface,
-            borderRadius: 16,
-            padding: 20,
-            width: '100%',
-            gap: 14,
-            borderWidth: 1,
-            borderColor: colors.border,
-          }}>
+          <View
+            style={{
+              backgroundColor: colors.surface,
+              borderRadius: 16,
+              padding: 20,
+              width: '100%',
+              gap: 14,
+              borderWidth: 1,
+              borderColor: colors.border,
+            }}
+          >
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
               <Ionicons name="sparkles" size={20} color={colors.accent} />
               <Text style={{ color: colors.textPrimary, fontSize: 15, fontWeight: '600' }}>
@@ -356,11 +409,7 @@ export function RevealStep({ onBack }: Props) {
     return (
       <View style={s.root}>
         <View style={s.centeredContent}>
-          <Image
-            source={{ uri: MASCOT_URLS[1] }}
-            style={s.idleMascot}
-            contentFit="cover"
-          />
+          <Image source={{ uri: MASCOT_URLS[1] }} style={s.idleMascot} contentFit="cover" />
           <Text style={s.bigTitle}>DreamBot is ready</Text>
           <Text style={s.centeredSub}>Tap below to see what it dreams up for you</Text>
           <TouchableOpacity
@@ -381,11 +430,7 @@ export function RevealStep({ onBack }: Props) {
     return (
       <View style={s.root}>
         <View style={s.centeredContent}>
-          <Image
-            source={{ uri: MASCOT_URLS[2] }}
-            style={s.idleMascot}
-            contentFit="cover"
-          />
+          <Image source={{ uri: MASCOT_URLS[2] }} style={s.idleMascot} contentFit="cover" />
           <Text style={s.bigTitle}>Dreaming...</Text>
           <Text style={s.centeredSub}>DreamBot is creating a dream for you</Text>
           <ActivityIndicator size="small" color={colors.accent} />
@@ -536,53 +581,90 @@ export function RevealStep({ onBack }: Props) {
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },
 
-  centeredContent: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16, paddingHorizontal: 32 },
+  centeredContent: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 16,
+    paddingHorizontal: 32,
+  },
   idleMascot: {
-    width: 140, height: 140, borderRadius: 28, marginBottom: 8,
+    width: 140,
+    height: 140,
+    borderRadius: 28,
+    marginBottom: 8,
   },
   bigTitle: { color: colors.textPrimary, fontSize: 22, fontWeight: '800', textAlign: 'center' },
   centeredSub: { color: colors.textSecondary, fontSize: 15, textAlign: 'center' },
 
   content: { flex: 1, paddingTop: 4, alignItems: 'center' },
   heading: {
-    color: colors.textPrimary, fontSize: 20, fontWeight: '800',
-    textAlign: 'center', marginBottom: 6, paddingHorizontal: 20,
+    color: colors.textPrimary,
+    fontSize: 20,
+    fontWeight: '800',
+    textAlign: 'center',
+    marginBottom: 6,
+    paddingHorizontal: 20,
   },
   subheading: {
-    color: colors.textSecondary, fontSize: 13, textAlign: 'center',
-    marginBottom: 16, paddingHorizontal: 24, lineHeight: 19,
+    color: colors.textSecondary,
+    fontSize: 13,
+    textAlign: 'center',
+    marginBottom: 16,
+    paddingHorizontal: 24,
+    lineHeight: 19,
   },
 
   imageWrap: {
-    width: IMAGE_WIDTH, height: IMAGE_HEIGHT,
-    borderRadius: 20, overflow: 'hidden',
-    borderWidth: 1, borderColor: colors.border,
+    width: IMAGE_WIDTH,
+    height: IMAGE_HEIGHT,
+    borderRadius: 20,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   imageSlide: {
-    width: IMAGE_WIDTH, height: IMAGE_HEIGHT,
+    width: IMAGE_WIDTH,
+    height: IMAGE_HEIGHT,
   },
   imageLoader: {
-    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     zIndex: 0,
   },
   image: {
-    width: IMAGE_WIDTH, height: IMAGE_HEIGHT, zIndex: 1,
+    width: IMAGE_WIDTH,
+    height: IMAGE_HEIGHT,
+    zIndex: 1,
   },
   generatingOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.7)',
-    alignItems: 'center', justifyContent: 'center', gap: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
   },
   generatingText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
 
   dots: {
-    flexDirection: 'row', justifyContent: 'center', gap: 8, marginTop: 14,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+    marginTop: 14,
   },
   dot: {
-    width: 8, height: 8, borderRadius: 4, backgroundColor: colors.border,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.border,
   },
   dotActive: {
-    width: 20, borderRadius: 4, backgroundColor: colors.accent,
+    width: 20,
+    borderRadius: 4,
+    backgroundColor: colors.accent,
   },
 
   errorContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
@@ -590,8 +672,13 @@ const s = StyleSheet.create({
 
   footer: { paddingHorizontal: 20, paddingBottom: 16, gap: 12 },
   createButton: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 10, backgroundColor: colors.border, borderRadius: 14, paddingVertical: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    backgroundColor: colors.border,
+    borderRadius: 14,
+    paddingVertical: 18,
   },
   createButtonText: { color: colors.textPrimary, fontSize: 18, fontWeight: '800' },
   dreamAgainButton: {
@@ -615,19 +702,28 @@ const s = StyleSheet.create({
   },
 
   fullscreenBackdrop: {
-    flex: 1, backgroundColor: 'rgba(0,0,0,0.95)',
-    alignItems: 'center', justifyContent: 'center',
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.95)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   fullscreenImageWrap: {
-    width: SCREEN_WIDTH, height: SCREEN_HEIGHT,
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT,
   },
   fullscreenImage: {
-    width: SCREEN_WIDTH, height: SCREEN_HEIGHT,
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT,
   },
   fullscreenClose: {
-    position: 'absolute', top: 60, right: 20,
-    width: 44, height: 44, borderRadius: 22,
+    position: 'absolute',
+    top: 60,
+    right: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: 'rgba(0,0,0,0.5)',
-    alignItems: 'center', justifyContent: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

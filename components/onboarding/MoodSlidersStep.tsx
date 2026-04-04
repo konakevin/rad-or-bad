@@ -59,20 +59,25 @@ function BipolarSlider({ label, leftLabel, rightLabel, value, onChange }: Slider
       >
         <View ref={trackRef} style={s.track}>
           <View style={[s.fill, { width: value * SLIDER_WIDTH }]} />
-          <View style={[s.thumb, { transform: [{ translateX: value * (SLIDER_WIDTH - THUMB_SIZE) }] }]} />
+          <View
+            style={[s.thumb, { transform: [{ translateX: value * (SLIDER_WIDTH - THUMB_SIZE) }] }]}
+          />
         </View>
       </View>
     </View>
   );
 }
 
-interface Props { onNext: () => void; onBack: () => void; }
+interface Props {
+  onNext: () => void;
+  onBack: () => void;
+}
 
 const SLIDERS: { axis: keyof MoodAxes; label: string; left: string; right: string }[] = [
-  { axis: 'peaceful_chaotic',   label: 'Energy',    left: 'Peaceful',  right: 'Chaotic' },
-  { axis: 'cute_terrifying',    label: 'Tone',      left: 'Cute',      right: 'Terrifying' },
-  { axis: 'minimal_maximal',    label: 'Detail',    left: 'Minimal',   right: 'Maximal' },
-  { axis: 'realistic_surreal',  label: 'Reality',   left: 'Realistic', right: 'Surreal' },
+  { axis: 'peaceful_chaotic', label: 'Energy', left: 'Peaceful', right: 'Chaotic' },
+  { axis: 'cute_terrifying', label: 'Tone', left: 'Cute', right: 'Terrifying' },
+  { axis: 'minimal_maximal', label: 'Detail', left: 'Minimal', right: 'Maximal' },
+  { axis: 'realistic_surreal', label: 'Reality', left: 'Realistic', right: 'Surreal' },
 ];
 
 export function MoodSlidersStep({ onNext, onBack }: Props) {
@@ -105,10 +110,14 @@ export function MoodSlidersStep({ onNext, onBack }: Props) {
             <Ionicons name="arrow-back" size={18} color="#FFFFFF" />
             <Text style={s.backBtnText}>Back</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={s.nextBtn} onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            onNext();
-          }} activeOpacity={0.7}>
+          <TouchableOpacity
+            style={s.nextBtn}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              onNext();
+            }}
+            activeOpacity={0.7}
+          >
             <Text style={s.nextBtnText}>Next</Text>
             <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
           </TouchableOpacity>
@@ -130,28 +139,55 @@ const s = StyleSheet.create({
   poleLabel: { color: colors.textSecondary, fontSize: 13, fontWeight: '600' },
   hitArea: { paddingVertical: 12 },
   track: {
-    width: SLIDER_WIDTH, height: 8, borderRadius: 4,
-    backgroundColor: colors.surface, justifyContent: 'center',
+    width: SLIDER_WIDTH,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.surface,
+    justifyContent: 'center',
   },
   fill: {
-    position: 'absolute', left: 0, height: 8, borderRadius: 4, backgroundColor: colors.accent,
+    position: 'absolute',
+    left: 0,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.accent,
   },
   thumb: {
-    position: 'absolute', width: THUMB_SIZE, height: THUMB_SIZE, borderRadius: THUMB_SIZE / 2,
+    position: 'absolute',
+    width: THUMB_SIZE,
+    height: THUMB_SIZE,
+    borderRadius: THUMB_SIZE / 2,
     backgroundColor: '#FFFFFF',
-    shadowColor: '#000', shadowOpacity: 0.3, shadowRadius: 4, shadowOffset: { width: 0, height: 2 }, elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 4,
   },
   footer: { paddingHorizontal: 20, paddingBottom: 16 },
   footerRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   backBtn: {
-    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
-    paddingVertical: 16, borderRadius: 14,
-    backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.accentBorder,
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 16,
+    borderRadius: 14,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.accentBorder,
   },
   backBtnText: { color: '#FFFFFF', fontSize: 15, fontWeight: '600' },
   nextBtn: {
-    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, backgroundColor: colors.accent, borderRadius: 14, paddingVertical: 16,
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: colors.accent,
+    borderRadius: 14,
+    paddingVertical: 16,
   },
   nextBtnText: { color: '#FFFFFF', fontSize: 17, fontWeight: '700' },
 });

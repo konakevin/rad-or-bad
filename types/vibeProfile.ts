@@ -1,26 +1,82 @@
 /** Vibe Profile v2 — replaces Recipe as the user's creative identity */
 
 export type Aesthetic =
-  | 'cyberpunk' | 'cozy' | 'liminal' | 'brutalist' | 'retrofuturism'
-  | 'dreamy' | 'analog_film' | 'surreal' | 'cottagecore' | 'dark_academia'
-  | 'solarpunk' | 'vaporwave' | 'gothic' | 'art_nouveau' | 'maximalist'
-  | 'minimalist' | 'psychedelic' | 'steampunk' | 'biopunk' | 'afrofuturism';
+  | 'cyberpunk'
+  | 'cozy'
+  | 'liminal'
+  | 'brutalist'
+  | 'retrofuturism'
+  | 'dreamy'
+  | 'analog_film'
+  | 'surreal'
+  | 'cottagecore'
+  | 'dark_academia'
+  | 'solarpunk'
+  | 'vaporwave'
+  | 'gothic'
+  | 'art_nouveau'
+  | 'maximalist'
+  | 'minimalist'
+  | 'psychedelic'
+  | 'steampunk'
+  | 'biopunk'
+  | 'afrofuturism';
 
 export type ArtStyle =
-  | 'oil_painting' | 'anime' | '35mm_photography' | 'watercolor' | 'cgi'
-  | 'pixel_art' | 'claymation' | 'pencil_sketch' | 'comic_book'
-  | 'stained_glass' | 'ukiyo_e' | 'gouache' | 'vector_art' | 'collage'
-  | 'neon_sign' | 'papercraft' | 'embroidery' | 'lego' | 'felt_puppet';
+  | 'oil_painting'
+  | 'anime'
+  | '35mm_photography'
+  | 'watercolor'
+  | 'cgi'
+  | 'pixel_art'
+  | 'claymation'
+  | 'pencil_sketch'
+  | 'comic_book'
+  | 'stained_glass'
+  | 'ukiyo_e'
+  | 'gouache'
+  | 'vector_art'
+  | 'collage'
+  | 'neon_sign'
+  | 'papercraft'
+  | 'embroidery'
+  | 'lego'
+  | 'felt_puppet';
 
 export type SubjectInterest =
-  | 'nature' | 'architecture' | 'sci_fi' | 'fantasy' | 'animals'
-  | 'cities' | 'space' | 'oceans' | 'mountains' | 'food' | 'fashion'
-  | 'music' | 'gaming' | 'sports' | 'travel' | 'abstract' | 'dark'
-  | 'cute' | 'whimsical' | 'pride';
+  | 'nature'
+  | 'architecture'
+  | 'sci_fi'
+  | 'fantasy'
+  | 'animals'
+  | 'cities'
+  | 'space'
+  | 'oceans'
+  | 'mountains'
+  | 'food'
+  | 'fashion'
+  | 'music'
+  | 'gaming'
+  | 'sports'
+  | 'travel'
+  | 'abstract'
+  | 'dark'
+  | 'cute'
+  | 'whimsical'
+  | 'pride';
 
 export type SpiritCompanion =
-  | 'fox' | 'cat' | 'owl' | 'dragon' | 'rabbit' | 'wolf'
-  | 'jellyfish' | 'deer' | 'butterfly' | 'robot' | 'ghost'
+  | 'fox'
+  | 'cat'
+  | 'owl'
+  | 'dragon'
+  | 'rabbit'
+  | 'wolf'
+  | 'jellyfish'
+  | 'deer'
+  | 'butterfly'
+  | 'robot'
+  | 'ghost'
   | 'mushroom_creature';
 
 /** 4 bipolar mood sliders, each 0.0–1.0 */

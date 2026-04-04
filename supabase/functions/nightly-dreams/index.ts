@@ -7,7 +7,13 @@ import { buildPromptInput, buildRawPrompt, buildHaikuPrompt } from '../_shared/r
 import type { Recipe } from '../_shared/recipe.ts';
 import { DEFAULT_RECIPE } from '../_shared/recipe.ts';
 import type { VibeProfile, ConceptRecipe } from '../_shared/vibeProfile.ts';
-import { buildConceptPrompt, buildPolisherPrompt, buildFallbackConcept, buildFallbackFluxPrompt, parseConceptJson } from '../_shared/vibeEngine.ts';
+import {
+  buildConceptPrompt,
+  buildPolisherPrompt,
+  buildFallbackConcept,
+  buildFallbackFluxPrompt,
+  parseConceptJson,
+} from '../_shared/vibeEngine.ts';
 
 const COST_PER_IMAGE_CENTS = 3;
 const MAX_BUDGET_CENTS = 500; // $5 default
@@ -46,7 +52,9 @@ Deno.serve(async (req) => {
   // 1. Find eligible users: onboarded + AI enabled + active in last 36 hours
   const { data: eligible, error: eligibleErr } = await supabase
     .from('user_recipes')
-    .select('user_id, recipe, dream_wish, wish_modifiers, wish_recipient_ids, users!inner(last_active_at)')
+    .select(
+      'user_id, recipe, dream_wish, wish_modifiers, wish_recipient_ids, users!inner(last_active_at)'
+    )
     .eq('onboarding_completed', true)
     .eq('ai_enabled', true)
     .gte('users.last_active_at', new Date(Date.now() - 36 * 60 * 60 * 1000).toISOString());
@@ -132,7 +140,10 @@ async function generateDreamForUser(
 ) {
   const { dream_wish: wish, wish_modifiers: mods } = user;
   const profileData = user.recipe;
-  const isV2 = typeof profileData === 'object' && profileData !== null && (profileData as Record<string, unknown>).version === 2;
+  const isV2 =
+    typeof profileData === 'object' &&
+    profileData !== null &&
+    (profileData as Record<string, unknown>).version === 2;
 
   let prompt: string;
 
@@ -151,8 +162,16 @@ async function generateDreamForUser(
     try {
       const res = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-key': anthropicKey, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 300, messages: [{ role: 'user', content: conceptBrief }] }),
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': anthropicKey,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 300,
+          messages: [{ role: 'user', content: conceptBrief }],
+        }),
       });
       if (!res.ok) throw new Error('Haiku concept error');
       const data = await res.json();
@@ -166,8 +185,16 @@ async function generateDreamForUser(
     try {
       const res = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-key': anthropicKey, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 150, messages: [{ role: 'user', content: polisherBrief }] }),
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': anthropicKey,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 150,
+          messages: [{ role: 'user', content: polisherBrief }],
+        }),
       });
       if (!res.ok) throw new Error('Haiku polish error');
       const data = await res.json();
@@ -193,8 +220,16 @@ async function generateDreamForUser(
       try {
         const res = await fetch('https://api.anthropic.com/v1/messages', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-api-key': anthropicKey, 'anthropic-version': '2023-06-01' },
-          body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 150, messages: [{ role: 'user', content: haikuBrief }] }),
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': anthropicKey,
+            'anthropic-version': '2023-06-01',
+          },
+          body: JSON.stringify({
+            model: 'claude-haiku-4-5-20251001',
+            max_tokens: 150,
+            messages: [{ role: 'user', content: haikuBrief }],
+          }),
         });
         if (!res.ok) throw new Error('Haiku error');
         const data = await res.json();
@@ -248,7 +283,10 @@ async function generateDreamForUser(
     }
     if (pollData.status === 'failed') {
       const errMsg = pollData.error ?? 'Generation failed';
-      if (typeof errMsg === 'string' && (errMsg.toLowerCase().includes('nsfw') || errMsg.toLowerCase().includes('safety'))) {
+      if (
+        typeof errMsg === 'string' &&
+        (errMsg.toLowerCase().includes('nsfw') || errMsg.toLowerCase().includes('safety'))
+      ) {
         // Notify user and clear the wish
         if (wish) {
           await supabase.from('notifications').insert({
@@ -257,7 +295,10 @@ async function generateDreamForUser(
             type: 'dream_generated',
             body: `Your wish couldn't be dreamed — it was a bit too spicy. Try a different wish!`,
           });
-          await supabase.from('user_recipes').update({ dream_wish: null, wish_recipient_ids: null, wish_modifiers: null }).eq('user_id', user.user_id);
+          await supabase
+            .from('user_recipes')
+            .update({ dream_wish: null, wish_recipient_ids: null, wish_modifiers: null })
+            .eq('user_id', user.user_id);
         }
       }
       throw new Error(errMsg);
@@ -294,7 +335,9 @@ async function generateDreamForUser(
         .limit(5);
 
       const recentContext = (recentDreams ?? [])
-        .map((d: { ai_prompt: string | null; from_wish: string | null }) => d.ai_prompt?.slice(0, 80))
+        .map((d: { ai_prompt: string | null; from_wish: string | null }) =>
+          d.ai_prompt?.slice(0, 80)
+        )
         .filter(Boolean);
       const pastWishes = (recentDreams ?? [])
         .map((d: { ai_prompt: string | null; from_wish: string | null }) => d.from_wish)
@@ -321,9 +364,10 @@ async function generateDreamForUser(
         body: JSON.stringify({
           model: 'claude-haiku-4-5-20251001',
           max_tokens: 60,
-          messages: [{
-            role: 'user',
-            content: `You are a DreamBot — a tiny creative spirit living in someone's phone, making dreams nightly. Playful, warm, a little weird. You love your human.
+          messages: [
+            {
+              role: 'user',
+              content: `You are a DreamBot — a tiny creative spirit living in someone's phone, making dreams nightly. Playful, warm, a little weird. You love your human.
 
 Tonight's dream prompt: "${prompt.slice(0, 200)}"
 
@@ -339,7 +383,8 @@ CRITICAL RULES:
 ${memoryBlock}
 
 Output ONLY the message, nothing else.`,
-          }],
+            },
+          ],
         }),
       });
 

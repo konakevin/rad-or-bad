@@ -11,7 +11,10 @@ import { AESTHETIC_TILES, ART_STYLE_TILES, LIMITS } from '@/constants/onboarding
 import type { Aesthetic, ArtStyle } from '@/types/vibeProfile';
 import { colors } from '@/constants/theme';
 
-interface Props { onNext: () => void; onBack: () => void; }
+interface Props {
+  onNext: () => void;
+  onBack: () => void;
+}
 
 export function VisualTasteStep({ onNext, onBack }: Props) {
   const aesthetics = useOnboardingStore((s) => s.profile.aesthetics);
@@ -19,7 +22,8 @@ export function VisualTasteStep({ onNext, onBack }: Props) {
   const toggleAesthetic = useOnboardingStore((s) => s.toggleAesthetic);
   const toggleArtStyle = useOnboardingStore((s) => s.toggleArtStyle);
 
-  const canProceed = aesthetics.length >= LIMITS.aesthetics.min && artStyles.length >= LIMITS.art_styles.min;
+  const canProceed =
+    aesthetics.length >= LIMITS.aesthetics.min && artStyles.length >= LIMITS.art_styles.min;
 
   return (
     <View style={s.root}>
@@ -95,7 +99,11 @@ export function VisualTasteStep({ onNext, onBack }: Props) {
             activeOpacity={canProceed ? 0.7 : 1}
           >
             <Text style={[s.nextBtnText, !canProceed && s.nextBtnTextDisabled]}>Next</Text>
-            <Ionicons name="arrow-forward" size={18} color={canProceed ? '#FFFFFF' : colors.textSecondary} />
+            <Ionicons
+              name="arrow-forward"
+              size={18}
+              color={canProceed ? '#FFFFFF' : colors.textSecondary}
+            />
           </TouchableOpacity>
         </View>
       </View>
@@ -129,14 +137,27 @@ const s = StyleSheet.create({
   footer: { paddingHorizontal: 20, paddingBottom: 16 },
   footerRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   backBtn: {
-    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
-    paddingVertical: 16, borderRadius: 14,
-    backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.accentBorder,
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 16,
+    borderRadius: 14,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.accentBorder,
   },
   backBtnText: { color: '#FFFFFF', fontSize: 15, fontWeight: '600' },
   nextBtn: {
-    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, backgroundColor: colors.accent, borderRadius: 14, paddingVertical: 16,
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: colors.accent,
+    borderRadius: 14,
+    paddingVertical: 16,
   },
   nextBtnDisabled: { backgroundColor: colors.border },
   nextBtnText: { color: '#FFFFFF', fontSize: 17, fontWeight: '700' },

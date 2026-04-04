@@ -361,9 +361,7 @@ export function DreamCard({
 
           {/* Post info */}
           <View style={[s.postInfo, { paddingBottom: bottomPadding }]}>
-            {item.bot_message && (
-              <Text style={s.botMessage}>{item.bot_message}</Text>
-            )}
+            {item.bot_message && <Text style={s.botMessage}>{item.bot_message}</Text>}
             <TouchableOpacity
               style={s.usernameRow}
               onPress={() =>
@@ -392,7 +390,6 @@ export function DreamCard({
               </TouchableOpacity>
             )}
           </View>
-
 
           {/* Side actions */}
           <View style={[s.sideActions, { bottom: bottomPadding + 10 }]}>

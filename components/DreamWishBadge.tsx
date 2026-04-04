@@ -26,11 +26,7 @@ export function DreamWishBadge({ variant = 'pill' }: Props) {
         onPress={() => setShowSheet(true)}
         activeOpacity={0.7}
       >
-        <Ionicons
-          name="moon"
-          size={variant === 'card' ? 20 : 16}
-          color={colors.accent}
-        />
+        <Ionicons name="moon" size={variant === 'card' ? 20 : 16} color={colors.accent} />
         <Text style={variant === 'card' ? s.cardText : s.pillText} numberOfLines={1}>
           {wish ? 'A wish is on its way' : 'Make a wish'}
         </Text>

@@ -25,13 +25,13 @@ interface StepConfig {
 }
 
 const STEPS: StepConfig[] = [
-  { key: 'welcome',  component: WelcomeStep, skipInEdit: true },
-  { key: 'visual',   component: VisualTasteStep },
+  { key: 'welcome', component: WelcomeStep, skipInEdit: true },
+  { key: 'visual', component: VisualTasteStep },
   { key: 'interests', component: InterestsStep },
-  { key: 'moods',    component: MoodSlidersStep },
-  { key: 'anchors',  component: PersonalAnchorsStep },
-  { key: 'spirit',   component: SpiritCompanionStep },
-  { key: 'reveal',   component: RevealStep },
+  { key: 'moods', component: MoodSlidersStep },
+  { key: 'anchors', component: PersonalAnchorsStep },
+  { key: 'spirit', component: SpiritCompanionStep },
+  { key: 'reveal', component: RevealStep },
 ];
 
 export default function OnboardingPager() {
@@ -40,16 +40,20 @@ export default function OnboardingPager() {
   const setStep = useOnboardingStore((s) => s.setStep);
   const listRef = useRef<FlatList>(null);
 
-  const steps = useMemo(() =>
-    isEditing ? STEPS.filter((s) => !s.skipInEdit) : STEPS,
-  [isEditing]);
+  const steps = useMemo(
+    () => (isEditing ? STEPS.filter((s) => !s.skipInEdit) : STEPS),
+    [isEditing]
+  );
 
-  const goTo = useCallback((index: number) => {
-    if (index >= 0 && index < steps.length) {
-      setStep(index + 1);
-      listRef.current?.scrollToIndex({ index, animated: true });
-    }
-  }, [steps.length, setStep]);
+  const goTo = useCallback(
+    (index: number) => {
+      if (index >= 0 && index < steps.length) {
+        setStep(index + 1);
+        listRef.current?.scrollToIndex({ index, animated: true });
+      }
+    },
+    [steps.length, setStep]
+  );
 
   const goNext = useCallback(() => goTo(step), [step, goTo]);
 
@@ -78,13 +82,14 @@ export default function OnboardingPager() {
         showsHorizontalScrollIndicator={false}
         scrollEnabled={false}
         keyExtractor={(item) => item.key}
-        getItemLayout={(_, index) => ({ length: SCREEN_WIDTH, offset: SCREEN_WIDTH * index, index })}
+        getItemLayout={(_, index) => ({
+          length: SCREEN_WIDTH,
+          offset: SCREEN_WIDTH * index,
+          index,
+        })}
         renderItem={({ item, index }) => (
           <View style={s.page}>
-            <item.component
-              onNext={goNext}
-              onBack={index > 0 ? goBack : () => {}}
-            />
+            <item.component onNext={goNext} onBack={index > 0 ? goBack : () => {}} />
           </View>
         )}
       />

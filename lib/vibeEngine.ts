@@ -11,7 +11,6 @@
 import type { VibeProfile, MoodAxes, ConceptRecipe, PromptMode } from '@/types/vibeProfile';
 import { PROMPT_MODE_CONFIGS } from '@/constants/promptModes';
 
-
 function describeMoods(moods: MoodAxes): string {
   const parts: string[] = [];
 
@@ -41,30 +40,34 @@ function describeMoods(moods: MoodAxes): string {
 export function buildConceptPrompt(
   profile: VibeProfile,
   mode: PromptMode = 'dream_me',
-  seed: number = Math.random(),
+  seed: number = Math.random()
 ): string {
   const config = PROMPT_MODE_CONFIGS[mode];
 
   // Spirit companion: ~20% chance to include as a hint
-  const spiritHint = profile.spirit_companion && seed < 0.2
-    ? `\nTheir spirit companion is a ${profile.spirit_companion.replace(/_/g, ' ')} — consider weaving it into the scene.`
-    : '';
+  const spiritHint =
+    profile.spirit_companion && seed < 0.2
+      ? `\nTheir spirit companion is a ${profile.spirit_companion.replace(/_/g, ' ')} — consider weaving it into the scene.`
+      : '';
 
   // Personal anchors: include selectively to prevent overuse
   // dream_vibe always included (it's the creative north star)
   // place, object, era: each has 40% chance of appearing per dream
   const anchorLines: string[] = [];
-  if (profile.personal_anchors.place && Math.random() < 0.4) anchorLines.push(`- Places they love: "${profile.personal_anchors.place}"`);
-  if (profile.personal_anchors.object && Math.random() < 0.4) anchorLines.push(`- Objects they love: "${profile.personal_anchors.object}"`);
-  if (profile.personal_anchors.era && Math.random() < 0.4) anchorLines.push(`- Eras they vibe with: "${profile.personal_anchors.era}"`);
-  if (profile.personal_anchors.dream_vibe) anchorLines.push(`- Their dream vibe: "${profile.personal_anchors.dream_vibe}"`);
-  const anchorsBlock = anchorLines.length > 0
-    ? `\nPERSONAL ANCHORS (weave in naturally when they fit — don't force them):\n${anchorLines.join('\n')}`
-    : '';
+  if (profile.personal_anchors.place && Math.random() < 0.4)
+    anchorLines.push(`- Places they love: "${profile.personal_anchors.place}"`);
+  if (profile.personal_anchors.object && Math.random() < 0.4)
+    anchorLines.push(`- Objects they love: "${profile.personal_anchors.object}"`);
+  if (profile.personal_anchors.era && Math.random() < 0.4)
+    anchorLines.push(`- Eras they vibe with: "${profile.personal_anchors.era}"`);
+  if (profile.personal_anchors.dream_vibe)
+    anchorLines.push(`- Their dream vibe: "${profile.personal_anchors.dream_vibe}"`);
+  const anchorsBlock =
+    anchorLines.length > 0
+      ? `\nPERSONAL ANCHORS (weave in naturally when they fit — don't force them):\n${anchorLines.join('\n')}`
+      : '';
 
-  const avoidBlock = profile.avoid.length > 0
-    ? `\nNEVER INCLUDE: ${profile.avoid.join(', ')}`
-    : '';
+  const avoidBlock = profile.avoid.length > 0 ? `\nNEVER INCLUDE: ${profile.avoid.join(', ')}` : '';
 
   return `You are a concept artist designing a single dream image for someone. Output a structured JSON concept recipe.
 
@@ -132,17 +135,18 @@ Output ONLY the prompt text.`;
 export function buildFallbackConcept(profile: VibeProfile): ConceptRecipe {
   const pick = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
 
-  const style = profile.art_styles.length > 0
-    ? pick(profile.art_styles).replace(/_/g, ' ')
-    : 'digital painting';
+  const style =
+    profile.art_styles.length > 0
+      ? pick(profile.art_styles).replace(/_/g, ' ')
+      : 'digital painting';
 
-  const interest = profile.interests.length > 0
-    ? pick(profile.interests).replace(/_/g, ' ')
-    : 'mysterious landscape';
+  const interest =
+    profile.interests.length > 0
+      ? pick(profile.interests).replace(/_/g, ' ')
+      : 'mysterious landscape';
 
-  const aesthetic = profile.aesthetics.length > 0
-    ? pick(profile.aesthetics).replace(/_/g, ' ')
-    : 'dreamy';
+  const aesthetic =
+    profile.aesthetics.length > 0 ? pick(profile.aesthetics).replace(/_/g, ' ') : 'dreamy';
 
   const isSurreal = profile.moods.realistic_surreal > 0.5;
   const isDark = profile.moods.cute_terrifying > 0.5;
@@ -176,7 +180,9 @@ export function buildFallbackFluxPrompt(concept: ConceptRecipe): string {
     concept.composition,
     concept.mood + ' atmosphere',
     'hyper detailed, gorgeous lighting',
-  ].filter(Boolean).join(', ');
+  ]
+    .filter(Boolean)
+    .join(', ');
 }
 
 /**

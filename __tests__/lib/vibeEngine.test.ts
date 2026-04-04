@@ -23,7 +23,7 @@ const TEST_PROFILE: VibeProfile = {
     place: 'a rooftop at sunset',
     object: 'a vintage camera',
     era: '80s synthwave',
-    dream_vibe: 'like waking up in someone else\'s memory',
+    dream_vibe: "like waking up in someone else's memory",
   },
   avoid: ['text', 'gore'],
   spirit_companion: 'fox',
@@ -59,7 +59,7 @@ describe('buildConceptPrompt', () => {
 
   it('includes dream vibe anchor always', () => {
     const prompt = buildConceptPrompt(TEST_PROFILE);
-    expect(prompt).toContain('like waking up in someone else\'s memory');
+    expect(prompt).toContain("like waking up in someone else's memory");
   });
 
   it('includes avoid list', () => {
@@ -157,20 +157,23 @@ describe('buildFallbackFluxPrompt', () => {
 
 describe('parseConceptJson', () => {
   it('parses clean JSON', () => {
-    const json = '{"subject":"a fox","environment":"forest","lighting":"soft","camera":"wide","style":"anime","palette":"blue","twist":"glowing","composition":"center","mood":"calm"}';
+    const json =
+      '{"subject":"a fox","environment":"forest","lighting":"soft","camera":"wide","style":"anime","palette":"blue","twist":"glowing","composition":"center","mood":"calm"}';
     const result = parseConceptJson(json);
     expect(result.subject).toBe('a fox');
     expect(result.mood).toBe('calm');
   });
 
   it('strips markdown fences', () => {
-    const json = '```json\n{"subject":"a fox","environment":"forest","lighting":"soft","camera":"wide","style":"anime","palette":"blue","twist":"glowing","composition":"center","mood":"calm"}\n```';
+    const json =
+      '```json\n{"subject":"a fox","environment":"forest","lighting":"soft","camera":"wide","style":"anime","palette":"blue","twist":"glowing","composition":"center","mood":"calm"}\n```';
     const result = parseConceptJson(json);
     expect(result.subject).toBe('a fox');
   });
 
   it('handles surrounding text', () => {
-    const json = 'Here is the concept:\n{"subject":"a fox","environment":"forest","lighting":"soft","camera":"wide","style":"anime","palette":"blue","twist":"glowing","composition":"center","mood":"calm"}\nHope you like it!';
+    const json =
+      'Here is the concept:\n{"subject":"a fox","environment":"forest","lighting":"soft","camera":"wide","style":"anime","palette":"blue","twist":"glowing","composition":"center","mood":"calm"}\nHope you like it!';
     const result = parseConceptJson(json);
     expect(result.subject).toBe('a fox');
   });

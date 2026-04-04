@@ -44,7 +44,7 @@ import { colors } from '@/constants/theme';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const THUMB_HEIGHT = Math.round(SCREEN_HEIGHT * 0.28);
-const THUMB_WIDTH = Math.round(THUMB_HEIGHT * 9 / 16); // maintain 9:16 aspect
+const THUMB_WIDTH = Math.round((THUMB_HEIGHT * 9) / 16); // maintain 9:16 aspect
 const THUMB_MARGIN_TOP = 8;
 const MAX_COMMENT_LENGTH = 500;
 const ANIM_DURATION = 250;
@@ -130,8 +130,7 @@ export function CommentOverlay({ post, onClose, hideTabBar }: Props) {
 
   // Comment pane slides up from the bottom
   const paneStyle = useAnimatedStyle(() => {
-    const translateY =
-      interpolate(progress.value, [0, 1], [SCREEN_HEIGHT, 0]) + dragY.value;
+    const translateY = interpolate(progress.value, [0, 1], [SCREEN_HEIGHT, 0]) + dragY.value;
     return {
       transform: [{ translateY }],
     };
@@ -235,7 +234,7 @@ export function CommentOverlay({ post, onClose, hideTabBar }: Props) {
       isLiked: false,
       parentId: replyTo?.id,
     };
-    setOptimisticComments(prev => [optimistic, ...prev]);
+    setOptimisticComments((prev) => [optimistic, ...prev]);
     setText('');
     const savedReply = replyTo;
     setReplyTo(null);
@@ -249,7 +248,7 @@ export function CommentOverlay({ post, onClose, hideTabBar }: Props) {
         },
         onError: (err: Error) => {
           // Remove the optimistic comment on failure
-          setOptimisticComments(prev => prev.filter(c => c.id !== tempId));
+          setOptimisticComments((prev) => prev.filter((c) => c.id !== tempId));
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
           Toast.show(err.message ?? 'Failed to post comment', 'close-circle');
         },
@@ -415,7 +414,9 @@ export function CommentOverlay({ post, onClose, hideTabBar }: Props) {
               )}
 
               {/* Input bar */}
-              <View style={[styles.inputBar, { paddingBottom: insets.bottom + (hideTabBar ? 16 : 75) }]}>
+              <View
+                style={[styles.inputBar, { paddingBottom: insets.bottom + (hideTabBar ? 16 : 75) }]}
+              >
                 {currentUser ? (
                   <>
                     <TextInput

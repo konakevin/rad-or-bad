@@ -1,7 +1,12 @@
 import { create } from 'zustand';
 import type {
-  VibeProfile, Aesthetic, ArtStyle, SubjectInterest,
-  SpiritCompanion, MoodAxes, PersonalAnchors,
+  VibeProfile,
+  Aesthetic,
+  ArtStyle,
+  SubjectInterest,
+  SpiritCompanion,
+  MoodAxes,
+  PersonalAnchors,
 } from '@/types/vibeProfile';
 import { DEFAULT_VIBE_PROFILE } from '@/types/vibeProfile';
 
