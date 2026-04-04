@@ -269,9 +269,7 @@ export function DreamFamilySheet({
                   }}
                   activeOpacity={0.7}
                 >
-                  <Ionicons name="sparkles" size={18} color="#FFFFFF" />
                   <Text style={s.actionText}>Dream Like This</Text>
-                  <Text style={s.actionCost}>1 ✨</Text>
                 </TouchableOpacity>
               </View>
             )}
