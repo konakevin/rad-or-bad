@@ -32,8 +32,6 @@ export async function postDream(opts: PostDreamOpts): Promise<string> {
       categories: ['art'],
       caption,
       is_active: true,
-      is_approved: true,
-      is_moderated: true,
       is_ai_generated: true,
       ai_prompt: opts.prompt,
       total_votes: 0,

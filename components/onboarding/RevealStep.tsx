@@ -292,7 +292,6 @@ export function RevealStep({ onBack }: Props) {
           caption: null,
           is_ai_generated: true,
           ai_prompt: activeDream.prompt || null,
-          is_approved: true,
         })
         .select('id')
         .single();

@@ -39,11 +39,6 @@ import { colors } from '@/constants/theme';
 import { generateDream, persistImage } from '@/lib/dreamApi';
 import { formatCompact } from '@/lib/formatNumber';
 import { postDream, pinToFeed } from '@/lib/dreamPost';
-import type { VibeProfile } from '@/types/vibeProfile';
-import type { Recipe } from '@/types/recipe';
-import { DEFAULT_RECIPE } from '@/types/recipe';
-import { isVibeProfile } from '@/lib/migrateRecipe';
-import { generateFromVibeProfile } from '@/lib/dreamApi';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const PREVIEW_WIDTH = SCREEN_WIDTH - 48;

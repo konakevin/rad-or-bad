@@ -72,7 +72,6 @@ export function useUpload() {
           width,
           height,
           caption: caption.trim() || null,
-          is_approved: true,
         })
         .select(
           'id, user_id, categories, image_url, media_type, width, height, caption, created_at, total_votes, rad_votes, bad_votes'
