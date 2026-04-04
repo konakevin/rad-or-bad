@@ -219,7 +219,14 @@ export function FullScreenFeed({
           onDreamLikeThis={() => {
             if (__DEV__)
               console.log('[Feed] Dream Like This → push stack screen, postId:', familyPost.id);
-            router.push(`/dreamLikeThis?postId=${familyPost.id}`);
+            const params = new URLSearchParams({
+              postId: familyPost.id,
+              imageUrl: familyPost.image_url,
+              username: familyPost.username,
+              userId: familyPost.user_id,
+              ...(familyPost.ai_prompt ? { prompt: familyPost.ai_prompt } : {}),
+            });
+            router.push(`/dreamLikeThis?${params.toString()}`);
           }}
         />
       )}

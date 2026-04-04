@@ -59,14 +59,38 @@ interface RefPost {
 }
 
 export default function DreamLikeThisScreen() {
-  const { postId } = useLocalSearchParams<{ postId: string }>();
+  const {
+    postId,
+    imageUrl: paramImageUrl,
+    username: paramUsername,
+    prompt: paramPrompt,
+    userId: paramUserId,
+  } = useLocalSearchParams<{
+    postId: string;
+    imageUrl?: string;
+    username?: string;
+    prompt?: string;
+    userId?: string;
+  }>();
   const user = useAuthStore((s) => s.user);
   const { data: sparkleBalance = 0 } = useSparkleBalance();
   const { mutateAsync: spendSparkles } = useSpendSparkles();
 
-  // ── Reference post data (fetched on mount) ────────────────────────
-  const [refPost, setRefPost] = useState<RefPost | null>(null);
-  const [phase, setPhase] = useState<Phase>('loading');
+  // ── Reference post data (from params, fetch prompt if missing) ─────
+  const hasParams = !!(paramImageUrl && paramUsername && paramUserId);
+  const [refPost, setRefPost] = useState<RefPost | null>(
+    hasParams
+      ? {
+          id: postId!,
+          prompt: paramPrompt ?? '',
+          styleField: null,
+          imageUrl: paramImageUrl!,
+          username: paramUsername!,
+          userId: paramUserId!,
+        }
+      : null
+  );
+  const [phase, setPhase] = useState<Phase>(hasParams ? 'pick' : 'loading');
   const [error, setError] = useState<string | null>(null);
 
   // ── Photo state ───────────────────────────────────────────────────
@@ -80,6 +104,7 @@ export default function DreamLikeThisScreen() {
   const [resultConcept, setResultConcept] = useState<Record<string, unknown> | null>(null);
   const [posting, setPosting] = useState(false);
   const [reDreamResult, setReDreamResult] = useState(false);
+  const [extractedStyle, setExtractedStyle] = useState<string | null>(null);
 
   const busy = useRef(false);
   const [fullscreen, setFullscreen] = useState(false);
@@ -151,9 +176,29 @@ export default function DreamLikeThisScreen() {
     setTimeout(() => setFullscreen(false), 260);
   }
 
-  // ── Fetch reference post on mount ─────────────────────────────────
+  // ── Extract visual style via Haiku (background, non-blocking) ──────
+  useEffect(() => {
+    const prompt = refPost?.prompt;
+    if (!prompt) return;
+    (async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('extract-style', {
+          body: { prompt },
+        });
+        if (!error && data?.style) {
+          if (__DEV__) console.log('[DreamLikeThis] Extracted style:', data.style);
+          setExtractedStyle(data.style);
+        }
+      } catch {
+        // Non-critical — falls back to first comma segment
+      }
+    })();
+  }, [refPost?.prompt]);
+
+  // ── Fetch prompt if not passed as param ─────────────────────────────
   useEffect(() => {
     if (!postId) return;
+    if (hasParams && paramPrompt) return;
     (async () => {
       const { data } = await supabase
         .from('uploads')
@@ -170,7 +215,7 @@ export default function DreamLikeThisScreen() {
       setRefPost({
         id: data.id,
         prompt,
-        styleField: null, // Will come from ai_concept once migration 074 is run
+        styleField: null,
         imageUrl: data.image_url,
         username: u.username,
         userId: data.user_id,
@@ -250,7 +295,7 @@ export default function DreamLikeThisScreen() {
           reader.readAsDataURL(blob);
         });
         const refUrl = `data:image/jpeg;base64,${b64}`;
-        const artStyle = refPost.prompt.split(',')[0].trim();
+        const artStyle = extractedStyle ?? refPost.prompt.split(',')[0].trim();
         const stylePrompt = customPrompt.trim()
           ? `Render this image as ${artStyle}. ${customPrompt.trim()}.`
           : `Render this image as ${artStyle}.`;
@@ -262,7 +307,7 @@ export default function DreamLikeThisScreen() {
       } else if (photoUri && photoBase64) {
         // Photo + style ref: apply reference art style to user's photo
         const refUrl = `data:image/jpeg;base64,${photoBase64}`;
-        const artStyle = refPost.prompt.split(',')[0].trim();
+        const artStyle = extractedStyle ?? refPost.prompt.split(',')[0].trim();
         if (__DEV__) console.log('[DreamLikeThis] Photo + style ref, art style:', artStyle);
         const stylePrompt = customPrompt.trim()
           ? `Render this photo as ${artStyle}. ${customPrompt.trim()}. Do not change the person or subject.`
