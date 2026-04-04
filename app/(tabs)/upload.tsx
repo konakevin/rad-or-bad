@@ -590,7 +590,7 @@ export default function DreamScreen() {
         // If style_ref mode, pass the reference prompt as a style hint
         const styleHint =
           isStyleRef && fusionTarget?.prompt
-            ? `STYLE TO COPY: "${fusionTarget.prompt.slice(0, 200)}". COPY the art medium, art style, color palette, lighting, and visual treatment from this reference EXACTLY. But create a NEW scene using the user's interests, personal anchors, and mood from their profile above. Same look, different content.`
+            ? `CRITICAL OVERRIDE — IGNORE the user's art_styles listed above. Instead, the "style" field in your JSON MUST be extracted from this reference prompt: "${fusionTarget.prompt.slice(0, 200)}". Whatever art medium appears in this reference (e.g. pencil sketch, pixel art, watercolor, oil painting) — use that EXACT medium as your "style" value. Do NOT substitute with the user's preferred styles. The user's profile drives the subject, environment, and mood. The reference drives the art style ONLY.`
             : undefined;
         if (__DEV__) {
           console.log('[JustDream] isStyleRef:', isStyleRef);

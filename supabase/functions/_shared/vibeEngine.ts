@@ -201,10 +201,17 @@ export function buildFallbackFluxPrompt(concept: ConceptRecipe): string {
 }
 
 export function parseConceptJson(raw: string): ConceptRecipe {
-  let cleaned = raw.replace(/```json?\s*/g, '').replace(/```\s*/g, '');
+  // Strip markdown fences, backticks, and any surrounding text
+  let cleaned = raw
+    .replace(/```json\s*/gi, '')
+    .replace(/```\s*/g, '')
+    .replace(/`/g, '')
+    .trim();
   const start = cleaned.indexOf('{');
   const end = cleaned.lastIndexOf('}');
   if (start === -1 || end === -1) throw new Error('No JSON object found');
   cleaned = cleaned.slice(start, end + 1);
+  // Fix common JSON issues: trailing commas, single quotes
+  cleaned = cleaned.replace(/,\s*}/g, '}').replace(/,\s*]/g, ']');
   return JSON.parse(cleaned) as ConceptRecipe;
 }

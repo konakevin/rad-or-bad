@@ -350,19 +350,35 @@ Deno.serve(async (req) => {
     let concept: ConceptRecipe;
     let conceptBrief = buildConceptPrompt(vibeProfile, promptMode, Math.random());
 
+    console.log('[generate-dream] hint received:', hint ? hint.slice(0, 80) : 'NONE');
+    console.log('[generate-dream] input_image:', input_image ? 'YES' : 'NO');
+    console.log('[generate-dream] prompt_mode:', promptMode);
+
     // Inject style reference BEFORE concept generation so Haiku uses it
     if (hint) {
       conceptBrief += `\n\n${hint}`;
+      console.log('[generate-dream] Style hint injected into concept brief');
     }
 
     // If photo is attached, tell the concept generator to reimagine it
     if (input_image) {
       conceptBrief += `\n\nIMPORTANT: This is a PHOTO REIMAGINING. The user uploaded a photo. KEEP THE MAIN SUBJECT — whatever or whoever is in the photo MUST remain the focus. Reimagine everything AROUND the subject: transform the environment, change the art style, add fantastical elements, alter the lighting and mood. The subject stays, the world changes. This is NOT a replacement — it's a creative reimagining of the same subject in a dream world.`;
     }
+
+    console.log('[generate-dream] Concept brief length:', conceptBrief.length);
+    console.log('[generate-dream] Concept brief tail:', conceptBrief.slice(-200));
+
     try {
-      const conceptRaw = await enhanceViaHaiku(conceptBrief, '', ANTHROPIC_KEY, 300);
-      concept = parseConceptJson(conceptRaw);
-    } catch {
+      const conceptRaw = await haikuJson(conceptBrief, ANTHROPIC_KEY, 600);
+      console.log('[generate-dream] Haiku concept JSON:', conceptRaw.slice(0, 200));
+      concept = JSON.parse(conceptRaw) as ConceptRecipe;
+      console.log('[generate-dream] Concept style:', concept.style);
+      console.log('[generate-dream] Concept palette:', concept.palette);
+    } catch (err) {
+      console.warn(
+        '[generate-dream] Concept parse failed, using fallback:',
+        (err as Error).message
+      );
       concept = buildFallbackConcept(vibeProfile);
     }
 
@@ -374,6 +390,8 @@ Deno.serve(async (req) => {
     } catch {
       finalPrompt = buildFallbackFluxPrompt(concept);
     }
+
+    console.log('[generate-dream] Final Flux prompt:', finalPrompt.slice(0, 150));
 
     lap('two-pass-done');
   } else if (recipe) {
@@ -562,6 +580,36 @@ Write an image prompt (max 50 words). Start with the art medium. You can go macr
 });
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
+
+/** Call Haiku expecting a JSON response. Uses prefilled assistant to force raw JSON output. */
+async function haikuJson(
+  brief: string,
+  anthropicKey: string | undefined,
+  maxTokens: number = 300
+): Promise<string> {
+  if (!anthropicKey) throw new Error('No API key');
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': anthropicKey,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: maxTokens,
+      messages: [
+        { role: 'user', content: brief },
+        { role: 'assistant', content: '{' },
+      ],
+    }),
+  });
+  if (!res.ok) throw new Error(`Haiku ${res.status}`);
+  const data = await res.json();
+  const text = data.content?.[0]?.text?.trim() ?? '';
+  // Prepend the { we prefilled
+  return '{' + text;
+}
 
 async function enhanceViaHaiku(
   brief: string,
