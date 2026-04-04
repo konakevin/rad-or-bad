@@ -274,17 +274,21 @@ export default function DreamScreen() {
       let result: { image_url: string; prompt_used: string };
 
       if (isStyleRef && fusionTarget?.prompt) {
-        // Dream Like This + Photo: send reference prompt directly to Kontext — skip vibe profile
+        // Dream Like This + Photo: extract style from reference, keep photo subject
         if (__DEV__) {
-          console.log('[PhotoDream] STYLE REF — sending reference prompt directly to Kontext');
+          console.log('[PhotoDream] STYLE REF — applying reference style to photo subject');
           console.log('[PhotoDream] Reference prompt:', fusionTarget.prompt.slice(0, 100));
         }
-        const prompt = userHint.trim()
-          ? `${userHint.trim()}. Style: ${fusionTarget.prompt.slice(0, 150)}`
-          : fusionTarget.prompt;
+        // Tell Kontext to keep the photo's subject but apply the reference art style
+        const refPrompt = fusionTarget.prompt;
+        // Extract the art medium (usually the first few words before the comma)
+        const medium = refPrompt.split(',')[0].trim();
+        const stylePrompt = userHint.trim()
+          ? `Reimagine this photo as ${medium}. ${userHint.trim()}`
+          : `Reimagine this photo as ${medium}. Keep the subject exactly as they are. Change only the art style, rendering, and visual treatment to match: ${refPrompt.slice(0, 200)}`;
         result = await generateDream({
           mode: 'flux-kontext',
-          prompt,
+          prompt: stylePrompt,
           input_image: refUrl,
         });
       } else if (userHint.trim()) {
@@ -690,6 +694,7 @@ export default function DreamScreen() {
             onPress={() => {
               clearDreamMode();
               reset();
+              if (router.canGoBack()) router.back();
             }}
             hitSlop={12}
           >
