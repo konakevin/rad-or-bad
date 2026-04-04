@@ -23,7 +23,7 @@ import { useToggleLike } from '@/hooks/useToggleLike';
 import { useAuthStore } from '@/store/auth';
 import { supabase } from '@/lib/supabase';
 import { Toast } from '@/components/Toast';
-import { useFusionStore } from '@/store/fusion';
+// fusionStore no longer used for Dream Like This — uses stack screen with route params
 import { DreamFamilySheet } from '@/components/DreamFamilySheet';
 import { colors } from '@/constants/theme';
 
@@ -68,7 +68,6 @@ export function FullScreenFeed({
   const { mutate: toggleFavorite } = useToggleFavorite();
   const { data: likeIds = new Set<string>() } = useLikeIds();
   const { mutate: toggleLike } = useToggleLike();
-  const setStyleRef = useFusionStore((s) => s.setStyleRef);
   const [familyPostId, setFamilyPostId] = useState<string | null>(null);
   const [familyPost, setFamilyPost] = useState<DreamPostItem | null>(null);
   const [commentPost, setCommentPost] = useState<DreamPostItem | null>(null);
@@ -189,6 +188,7 @@ export function FullScreenFeed({
             onFamily={
               item.is_ai_generated
                 ? () => {
+                    if (__DEV__) console.log('[Feed] onFamily tapped, postId:', item.id);
                     setFamilyPostId(item.id);
                     setFamilyPost(item);
                   }
@@ -208,6 +208,7 @@ export function FullScreenFeed({
         <DreamFamilySheet
           visible={!!familyPostId}
           onClose={() => {
+            if (__DEV__) console.log('[Feed] DreamFamilySheet onClose');
             setFamilyPostId(null);
             setFamilyPost(null);
           }}
@@ -215,39 +216,10 @@ export function FullScreenFeed({
           uploadId={familyPost.id}
           isAiGenerated={familyPost.is_ai_generated}
           hideTabBar={hideTabBar}
-          onDreamLikeThis={async () => {
-            // Fetch ai_prompt + ai_concept from DB — feed data may not include them
-            let prompt = familyPost.ai_prompt ?? '';
-            let styleField: string | null = null;
-
-            // Try concept from feed data first
-            const feedConcept = familyPost.ai_concept;
-            if (feedConcept && typeof feedConcept.style === 'string') {
-              styleField = feedConcept.style;
-            }
-
-            if (!prompt || !styleField) {
-              const { data: raw } = await supabase
-                .from('uploads')
-                .select('ai_prompt, caption')
-                .eq('id', familyPost.id)
-                .single();
-              const row = raw as Record<string, unknown> | null;
-              if (!prompt) {
-                prompt = (row?.ai_prompt as string) || (row?.caption as string) || '';
-              }
-            }
-
-            setStyleRef({
-              postId: familyPost.id,
-              prompt,
-              styleField,
-              imageUrl: familyPost.image_url,
-              username: familyPost.username,
-              userId: familyPost.user_id,
-              recipeId: familyPost.recipe_id ?? null,
-            });
-            router.navigate('/(tabs)/upload');
+          onDreamLikeThis={() => {
+            if (__DEV__)
+              console.log('[Feed] Dream Like This → push stack screen, postId:', familyPost.id);
+            router.push(`/dreamLikeThis?postId=${familyPost.id}`);
           }}
         />
       )}

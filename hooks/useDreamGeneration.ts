@@ -12,7 +12,7 @@ import * as Haptics from 'expo-haptics';
 import { useSharedValue, withTiming, withSequence } from 'react-native-reanimated';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/auth';
-import { useFusionStore } from '@/store/fusion';
+import type { FusionTarget } from '@/store/fusion';
 import { useSparkleBalance, useSpendSparkles } from '@/hooks/useSparkles';
 import { showAlert } from '@/components/CustomAlert';
 import { Toast } from '@/components/Toast';
@@ -40,6 +40,10 @@ interface GenerationDeps {
   /** Current UI phase */
   phase: Phase;
   setPhase: (p: Phase) => void;
+  /** Dream mode (local state, consumed from fusion store on focus) */
+  isStyleRef: boolean;
+  isTwinMode: boolean;
+  fusionTarget: import('@/store/fusion').FusionTarget | null;
   /** Photo state */
   photoBase64: string | null;
   photoUri: string | null;
@@ -71,6 +75,9 @@ export function useDreamGeneration(deps: GenerationDeps) {
   const {
     phase,
     setPhase,
+    isStyleRef,
+    isTwinMode,
+    fusionTarget,
     photoBase64,
     photoUri,
     photoFromUpload,
@@ -90,12 +97,6 @@ export function useDreamGeneration(deps: GenerationDeps) {
   const user = useAuthStore((s) => s.user);
   const { data: sparkleBalance = 0 } = useSparkleBalance();
   const { mutateAsync: spendSparkles } = useSpendSparkles();
-  const dreamMode = useFusionStore((s) => s.mode);
-  const fusionTarget = useFusionStore((s) => s.target);
-  const clearDreamMode = useFusionStore((s) => s.clear);
-
-  const isStyleRef = dreamMode === 'style_ref' && !!fusionTarget;
-  const isTwinMode = dreamMode === 'twin' && !!fusionTarget;
 
   const busy = useRef(false);
 
@@ -209,19 +210,15 @@ export function useDreamGeneration(deps: GenerationDeps) {
       let result: GenerateResult;
 
       if (isStyleRef) {
+        // Dream Like This + Photo: apply the reference art style to the user's photo
         const refPrompt = fusionTarget?.prompt;
-        const styleField = fusionTarget?.styleField;
-        if (!refPrompt && !styleField)
-          throw new Error('No style reference available for this dream');
-        // Use structured style from concept JSON when available
-        const medium = styleField ?? refPrompt?.split(',')[0].trim() ?? '';
+        if (!refPrompt) throw new Error('No style reference prompt available for this dream');
         if (__DEV__) {
-          console.log('[PhotoDream] STYLE REF — style:', medium);
-          console.log('[PhotoDream] From concept:', !!styleField);
+          console.log('[PhotoDream] STYLE REF — full reference prompt:', refPrompt.slice(0, 150));
         }
         const stylePrompt = userHint.trim()
-          ? `Reimagine this photo as ${medium}. ${userHint.trim()}`
-          : `Reimagine this photo as ${medium}. Keep the subject exactly as they are. Change only the art style, rendering, and visual treatment.`;
+          ? `Apply this exact art style to the photo: ${refPrompt.slice(0, 250)}. Also: ${userHint.trim()}. Keep the photo's subject unchanged.`
+          : `Apply this exact art style and visual treatment to the photo, keeping the subject unchanged: ${refPrompt.slice(0, 250)}`;
         result = await generateDream({
           mode: 'flux-kontext',
           prompt: stylePrompt,
@@ -310,22 +307,15 @@ export function useDreamGeneration(deps: GenerationDeps) {
           throw new Error(modResult.reason ?? 'Prompt contains inappropriate content');
         result = await generateDream({ mode: 'flux-dev', prompt: customPrompt.trim() });
       } else if (isStyleRef) {
+        // Dream Like This: replay the reference prompt directly to Flux.
+        // No two-pass engine, no hints — just the exact prompt that made the original.
         const refPrompt = fusionTarget?.prompt;
-        const styleField = fusionTarget?.styleField;
-        if (!refPrompt && !styleField)
-          throw new Error('No style reference available for this dream');
-        // Use the structured style field when available (from concept JSON),
-        // fall back to extracting from the raw prompt
-        const style = styleField ?? refPrompt?.split(',')[0].trim() ?? '';
+        if (!refPrompt) throw new Error('No style reference prompt available for this dream');
         if (__DEV__) {
-          console.log('[JustDream] STYLE REF — style:', style);
-          console.log('[JustDream] From concept:', !!styleField, 'from prompt:', !styleField);
+          console.log('[JustDream] STYLE REF — replaying reference prompt directly');
+          console.log('[JustDream] Prompt:', refPrompt.slice(0, 120));
         }
-        const { vibeProfile } = await loadProfile();
-        const styleHint = `STYLE OVERRIDE — THIS IS MANDATORY, NOT A SUGGESTION:\nYou MUST use this EXACT art style/medium for the "style" field: "${style}"\nCopy it verbatim into the style field. The style, rendering technique, and visual treatment MUST match. Everything else (subject, environment, mood) should come from the user's vibe profile as normal.`;
-        result = vibeProfile
-          ? await generateFromVibeProfile(vibeProfile, { hint: styleHint })
-          : await generateDream({ mode: 'flux-dev', prompt: refPrompt ?? style });
+        result = await generateDream({ mode: 'flux-dev', prompt: refPrompt });
       } else {
         if (__DEV__) console.log('[JustDream] Loading profile...');
         const { recipe, vibeProfile } = await loadProfile();
@@ -461,7 +451,6 @@ export function useDreamGeneration(deps: GenerationDeps) {
     isStyleRef,
     isTwinMode,
     fusionTarget,
-    clearDreamMode,
     // Animation
     imgScale,
     imgOpacity,

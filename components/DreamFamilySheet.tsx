@@ -263,6 +263,7 @@ export function DreamFamilySheet({
                 <TouchableOpacity
                   style={s.actionButton}
                   onPress={() => {
+                    if (__DEV__) console.log('[FamilySheet] Dream Like This button pressed');
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                     onClose();
                     onDreamLikeThis();

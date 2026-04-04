@@ -10,7 +10,7 @@
  *   useDreamGeneration — all 6 generation paths, sparkle spending, posting
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useFocusEffect } from 'expo-router';
 import {
   View,
@@ -55,18 +55,21 @@ export default function DreamScreen() {
 
   // ── Hooks ───────────────────────────────────────────────────────────
 
+  const album = useDreamAlbum();
+
   const photo = usePhotoInput(
     useCallback(() => {
       setPhase('preview');
       album.clearAlbum();
-    }, [])
+    }, [album.clearAlbum])
   );
-
-  const album = useDreamAlbum();
 
   const gen = useDreamGeneration({
     phase,
     setPhase,
+    isStyleRef: false,
+    isTwinMode: false,
+    fusionTarget: null,
     photoBase64: photo.photoBase64,
     photoUri: photo.photoUri,
     photoFromUpload: photo.photoFromUpload,
@@ -83,29 +86,14 @@ export default function DreamScreen() {
     setError,
   });
 
-  // ── Derived state ─────────────────────────────────────────────────────
-
-  const { isStyleRef, isTwinMode, fusionTarget, clearDreamMode, sparkleBalance } = gen;
-
-  // ── Twin auto-trigger ─────────────────────────────────────────────────
-
-  const [twinTriggered, setTwinTriggered] = useState(false);
-  useEffect(() => {
-    if (isTwinMode && !twinTriggered && phase === 'pick') {
-      setTwinTriggered(true);
-      gen.twinDream();
-    }
-    if (!isTwinMode) setTwinTriggered(false);
-  }, [isTwinMode, phase]);
+  const { sparkleBalance } = gen;
 
   // ── Focus/blur ────────────────────────────────────────────────────────
 
   useFocusEffect(
     useCallback(() => {
       gen.busy.current = false;
-      return () => {
-        // NOTE: Do NOT clearDreamMode() here — it races with "Dream Like This"
-      };
+      return () => {};
     }, [])
   );
 
@@ -118,9 +106,7 @@ export default function DreamScreen() {
     setError(null);
     setPosting(false);
     setDreaming(false);
-    clearDreamMode();
     gen.busy.current = false;
-    setTwinTriggered(false);
     gen.imgOpacity.value = 0;
     gen.imgScale.value = 0.85;
   }
@@ -189,7 +175,6 @@ export default function DreamScreen() {
     const result = await gen.post(album.activeDream, album.activeIndex, album.album.length);
     if (!result?.success) return;
     if (result.isLastDream) {
-      clearDreamMode();
       reset();
       router.replace('/(tabs)');
     } else {
@@ -284,135 +269,6 @@ export default function DreamScreen() {
   // ═══════════════════════════════════════════════════════════════════════
   // RENDER — each phase is a separate block
   // ═══════════════════════════════════════════════════════════════════════
-
-  // ── STYLE REF (Dream Like This) ──────────────────────────────────────
-
-  if (phase === 'pick' && isStyleRef && fusionTarget) {
-    return (
-      <SafeAreaView style={s.root}>
-        <View style={s.header}>
-          <TouchableOpacity
-            onPress={() => {
-              clearDreamMode();
-              reset();
-              if (router.canGoBack()) router.back();
-            }}
-            hitSlop={12}
-          >
-            <Ionicons name="close" size={28} color={colors.textSecondary} />
-          </TouchableOpacity>
-          <Text style={s.headerTitle}>Dream Like This</Text>
-          <SparklePill />
-        </View>
-        <View style={s.center}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-            <View style={{ alignItems: 'center' }}>
-              <Image
-                source={{ uri: fusionTarget.imageUrl }}
-                style={{ width: 100, height: 130, borderRadius: 10 }}
-                contentFit="cover"
-              />
-              <Text style={{ color: colors.textSecondary, fontSize: 11, marginTop: 4 }}>Style</Text>
-            </View>
-            {photo.photoUri && (
-              <>
-                <Ionicons name="arrow-forward" size={20} color={colors.accent} />
-                <View style={{ alignItems: 'center' }}>
-                  <Image
-                    source={{ uri: photo.photoUri }}
-                    style={{ width: 100, height: 130, borderRadius: 10 }}
-                    contentFit="cover"
-                  />
-                  <Text style={{ color: colors.textSecondary, fontSize: 11, marginTop: 4 }}>
-                    Your photo
-                  </Text>
-                </View>
-              </>
-            )}
-          </View>
-
-          <Text style={s.sub}>
-            {photo.photoUri
-              ? `Applying ${fusionTarget.username}'s style to your photo`
-              : `Dreaming in ${fusionTarget.username}'s style`}
-          </Text>
-          <Text
-            style={{
-              color: colors.textMuted,
-              fontSize: 12,
-              textAlign: 'center',
-              marginTop: 8,
-              paddingHorizontal: 20,
-              lineHeight: 17,
-            }}
-          >
-            Every dream is one of a kind. Even the same style can produce wildly different results
-            each time — that&apos;s the magic of AI. DreamBot captures the vibe, but the final creation
-            is always a surprise.
-          </Text>
-
-          <View style={[s.customPromptWrap, { marginTop: 16, alignSelf: 'stretch' }]}>
-            <TextInput
-              style={s.customPromptInput}
-              placeholder="Add your own twist, or leave blank..."
-              placeholderTextColor={colors.textMuted}
-              value={album.customPrompt}
-              onChangeText={album.setCustomPrompt}
-              maxLength={300}
-              multiline
-            />
-            {album.customPrompt.length > 0 && (
-              <TouchableOpacity
-                onPress={() => album.setCustomPrompt('')}
-                hitSlop={8}
-                style={s.customPromptClear}
-              >
-                <Ionicons name="close-circle" size={18} color={colors.textSecondary} />
-              </TouchableOpacity>
-            )}
-          </View>
-
-          <View style={[s.pickButtonRow, { marginTop: 16, alignSelf: 'stretch' }]}>
-            <TouchableOpacity
-              style={s.ctaHalf}
-              onPress={async () => {
-                try {
-                  const ImageCropPicker = require('react-native-image-crop-picker').default;
-                  const media = await ImageCropPicker.openPicker({
-                    mediaType: 'photo',
-                    cropping: false,
-                    forceJpg: true,
-                    compressImageQuality: 0.9,
-                    includeBase64: true,
-                  });
-                  photo.setPhotoBase64(media.data ?? null);
-                  photo.setPhotoUri(media.path);
-                  photo.photoFromUpload.current = true;
-                } catch {}
-              }}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="images" size={18} color={colors.textPrimary} />
-              <Text style={s.ctaSecondaryText}>
-                {photo.photoUri ? 'Change Photo' : 'Use a Photo'}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[s.ctaHalf, { backgroundColor: colors.accent }]}
-              onPress={() => {
-                if (photo.photoUri && photo.photoBase64) gen.dream();
-                else gen.justDream();
-              }}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="sparkles" size={18} color="#FFF" />
-              <Text style={[s.ctaSecondaryText, { color: '#FFFFFF' }]}>Dream It</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </SafeAreaView>
-    );
-  }
 
   // ── PICK ──────────────────────────────────────────────────────────────
 
@@ -636,8 +492,7 @@ export default function DreamScreen() {
           <TouchableOpacity
             style={s.cta}
             onPress={async () => {
-              if (isTwinMode) gen.twinDream();
-              else if (album.reDreamCurrent && album.activeDream?.url) {
+              if (album.reDreamCurrent && album.activeDream?.url) {
                 try {
                   const resp = await fetch(album.activeDream.url);
                   const blob = await resp.blob();
@@ -658,10 +513,8 @@ export default function DreamScreen() {
             activeOpacity={0.7}
             disabled={posting || dreaming}
           >
-            <Ionicons name={isTwinMode ? 'dice-outline' : 'sparkles'} size={20} color="#FFF" />
-            <Text style={s.ctaText}>
-              {isTwinMode ? 'Twin Again' : album.customPrompt.trim() ? 'Dream This' : 'Dream'}
-            </Text>
+            <Ionicons name="sparkles" size={20} color="#FFF" />
+            <Text style={s.ctaText}>{album.customPrompt.trim() ? 'Dream This' : 'Dream'}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={s.reuseRow}
