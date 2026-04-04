@@ -297,6 +297,19 @@ Kevin is the sole human developer. Claude is the other dev. No team, no PR proce
 
 ---
 
+## Pre-Commit Checklist
+
+**Run ALL 4 before every commit — CI will fail if any don't pass:**
+```bash
+export NVM_DIR="$HOME/.nvm" && source "$NVM_DIR/nvm.sh"
+npx prettier --write "**/*.{ts,tsx}" --ignore-path .gitignore
+npx expo lint
+npx tsc --noEmit
+npx jest --silent
+```
+
+---
+
 ## Working With Kevin
 
 ### Screenshots
