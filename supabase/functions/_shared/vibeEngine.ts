@@ -5,27 +5,6 @@
 
 import type { VibeProfile, MoodAxes, ConceptRecipe, PromptMode } from './vibeProfile.ts';
 
-const SCENE_ANGLES = [
-  'Show an unexpected activity happening at this location — not the obvious postcard shot',
-  'Zoom into a tiny detail most people overlook at this kind of place',
-  'Set this during an unusual time — 3am, during a storm, the moment before sunrise',
-  'Combine this location with somewhere it doesn\'t belong — put it in space, underwater, on a floating island',
-  'Show this place abandoned or overgrown, reclaimed by nature',
-  'Focus on what\'s happening just out of frame — the story we can\'t quite see',
-  'Make this an interior scene even if the subject suggests outdoors, or vice versa',
-  'Show this from an impossible perspective — from inside a reflection, through a keyhole, from underground looking up',
-  'Set this in a different era than expected — ancient ruins with neon lights, a medieval market with holographic signs',
-  'Make the weather the main character — the location exists to serve the atmosphere',
-  'Show the aftermath of something — the party just ended, the storm just passed, everyone just left',
-  'Put two things together that have never been combined — the location meets its opposite',
-  'Show this place at a microscopic or cosmic scale — either zoomed way in or way out',
-  'Make it cozy and intimate even if the setting is epic, or make it vast even if the setting is small',
-  'Capture a specific moment — someone just arrived, something just broke, a door just opened',
-  'Show the hidden side — backstage, behind the waterfall, inside the walls, below the surface',
-  'Frame this as if it\'s a memory — slightly faded, slightly wrong, hauntingly familiar',
-  'Add an element of fantasy to an otherwise mundane version of this scene',
-];
-
 interface PromptModeConfig {
   userWeight: number;
   spiceWeight: number;
@@ -104,8 +83,6 @@ export function buildConceptPrompt(
     ? `\nNEVER INCLUDE: ${profile.avoid.join(', ')}`
     : '';
 
-  const sceneAngle = SCENE_ANGLES[Math.floor(Math.random() * SCENE_ANGLES.length)];
-
   return `You are a concept artist designing a single dream image for someone. Output a structured JSON concept recipe.
 
 WHO THIS PERSON IS:
@@ -118,8 +95,7 @@ ${anchorsBlock}${spiritHint}${avoidBlock}
 CREATIVE DIRECTION:
 ${config.directive}
 
-SCENE ANGLE (follow this creative constraint for this particular dream):
-${sceneAngle}
+SCENE ANGLE: Before designing, invent a unique creative angle for this dream. Don't default to the obvious postcard version of a location. Consider: an unusual time of day, an unexpected activity, a fantasy mashup, a hidden perspective, an impossible scale, the aftermath of something, a tiny overlooked detail, a different era. Pick ONE angle you've never used before and let it shape the entire concept.
 
 WEIGHTING: ${Math.round(config.userWeight * 100)}% of your choices should draw from their profile. ${Math.round(config.spiceWeight * 100)}% should be a creative surprise — something adjacent to their taste but unexpected. The surprise is what makes each dream feel fresh.
 
