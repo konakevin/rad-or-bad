@@ -427,7 +427,7 @@ export function DreamCard({
             </TouchableOpacity>
             {item.is_ai_generated && onFamily && (
               <TouchableOpacity style={ui.sideButton} onPress={onFamily} activeOpacity={0.7}>
-                <Ionicons name="albums-outline" size={24} color="#FFFFFF" />
+                <Ionicons name="git-network-outline" size={24} color="#FFFFFF" />
                 {(item.twin_count ?? 0) + (item.fuse_count ?? 0) > 0 && (
                   <Text style={ui.sideCount}>
                     {(item.twin_count ?? 0) + (item.fuse_count ?? 0)}

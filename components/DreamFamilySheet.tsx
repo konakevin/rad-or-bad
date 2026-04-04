@@ -301,20 +301,18 @@ export function DreamFamilySheet({
             {/* Action buttons */}
             {isAiGenerated && (
               <View style={[s.actions, { paddingBottom: insets.bottom + (hideTabBar ? 16 : 75) }]}>
-                {aiPrompt && (
-                  <TouchableOpacity
-                    style={s.actionButton}
-                    onPress={() => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                      dismiss();
-                      setTimeout(onTwin, 300);
-                    }}
-                    activeOpacity={0.7}
-                  >
-                    <Ionicons name="dice-outline" size={18} color="#FFFFFF" />
-                    <Text style={s.actionText}>Twin this dream</Text>
-                  </TouchableOpacity>
-                )}
+                <TouchableOpacity
+                  style={s.actionButton}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                    dismiss();
+                    setTimeout(onTwin, 300);
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="dice-outline" size={18} color="#FFFFFF" />
+                  <Text style={s.actionText}>Twin this dream</Text>
+                </TouchableOpacity>
                 <TouchableOpacity
                   style={[s.actionButton, s.actionButtonSecondary]}
                   onPress={() => {
