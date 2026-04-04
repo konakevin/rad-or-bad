@@ -92,7 +92,7 @@ export default function DreamScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      gen.busy.current = false;
+      gen.resetBusy();
       return () => {};
     }, [])
   );
@@ -106,7 +106,7 @@ export default function DreamScreen() {
     setError(null);
     setPosting(false);
     setDreaming(false);
-    gen.busy.current = false;
+    gen.resetBusy();
     gen.imgOpacity.value = 0;
     gen.imgScale.value = 0.85;
   }

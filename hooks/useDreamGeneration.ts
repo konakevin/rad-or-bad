@@ -444,9 +444,13 @@ export function useDreamGeneration(deps: GenerationDeps) {
     [user, posting, isStyleRef, isTwinMode, fusionTarget, loadProfile]
   );
 
+  const resetBusy = useCallback(() => {
+    busy.current = false;
+  }, []);
+
   return {
     // State
-    busy,
+    resetBusy,
     sparkleBalance,
     isStyleRef,
     isTwinMode,
