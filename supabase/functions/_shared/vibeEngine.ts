@@ -71,12 +71,12 @@ export function buildConceptPrompt(
     : '';
 
   const anchorLines: string[] = [];
-  if (profile.personal_anchors.place) anchorLines.push(`- A place they love: "${profile.personal_anchors.place}"`);
-  if (profile.personal_anchors.object) anchorLines.push(`- An object they love: "${profile.personal_anchors.object}"`);
-  if (profile.personal_anchors.era) anchorLines.push(`- Era they vibe with: "${profile.personal_anchors.era}"`);
+  if (profile.personal_anchors.place && Math.random() < 0.4) anchorLines.push(`- Places they love: "${profile.personal_anchors.place}"`);
+  if (profile.personal_anchors.object && Math.random() < 0.4) anchorLines.push(`- Objects they love: "${profile.personal_anchors.object}"`);
+  if (profile.personal_anchors.era && Math.random() < 0.4) anchorLines.push(`- Eras they vibe with: "${profile.personal_anchors.era}"`);
   if (profile.personal_anchors.dream_vibe) anchorLines.push(`- Their dream vibe: "${profile.personal_anchors.dream_vibe}"`);
   const anchorsBlock = anchorLines.length > 0
-    ? `\nPERSONAL ANCHORS (use these to make it feel uniquely theirs):\n${anchorLines.join('\n')}`
+    ? `\nPERSONAL ANCHORS (weave in naturally when they fit — don't force them):\n${anchorLines.join('\n')}`
     : '';
 
   const avoidBlock = profile.avoid.length > 0

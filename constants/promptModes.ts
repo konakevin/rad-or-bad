@@ -44,12 +44,12 @@ export const PROMPT_MODE_CONFIGS: Record<PromptMode, PromptModeConfig> = {
   },
 };
 
-export const PROMPT_MODE_TILES: { key: PromptMode; label: string; icon: string }[] = [
-  { key: 'dream_me',         label: 'Dream Me',   icon: 'sparkles' },
-  { key: 'chaos',            label: 'Chaos',       icon: 'flash' },
-  { key: 'cinematic_poster', label: 'Cinematic',   icon: 'film' },
-  { key: 'minimal_mood',     label: 'Minimal',     icon: 'remove' },
-  { key: 'nature_escape',    label: 'Nature',      icon: 'leaf' },
-  { key: 'character_study',  label: 'Character',   icon: 'person' },
-  { key: 'nostalgia_trip',   label: 'Nostalgia',   icon: 'time' },
+export const PROMPT_MODE_TILES: { key: PromptMode; label: string; icon: string; hint: string }[] = [
+  { key: 'dream_me',         label: 'Dream Me',   icon: 'sparkles', hint: 'Personalized to your taste with a splash of surprise' },
+  { key: 'chaos',            label: 'Chaos',       icon: 'flash',    hint: 'Wild and unpredictable — anything goes' },
+  { key: 'cinematic_poster', label: 'Cinematic',   icon: 'film',     hint: 'Dramatic movie poster vibes, epic lighting' },
+  { key: 'minimal_mood',     label: 'Minimal',     icon: 'remove',   hint: 'Clean and simple — one subject, one mood' },
+  { key: 'nature_escape',    label: 'Nature',      icon: 'leaf',     hint: 'Pure landscapes, no characters' },
+  { key: 'character_study',  label: 'Character',   icon: 'person',   hint: 'A creature or figure takes center stage' },
+  { key: 'nostalgia_trip',   label: 'Nostalgia',   icon: 'time',     hint: 'Warm memories, golden tones, your favorite eras' },
 ];

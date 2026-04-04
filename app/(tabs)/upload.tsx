@@ -75,10 +75,11 @@ export default function DreamScreen() {
   const [activeIndex, setActiveIndex] = useState(0);
   const albumRef = useRef<FlatList>(null);
   const [userHint, setUserHint] = useState('');
-  const [letBotDream, setLetBotDream] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reusePhoto, setReusePhoto] = useState(false);
+  const [reDreamCurrent, setReDreamCurrent] = useState(false);
   const [selectedMode, setSelectedMode] = useState<PromptMode>('dream_me');
+  const [customPrompt, setCustomPrompt] = useState('');
   const [fullscreen, setFullscreen] = useState(false);
   const dreamMode = useFusionStore((s) => s.mode);
   const fusionTarget = useFusionStore((s) => s.target);
@@ -179,8 +180,7 @@ export default function DreamScreen() {
       setPhase('preview');
       setDreamAlbum([]);
       setActiveIndex(0);
-      setLetBotDream(true);
-      setUserHint('');
+        setUserHint('');
       imgOpacity.value = 0;
       imgScale.value = 0.85;
     } catch {
@@ -208,7 +208,7 @@ export default function DreamScreen() {
 
       let result: { image_url: string; prompt_used: string };
 
-      if (!letBotDream && userHint.trim()) {
+      if (userHint.trim()) {
         // Moderate user-typed prompt — displayed as caption
         const modResult = await moderateText(userHint.trim());
         if (!modResult.passed) {
@@ -471,13 +471,21 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     try {
-      if (__DEV__) console.log('[JustDream] Loading profile...');
-      const { recipe, vibeProfile } = await loadProfile();
-      if (__DEV__) console.log('[JustDream] Profile loaded, generating via Edge Function...');
-
-      const result = vibeProfile
-        ? await generateFromVibeProfile(vibeProfile, { promptMode: selectedMode })
-        : await generateFromRecipe(recipe!);
+      let result;
+      if (customPrompt.trim()) {
+        // Custom prompt — send directly to Flux
+        if (__DEV__) console.log('[JustDream] Custom prompt:', customPrompt.trim().slice(0, 60));
+        const modResult = await moderateText(customPrompt.trim());
+        if (!modResult.passed) throw new Error(modResult.reason ?? 'Prompt contains inappropriate content');
+        result = await generateDream({ mode: 'flux-dev', prompt: customPrompt.trim() });
+      } else {
+        if (__DEV__) console.log('[JustDream] Loading profile...');
+        const { recipe, vibeProfile } = await loadProfile();
+        if (__DEV__) console.log('[JustDream] Profile loaded, generating via Edge Function...');
+        result = vibeProfile
+          ? await generateFromVibeProfile(vibeProfile, { promptMode: selectedMode })
+          : await generateFromRecipe(recipe!);
+      }
       const url = result.image_url;
       const p = result.prompt_used;
       if (__DEV__) console.log('[JustDream] Image generated:', url.slice(0, 60));
@@ -518,7 +526,6 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
     setError(null);
     setPosting(false);
     setDreaming(false);
-    setLetBotDream(true);
     imgOpacity.value = 0;
     imgScale.value = 0.85;
   }
@@ -532,33 +539,63 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
           <Image source={{ uri: mascotUrl }} style={s.mascot} contentFit="cover" />
           <Text style={s.title}>Dream</Text>
           <Text style={s.sub}>Let your DreamBot create something new</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.modeRow}>
-            {PROMPT_MODE_TILES.map((m) => (
-              <TouchableOpacity
-                key={m.key}
-                style={[s.modePill, selectedMode === m.key && s.modePillActive]}
-                onPress={() => setSelectedMode(m.key)}
-                activeOpacity={0.7}
+          {!customPrompt.trim() && (
+            <>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={s.modeRow}
+                style={s.modeScroll}
               >
-                <Ionicons
-                  name={m.icon as keyof typeof Ionicons.glyphMap}
-                  size={14}
-                  color={selectedMode === m.key ? '#FFFFFF' : colors.textSecondary}
-                />
-                <Text style={[s.modePillText, selectedMode === m.key && s.modePillTextActive]}>
-                  {m.label}
-                </Text>
+                {PROMPT_MODE_TILES.map((m) => (
+                  <TouchableOpacity
+                    key={m.key}
+                    style={[s.modePill, selectedMode === m.key && s.modePillActive]}
+                    onPress={() => setSelectedMode(m.key)}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons
+                      name={m.icon as keyof typeof Ionicons.glyphMap}
+                      size={14}
+                      color={selectedMode === m.key ? '#FFFFFF' : colors.textSecondary}
+                    />
+                    <Text style={[s.modePillText, selectedMode === m.key && s.modePillTextActive]}>
+                      {m.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+              <Text style={s.modeHint}>
+                {PROMPT_MODE_TILES.find((m) => m.key === selectedMode)?.hint ?? ''}
+              </Text>
+            </>
+          )}
+          <View style={s.customPromptWrap}>
+            <TextInput
+              style={s.customPromptInput}
+              placeholder="Or type your own prompt..."
+              placeholderTextColor={colors.textMuted}
+              value={customPrompt}
+              onChangeText={setCustomPrompt}
+              maxLength={300}
+              multiline
+            />
+            {customPrompt.length > 0 && (
+              <TouchableOpacity onPress={() => setCustomPrompt('')} hitSlop={8} style={s.customPromptClear}>
+                <Ionicons name="close-circle" size={18} color={colors.textSecondary} />
               </TouchableOpacity>
-            ))}
-          </ScrollView>
-          <TouchableOpacity style={s.cta} onPress={justDream} activeOpacity={0.7}>
-            <Ionicons name="sparkles" size={20} color="#FFF" />
-            <Text style={s.ctaText}>Dream Now</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={s.ctaSecondary} onPress={pickPhoto} activeOpacity={0.7}>
-            <Ionicons name="images" size={20} color={colors.textPrimary} />
-            <Text style={s.ctaSecondaryText}>Dream a Photo</Text>
-          </TouchableOpacity>
+            )}
+          </View>
+          <View style={s.pickButtonRow}>
+            <TouchableOpacity style={s.ctaHalf} onPress={pickPhoto} activeOpacity={0.7}>
+              <Ionicons name="images" size={18} color={colors.textPrimary} />
+              <Text style={s.ctaSecondaryText}>Dream a Photo</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[s.cta, { flex: 1 }]} onPress={justDream} activeOpacity={0.7}>
+              <Ionicons name="sparkles" size={18} color="#FFF" />
+              <Text style={s.ctaText}>{customPrompt.trim() ? 'Dream This' : 'Dream'}</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </SafeAreaView>
     );
@@ -579,62 +616,69 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
         <View style={s.previewWrap}>
           <Image source={{ uri: photoUri! }} style={s.previewImg} contentFit="cover" />
 
-          {/* Toggle: let bot dream vs write your own */}
-          <TouchableOpacity
-            style={s.toggleRow}
-            onPress={() => {
-              setLetBotDream(!letBotDream);
-              if (!letBotDream) setUserHint('');
-            }}
-            activeOpacity={0.7}
-          >
-            <View style={[s.checkbox, letBotDream && s.checkboxActive]}>
-              {letBotDream && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}
-            </View>
-            <Text style={s.toggleLabel}>Let DreamBot dream this</Text>
-          </TouchableOpacity>
-
-          {!letBotDream && (
-            <View style={s.promptWrap}>
-              <Text style={s.promptHint}>
-                Describe your own dream — your words become the vision
-              </Text>
-              <TextInput
-                style={s.promptInput}
-                placeholder="A cozy cabin in the woods during a snowstorm, painted in watercolors..."
-                placeholderTextColor={colors.textMuted}
-                value={userHint}
-                onChangeText={setUserHint}
-                maxLength={500}
-                multiline
-                textAlignVertical="top"
-              />
-            </View>
-          )}
-
-          {letBotDream && (
-            <Text style={s.botNote}>Your DreamBot will dream this photo for you</Text>
-          )}
+          {/* Custom prompt for photo dreaming */}
+          <View style={s.customPromptWrap}>
+            <TextInput
+              style={s.customPromptInput}
+              placeholder="Describe your dream, or leave blank for DreamBot to decide..."
+              placeholderTextColor={colors.textMuted}
+              value={userHint}
+              onChangeText={setUserHint}
+              maxLength={300}
+              multiline
+            />
+            {userHint.length > 0 && (
+              <TouchableOpacity onPress={() => setUserHint('')} hitSlop={8} style={s.customPromptClear}>
+                <Ionicons name="close-circle" size={18} color={colors.textSecondary} />
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
         {error && <Text style={s.errorText}>{error}</Text>}
         <View style={s.footer}>
+          {/* Mode pills — show when no custom hint is typed */}
+          {!userHint.trim() && (
+            <>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={s.modeRow}
+                style={s.modeScroll}
+              >
+                {PROMPT_MODE_TILES.map((m) => (
+                  <TouchableOpacity
+                    key={m.key}
+                    style={[s.modePill, selectedMode === m.key && s.modePillActive]}
+                    onPress={() => setSelectedMode(m.key)}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons
+                      name={m.icon as keyof typeof Ionicons.glyphMap}
+                      size={14}
+                      color={selectedMode === m.key ? '#FFFFFF' : colors.textSecondary}
+                    />
+                    <Text style={[s.modePillText, selectedMode === m.key && s.modePillTextActive]}>
+                      {m.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+              <Text style={s.modeHint}>
+                {PROMPT_MODE_TILES.find((m) => m.key === selectedMode)?.hint ?? ''}
+              </Text>
+            </>
+          )}
+
           <TouchableOpacity
-            style={[s.cta, !letBotDream && !userHint.trim() && s.ctaDisabled]}
+            style={s.cta}
             onPress={() => {
               setError(null);
               dream();
             }}
-            disabled={!letBotDream && !userHint.trim()}
             activeOpacity={0.7}
           >
-            <Ionicons
-              name="sparkles"
-              size={20}
-              color={!letBotDream && !userHint.trim() ? colors.textSecondary : '#FFF'}
-            />
-            <Text style={[s.ctaText, !letBotDream && !userHint.trim() && s.ctaTextDisabled]}>
-              Dream It
-            </Text>
+            <Ionicons name="sparkles" size={20} color="#FFF" />
+            <Text style={s.ctaText}>{userHint.trim() ? 'Dream This' : 'Dream'}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -672,7 +716,7 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
           <Text style={s.headerTitle}>Your dream</Text>
           <View style={{ width: 28 }} />
         </View>
-        <View style={{ flex: 1, justifyContent: 'center' }}>
+        <View style={{ flex: 1, justifyContent: 'center', maxHeight: SCREEN_HEIGHT * 0.45 }}>
           <FlatList
             ref={albumRef}
             data={dreamAlbum}
@@ -800,10 +844,77 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
         </Modal>
 
         <View style={s.footer}>
+          {/* Mode selector — hidden when custom prompt is active */}
+          {!customPrompt.trim() && (
+            <>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={s.modeRow}
+                style={s.modeScroll}
+              >
+                {PROMPT_MODE_TILES.map((m) => (
+                  <TouchableOpacity
+                    key={m.key}
+                    style={[s.modePill, selectedMode === m.key && s.modePillActive]}
+                    onPress={() => setSelectedMode(m.key)}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons
+                      name={m.icon as keyof typeof Ionicons.glyphMap}
+                      size={14}
+                      color={selectedMode === m.key ? '#FFFFFF' : colors.textSecondary}
+                    />
+                    <Text style={[s.modePillText, selectedMode === m.key && s.modePillTextActive]}>
+                      {m.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+              <Text style={s.modeHint}>
+                {PROMPT_MODE_TILES.find((m) => m.key === selectedMode)?.hint ?? ''}
+              </Text>
+            </>
+          )}
+
+          <View style={s.customPromptWrap}>
+            <TextInput
+              style={s.customPromptInput}
+              placeholder="Or type your own prompt..."
+              placeholderTextColor={colors.textMuted}
+              value={customPrompt}
+              onChangeText={setCustomPrompt}
+              maxLength={300}
+              multiline
+            />
+            {customPrompt.length > 0 && (
+              <TouchableOpacity onPress={() => setCustomPrompt('')} hitSlop={8} style={s.customPromptClear}>
+                <Ionicons name="close-circle" size={18} color={colors.textSecondary} />
+              </TouchableOpacity>
+            )}
+          </View>
+
           <TouchableOpacity
             style={s.cta}
-            onPress={() => {
+            onPress={async () => {
               if (isTwinMode) twinDream();
+              else if (reDreamCurrent && activeDream?.url) {
+                // Re-dream: fetch current image as base64 and send to Kontext
+                try {
+                  const resp = await fetch(activeDream.url);
+                  const blob = await resp.blob();
+                  const reader = new FileReader();
+                  reader.onloadend = () => {
+                    const b64 = reader.result as string;
+                    setPhotoBase64(b64.split(',')[1] ?? null);
+                    setPhotoUri(activeDream.url);
+                    dream();
+                  };
+                  reader.readAsDataURL(blob);
+                } catch {
+                  Toast.show('Could not load image', 'close-circle');
+                }
+              }
               else if (reusePhoto && photoUri) dream();
               else justDream();
             }}
@@ -811,16 +922,30 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
             disabled={posting || dreaming}
           >
             <Ionicons
-              name={isTwinMode ? 'dice-outline' : 'refresh'}
+              name={isTwinMode ? 'dice-outline' : 'sparkles'}
               size={20}
               color="#FFF"
             />
-            <Text style={s.ctaText}>{isTwinMode ? 'Twin Again' : 'Dream Again'}</Text>
+            <Text style={s.ctaText}>{isTwinMode ? 'Twin Again' : customPrompt.trim() ? 'Dream This' : 'Dream'}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={s.reuseRow}
+            onPress={() => { setReDreamCurrent(!reDreamCurrent); if (!reDreamCurrent) setReusePhoto(false); }}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name={reDreamCurrent ? 'checkbox' : 'square-outline'}
+              size={18}
+              color={reDreamCurrent ? colors.accent : colors.textSecondary}
+            />
+            <Text style={[s.reuseText, reDreamCurrent && s.reuseTextActive]}>
+              Re-dream this image
+            </Text>
           </TouchableOpacity>
           {photoUri && (
             <TouchableOpacity
               style={s.reuseRow}
-              onPress={() => setReusePhoto(!reusePhoto)}
+              onPress={() => { setReusePhoto(!reusePhoto); if (!reusePhoto) setReDreamCurrent(false); }}
               activeOpacity={0.7}
             >
               <Ionicons
@@ -833,19 +958,25 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
               </Text>
             </TouchableOpacity>
           )}
-          <TouchableOpacity
-            style={s.ctaSecondary}
-            onPress={post}
-            activeOpacity={0.7}
-            disabled={posting || dreaming}
-          >
-            {posting ? (
-              <ActivityIndicator size="small" color={colors.textPrimary} />
-            ) : (
-              <Ionicons name="cloud-upload" size={20} color={colors.textPrimary} />
-            )}
-            <Text style={s.ctaSecondaryText}>{posting ? 'Posting...' : 'Post This Dream'}</Text>
-          </TouchableOpacity>
+          <View style={s.row}>
+            <TouchableOpacity style={s.ctaHalf} onPress={pickPhoto} activeOpacity={0.7}>
+              <Ionicons name="images" size={18} color={colors.textPrimary} />
+              <Text style={s.ctaSecondaryText}>Dream a Photo</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={s.ctaHalf}
+              onPress={post}
+              activeOpacity={0.7}
+              disabled={posting || dreaming}
+            >
+              {posting ? (
+                <ActivityIndicator size="small" color={colors.textPrimary} />
+              ) : (
+                <Ionicons name="cloud-upload" size={18} color={colors.textPrimary} />
+              )}
+              <Text style={s.ctaSecondaryText}>{posting ? 'Posting...' : 'Post Dream'}</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </SafeAreaView>
     );
@@ -870,7 +1001,7 @@ const s = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 40,
+    paddingHorizontal: 20,
     gap: 16,
   },
   header: {
@@ -885,7 +1016,8 @@ const s = StyleSheet.create({
   loadingMascot: { width: 140, height: 140, borderRadius: 28, marginBottom: 8 },
   title: { color: colors.textPrimary, fontSize: 24, fontWeight: '800', textAlign: 'center' },
   sub: { color: colors.textSecondary, fontSize: 15, textAlign: 'center', lineHeight: 22 },
-  modeRow: { gap: 8, paddingHorizontal: 4, marginBottom: 16, justifyContent: 'center' },
+  modeScroll: { flexGrow: 0, marginBottom: 16 },
+  modeRow: { gap: 8, paddingHorizontal: 4 },
   modePill: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
     paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20,
@@ -894,6 +1026,26 @@ const s = StyleSheet.create({
   modePillActive: { backgroundColor: colors.accent, borderColor: colors.accent },
   modePillText: { color: colors.textSecondary, fontSize: 13, fontWeight: '600' },
   modePillTextActive: { color: '#FFFFFF' },
+  modeHint: { color: colors.textSecondary, fontSize: 13, textAlign: 'center', marginBottom: 12, paddingHorizontal: 20 },
+  customPromptWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 14,
+    marginBottom: 4,
+    minHeight: 44,
+  },
+  customPromptInput: {
+    flex: 1,
+    color: colors.textPrimary,
+    fontSize: 14,
+    maxHeight: 60,
+    paddingVertical: 10,
+  },
+  customPromptClear: { padding: 4 },
   cta: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -919,10 +1071,20 @@ const s = StyleSheet.create({
     paddingHorizontal: 24,
     width: '100%',
   },
-  ctaSecondaryText: { color: colors.textPrimary, fontSize: 17, fontWeight: '700' },
+  ctaSecondaryText: { color: colors.textPrimary, fontSize: 15, fontWeight: '700' },
+  ctaHalf: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: colors.card,
+    borderRadius: 14,
+    paddingVertical: 14,
+  },
   ctaDisabled: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
   ctaTextDisabled: { color: colors.textSecondary },
-  footer: { paddingHorizontal: 20, paddingBottom: 80, gap: 12 },
+  footer: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 80, gap: 12 },
   previewWrap: { flex: 1, paddingHorizontal: 24, alignItems: 'center', gap: 20 },
   previewImg: { width: PREVIEW_WIDTH, height: PREVIEW_WIDTH * 1.2, borderRadius: 16 },
   toggleRow: {
@@ -1038,7 +1200,8 @@ const s = StyleSheet.create({
     marginTop: 12,
     lineHeight: 17,
   },
-  row: { flexDirection: 'row', justifyContent: 'center', gap: 24 },
+  row: { flexDirection: 'row', gap: 12 },
+  pickButtonRow: { flexDirection: 'row', gap: 12, alignSelf: 'stretch' },
   sec: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 8 },
   secText: { color: colors.textSecondary, fontSize: 14, fontWeight: '600' },
   reuseRow: {

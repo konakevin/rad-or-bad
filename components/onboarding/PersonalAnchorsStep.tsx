@@ -13,10 +13,10 @@ import { colors } from '@/constants/theme';
 interface Props { onNext: () => void; onBack: () => void; }
 
 const FIELDS: { key: keyof PersonalAnchors; label: string; placeholder: string; icon: string }[] = [
-  { key: 'place',      label: 'A place you love',       placeholder: 'A rooftop at sunset, my grandma\'s kitchen...', icon: 'location' },
-  { key: 'object',     label: 'An object you love',      placeholder: 'A vintage camera, my guitar, a worn book...', icon: 'cube' },
-  { key: 'era',        label: 'An era you vibe with',     placeholder: '80s synthwave, medieval, the future...', icon: 'time' },
-  { key: 'dream_vibe', label: 'Your dream vibe',          placeholder: 'Like waking up in someone else\'s memory...', icon: 'sparkles' },
+  { key: 'place',      label: 'Places you love',          placeholder: 'A rooftop at sunset, my grandma\'s kitchen, the beach at night...', icon: 'location' },
+  { key: 'object',     label: 'Some objects you love',      placeholder: 'A vintage camera, my guitar, a worn book...', icon: 'cube' },
+  { key: 'era',        label: 'Eras you vibe with',        placeholder: '80s synthwave, medieval, the future...', icon: 'time' },
+  { key: 'dream_vibe', label: 'How should your dreams feel?', placeholder: 'Cozy and magical, epic but intimate...', icon: 'sparkles' },
 ];
 
 export function PersonalAnchorsStep({ onNext, onBack }: Props) {

@@ -134,6 +134,18 @@ export function RevealStep({ onBack }: Props) {
     setError(null);
 
     try {
+      // Save the profile immediately so it's persisted even if they don't post
+      if (user) {
+        await supabase.from('user_recipes').upsert({
+          user_id: user.id,
+          recipe: JSON.parse(JSON.stringify(profile)),
+          onboarding_completed: true,
+          ai_enabled: true,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id' });
+        await supabase.from('users').update({ has_ai_recipe: true }).eq('id', user.id);
+      }
+
       // Build a quick preview prompt from the vibe profile
       const style = profile.art_styles.length > 0 ? profile.art_styles[Math.floor(Math.random() * profile.art_styles.length)].replace(/_/g, ' ') : 'digital painting';
       const interest = profile.interests.length > 0 ? profile.interests[Math.floor(Math.random() * profile.interests.length)].replace(/_/g, ' ') : 'dreamy landscape';
