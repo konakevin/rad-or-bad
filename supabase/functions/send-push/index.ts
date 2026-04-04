@@ -40,7 +40,7 @@ function getNotificationContent(type: string, actorName: string, body: string | 
     case 'dream_generated':
       return {
         title: 'A new dream awaits',
-        body: body ?? 'Your Dream Bot created something for you',
+        body: body ?? 'Your DreamBot created something for you',
       };
     default:
       return { title: 'New notification', body: '' };

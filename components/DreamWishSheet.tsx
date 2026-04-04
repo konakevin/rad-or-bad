@@ -145,7 +145,7 @@ export function DreamWishSheet({
           const msg =
             recipientIds.size > 0
               ? `Wish set! Sending to ${recipientIds.size} friend${recipientIds.size > 1 ? 's' : ''} tonight`
-              : 'Wish set! Your Dream Bot will dream it next';
+              : 'Wish set! Your DreamBot will dream it next';
           Toast.show(msg, 'sparkles', 3500);
           onClose();
         },
@@ -192,7 +192,7 @@ export function DreamWishSheet({
           </TouchableOpacity>
         </View>
 
-        <Text style={s.subtitle}>What should Dream Bot dream tonight?</Text>
+        <Text style={s.subtitle}>What should DreamBot dream tonight?</Text>
 
         <ScrollView
           style={s.content}

@@ -117,7 +117,7 @@ export default function FusionScreen() {
 
       // Generate via Edge Function — prompt building + Haiku + Replicate all server-side
       const epigeneticContext =
-        `EPIGENETIC CONTEXT: This dream is a genetic fusion of two Dream Bots. ` +
+        `EPIGENETIC CONTEXT: This dream is a genetic fusion of two DreamBots. ` +
         `The source dream that inspired this fusion was: "${fusionTarget.prompt}". ` +
         `Use this as creative context — the fusion should feel like it could be the child ` +
         `of that dream and the other parent's style. Don't copy it, evolve it.`;
@@ -303,7 +303,7 @@ export default function FusionScreen() {
           <View style={s.center}>
             <ActivityIndicator size="large" color={colors.accent} />
             <Text style={s.loadingTitle}>Fusing DNA...</Text>
-            <Text style={s.loadingSub}>Merging two Dream Bots into one</Text>
+            <Text style={s.loadingSub}>Merging two DreamBots into one</Text>
           </View>
         ) : (
           <View style={s.center}>

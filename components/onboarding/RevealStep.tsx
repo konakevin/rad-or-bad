@@ -254,7 +254,7 @@ export function RevealStep({ onBack }: Props) {
       });
 
       reset();
-      Toast.show('Your Dream Bot is alive!', 'sparkles');
+      Toast.show('Your DreamBot is alive!', 'sparkles');
       router.replace('/(tabs)');
     } catch (err) {
       if (__DEV__) console.warn('[Reveal] Create error:', err);
@@ -273,7 +273,7 @@ export function RevealStep({ onBack }: Props) {
             style={s.idleMascot}
             contentFit="cover"
           />
-          <Text style={s.bigTitle}>Your Dream Bot is ready</Text>
+          <Text style={s.bigTitle}>Your DreamBot is ready</Text>
           <Text style={s.centeredSub}>Tap below to see what it dreams up for you</Text>
           <TouchableOpacity
             style={[s.createButton, { alignSelf: 'stretch', marginTop: 8 }]}
@@ -299,7 +299,7 @@ export function RevealStep({ onBack }: Props) {
             contentFit="cover"
           />
           <Text style={s.bigTitle}>Dreaming...</Text>
-          <Text style={s.centeredSub}>Your Dream Bot is creating a dream for you</Text>
+          <Text style={s.centeredSub}>Your DreamBot is creating a dream for you</Text>
           <ActivityIndicator size="small" color={colors.accent} />
         </View>
       </View>

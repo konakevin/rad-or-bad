@@ -186,7 +186,7 @@ async function generateDreamForUser(
 
     const haikuBrief = wish
       ? buildHaikuPrompt(input) +
-        `\n\nIMPORTANT: Your human wished for "${wish}". You're a tiny, loving Dream Bot who adores them — pour that affection into this dream. Their wish is the heart of the scene. Style it with their taste profile, but make it feel like a gift from someone who really knows them.${vibeStr}`
+        `\n\nIMPORTANT: Your human wished for "${wish}". You're a tiny, loving DreamBot who adores them — pour that affection into this dream. Their wish is the heart of the scene. Style it with their taste profile, but make it feel like a gift from someone who really knows them.${vibeStr}`
       : buildHaikuPrompt(input);
 
     if (anthropicKey) {
@@ -280,7 +280,7 @@ async function generateDreamForUser(
   const { data: urlData } = supabase.storage.from('uploads').getPublicUrl(fileName);
   const permanentUrl = urlData.publicUrl;
 
-  // Generate a bot message — a short playful note from the Dream Bot
+  // Generate a bot message — a short playful note from the DreamBot
   let botMessage: string | null = null;
   if (anthropicKey) {
     try {
@@ -323,7 +323,7 @@ async function generateDreamForUser(
           max_tokens: 60,
           messages: [{
             role: 'user',
-            content: `You are a Dream Bot — a tiny creative spirit living in someone's phone, making dreams nightly. Playful, warm, a little weird. You love your human.
+            content: `You are a DreamBot — a tiny creative spirit living in someone's phone, making dreams nightly. Playful, warm, a little weird. You love your human.
 
 Tonight's dream prompt: "${prompt.slice(0, 200)}"
 

@@ -40,10 +40,10 @@ export function WelcomeStep({ onNext }: Props) {
           />
         </View>
 
-        <Text style={s.title}>Meet your Dream Bot</Text>
+        <Text style={s.title}>Meet your DreamBot</Text>
 
         <Text style={s.body}>
-          You{"'"}re about to create your own little Dream Bot — a personal AI that learns your taste and creates stunning art just for you, every single day.
+          You{"'"}re about to create your own little DreamBot — a personal AI that learns your taste and creates stunning art just for you, every single day.
         </Text>
 
         <View style={s.steps}>
@@ -74,7 +74,7 @@ export function WelcomeStep({ onNext }: Props) {
 
       <View style={s.footer}>
         <TouchableOpacity style={s.startButton} onPress={handleStart} activeOpacity={0.7}>
-          <Text style={s.startButtonText}>Create My Dream Bot</Text>
+          <Text style={s.startButtonText}>Create My DreamBot</Text>
           <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
         </TouchableOpacity>
       </View>

@@ -221,7 +221,7 @@ export default function DreamScreen() {
           input_image: refUrl,
         });
       } else {
-        // Let Dream Bot handle it via recipe/profile + Haiku enhancement (all server-side)
+        // Let DreamBot handle it via recipe/profile + Haiku enhancement (all server-side)
         const { recipe: loadedRecipe } = await loadProfile();
         const recipe = loadedRecipe ?? DEFAULT_RECIPE;
         const input = buildPromptInput(recipe);
@@ -531,7 +531,7 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
         <View style={s.center}>
           <Image source={{ uri: mascotUrl }} style={s.mascot} contentFit="cover" />
           <Text style={s.title}>Dream</Text>
-          <Text style={s.sub}>Let your Dream Bot create something new</Text>
+          <Text style={s.sub}>Let your DreamBot create something new</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.modeRow}>
             {PROMPT_MODE_TILES.map((m) => (
               <TouchableOpacity
@@ -591,7 +591,7 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
             <View style={[s.checkbox, letBotDream && s.checkboxActive]}>
               {letBotDream && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}
             </View>
-            <Text style={s.toggleLabel}>Let Dream Bot dream this</Text>
+            <Text style={s.toggleLabel}>Let DreamBot dream this</Text>
           </TouchableOpacity>
 
           {!letBotDream && (
@@ -613,7 +613,7 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
           )}
 
           {letBotDream && (
-            <Text style={s.botNote}>Your Dream Bot will dream this photo for you</Text>
+            <Text style={s.botNote}>Your DreamBot will dream this photo for you</Text>
           )}
         </View>
         {error && <Text style={s.errorText}>{error}</Text>}
@@ -649,7 +649,7 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
         <View style={s.center}>
           <Image source={{ uri: loadingMascot }} style={s.loadingMascot} contentFit="cover" />
           <Text style={s.title}>Dreaming...</Text>
-          <Text style={s.sub}>Your Dream Bot is dreaming your photo</Text>
+          <Text style={s.sub}>Your DreamBot is dreaming your photo</Text>
           <ActivityIndicator size="small" color={colors.accent} />
         </View>
       </SafeAreaView>

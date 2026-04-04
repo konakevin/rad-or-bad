@@ -1,4 +1,4 @@
-/** Dream Bot mascot images hosted on Supabase storage */
+/** DreamBot mascot images hosted on Supabase storage */
 const BASE = 'https://jimftynwrinwenonjrlj.supabase.co/storage/v1/object/public/uploads/assets';
 
 export const MASCOT_URLS = [

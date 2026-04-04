@@ -318,7 +318,7 @@ export default function SettingsScreen() {
         <View style={styles.section}>
           <SettingsRow
             icon="sparkles"
-            label="Edit My Dream Bot"
+            label="Edit My DreamBot"
             onPress={async () => {
               const { useOnboardingStore } = require('@/store/onboarding');
               const { isVibeProfile } = require('@/lib/migrateRecipe');
@@ -340,13 +340,13 @@ export default function SettingsScreen() {
           />
           <SettingsRow
             icon="trash-outline"
-            label="Reset My Dream Bot"
+            label="Reset My DreamBot"
             onPress={async () => {
               await supabase.from('users').update({ has_ai_recipe: false }).eq('id', user!.id);
               await supabase.from('user_recipes').delete().eq('user_id', user!.id);
               Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
               const { Toast } = require('@/components/Toast');
-              Toast.show('Dream Bot reset — reload to set up again', 'checkmark-circle');
+              Toast.show('DreamBot reset — reload to set up again', 'checkmark-circle');
             }}
             destructive
             trailing={null}
