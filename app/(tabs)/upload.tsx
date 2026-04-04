@@ -725,6 +725,19 @@ export default function DreamScreen() {
             Dreaming in {fusionTarget.username}
             {"'"}s style
           </Text>
+          <Text
+            style={{
+              color: colors.textMuted,
+              fontSize: 12,
+              textAlign: 'center',
+              marginTop: 8,
+              paddingHorizontal: 20,
+              lineHeight: 17,
+            }}
+          >
+            Each dream is unique — DreamBot will capture the vibe and art style but put its own
+            creative spin on it. No two dreams are ever the same!
+          </Text>
 
           {/* Custom prompt input */}
           <View style={[s.customPromptWrap, { marginTop: 16, alignSelf: 'stretch' }]}>
