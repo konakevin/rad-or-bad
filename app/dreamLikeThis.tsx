@@ -382,8 +382,8 @@ export default function DreamLikeThisScreen() {
 
           <Text style={s.sub}>
             {photoUri
-              ? `Applying ${refPost.username}&apos;s style to your photo`
-              : `Dreaming in ${refPost.username}&apos;s style`}
+              ? `Applying ${refPost.username}'s style to your photo`
+              : `Dreaming in ${refPost.username}'s style`}
           </Text>
 
           <View style={[s.promptWrap, { marginTop: 16, alignSelf: 'stretch' }]}>
@@ -434,7 +434,7 @@ export default function DreamLikeThisScreen() {
       <SafeAreaView style={s.root}>
         <View style={s.center}>
           <Text style={s.title}>Dreaming...</Text>
-          <Text style={s.sub}>Applying {refPost.username}&apos;s style</Text>
+          <Text style={s.sub}>Applying {refPost.username}'s style</Text>
           <ActivityIndicator size="small" color={colors.accent} />
         </View>
       </SafeAreaView>
