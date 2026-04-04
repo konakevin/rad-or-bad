@@ -5,6 +5,7 @@
 
 import { supabase } from '@/lib/supabase';
 import type { Recipe } from '@/types/recipe';
+import type { VibeProfile, PromptMode } from '@/types/vibeProfile';
 
 interface GenerateDreamOpts {
   /** Which Flux model to use */
@@ -27,6 +28,10 @@ interface GenerateDreamOpts {
   persist?: boolean;
   /** Skip Haiku enhancement — use raw prompt (faster) */
   skip_enhance?: boolean;
+  /** Vibe Profile v2 — two-pass prompt generation */
+  vibe_profile?: VibeProfile;
+  /** Prompt mode for vibe profile generation */
+  prompt_mode?: PromptMode;
 }
 
 interface GenerateDreamResult {
@@ -106,6 +111,21 @@ export async function generateFromRecipe(
     recipe,
     hint: opts?.hint,
     skip_enhance: opts?.skipEnhance,
+  });
+}
+
+/**
+ * Convenience: generate a dream from a VibeProfile v2 using the two-pass engine.
+ */
+export async function generateFromVibeProfile(
+  profile: VibeProfile,
+  opts?: { hint?: string; promptMode?: PromptMode }
+): Promise<GenerateDreamResult> {
+  return generateDream({
+    mode: 'flux-dev',
+    vibe_profile: profile,
+    prompt_mode: opts?.promptMode,
+    hint: opts?.hint,
   });
 }
 

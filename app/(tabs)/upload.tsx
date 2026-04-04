@@ -31,6 +31,8 @@ import { buildPromptInput } from '@/lib/recipeEngine';
 import { Toast } from '@/components/Toast';
 import { DEFAULT_RECIPE } from '@/types/recipe';
 import type { Recipe } from '@/types/recipe';
+import type { VibeProfile } from '@/types/vibeProfile';
+import { isVibeProfile } from '@/lib/migrateRecipe';
 import { colors } from '@/constants/theme';
 import { useSparkleBalance, useSpendSparkles } from '@/hooks/useSparkles';
 import { showAlert } from '@/components/CustomAlert';
@@ -43,6 +45,7 @@ const PREVIEW_WIDTH = SCREEN_WIDTH - 48;
 import {
   generateFromPhoto,
   generateFromRecipe,
+  generateFromVibeProfile,
   generateTwin,
   generateDream,
   persistImage,
@@ -130,6 +133,7 @@ export default function DreamScreen() {
 
   const busy = useRef(false);
   const [cachedRecipe, setCachedRecipe] = useState<Recipe | null>(null);
+  const [cachedVibeProfile, setCachedVibeProfile] = useState<VibeProfile | null>(null);
 
   const imgScale = useSharedValue(0.85);
   const imgOpacity = useSharedValue(0);
@@ -138,17 +142,23 @@ export default function DreamScreen() {
     transform: [{ scale: imgScale.value }],
   }));
 
-  async function loadRecipe(): Promise<Recipe> {
-    if (cachedRecipe) return cachedRecipe;
-    if (!user) return DEFAULT_RECIPE;
+  async function loadProfile(): Promise<{ recipe: Recipe | null; vibeProfile: VibeProfile | null }> {
+    if (cachedVibeProfile) return { recipe: null, vibeProfile: cachedVibeProfile };
+    if (cachedRecipe) return { recipe: cachedRecipe, vibeProfile: null };
+    if (!user) return { recipe: DEFAULT_RECIPE, vibeProfile: null };
     const { data } = await supabase
       .from('user_recipes')
       .select('recipe')
       .eq('user_id', user.id)
       .single();
-    const r = (data?.recipe as unknown as Recipe) ?? DEFAULT_RECIPE;
+    const raw = data?.recipe as unknown;
+    if (isVibeProfile(raw)) {
+      setCachedVibeProfile(raw);
+      return { recipe: null, vibeProfile: raw };
+    }
+    const r = (raw as Recipe) ?? DEFAULT_RECIPE;
     setCachedRecipe(r);
-    return r;
+    return { recipe: r, vibeProfile: null };
   }
 
   async function pickPhoto() {
@@ -207,8 +217,9 @@ export default function DreamScreen() {
           input_image: refUrl,
         });
       } else {
-        // Let Dream Bot handle it via recipe + Haiku enhancement (all server-side)
-        const recipe = await loadRecipe();
+        // Let Dream Bot handle it via recipe/profile + Haiku enhancement (all server-side)
+        const { recipe: loadedRecipe } = await loadProfile();
+        const recipe = loadedRecipe ?? DEFAULT_RECIPE;
         const input = buildPromptInput(recipe);
         const scene = [input.eraKeywords, input.settingKeywords, input.sceneAtmosphere]
           .filter(Boolean)
@@ -326,8 +337,8 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
 
       let recipeId: string | null = null;
       try {
-        const recipe = cachedRecipe ?? (await loadRecipe());
-        recipeId = await registerRecipe(user.id, recipe);
+        const { recipe: postRecipe } = await loadProfile();
+        if (postRecipe) recipeId = await registerRecipe(user.id, postRecipe);
         if (__DEV__) console.log('[Post] Recipe registered:', recipeId);
       } catch (recipeErr) {
         if (__DEV__) console.warn('[Post] Recipe registration failed (non-critical):', recipeErr);
@@ -456,11 +467,13 @@ NO filters. NO subtle edits. Full creative reimagining. Output ONLY the prompt.`
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     try {
-      if (__DEV__) console.log('[JustDream] Loading recipe...');
-      const recipe = await loadRecipe();
-      if (__DEV__) console.log('[JustDream] Recipe loaded, generating via Edge Function...');
+      if (__DEV__) console.log('[JustDream] Loading profile...');
+      const { recipe, vibeProfile } = await loadProfile();
+      if (__DEV__) console.log('[JustDream] Profile loaded, generating via Edge Function...');
 
-      const result = await generateFromRecipe(recipe);
+      const result = vibeProfile
+        ? await generateFromVibeProfile(vibeProfile)
+        : await generateFromRecipe(recipe!);
       const url = result.image_url;
       const p = result.prompt_used;
       if (__DEV__) console.log('[JustDream] Image generated:', url.slice(0, 60));
