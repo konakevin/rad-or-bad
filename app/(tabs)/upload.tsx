@@ -169,6 +169,27 @@ export default function DreamScreen() {
     ],
   }));
 
+  /** Try to spend 1 sparkle. Returns true if spent, false if insufficient (shows alert). */
+  async function trySpendSparkle(reason: string): Promise<boolean> {
+    if (sparkleBalance < 1) {
+      showAlert('Not enough sparkles', 'You need 1 sparkle to dream. Get more sparkles to keep dreaming!', [
+        { text: 'Get Sparkles', onPress: () => router.push('/sparkleStore') },
+        { text: 'Cancel', style: 'cancel' },
+      ]);
+      return false;
+    }
+    try {
+      await spendSparkles({ amount: 1, reason });
+      return true;
+    } catch {
+      showAlert('Not enough sparkles', 'You need 1 sparkle to dream.', [
+        { text: 'Get Sparkles', onPress: () => router.push('/sparkleStore') },
+        { text: 'Cancel', style: 'cancel' },
+      ]);
+      return false;
+    }
+  }
+
   const busy = useRef(false);
   const [cachedRecipe, setCachedRecipe] = useState<Recipe | null>(null);
   const [cachedVibeProfile, setCachedVibeProfile] = useState<VibeProfile | null>(null);
@@ -225,6 +246,7 @@ export default function DreamScreen() {
   async function dream() {
     if (!photoUri || !user) return;
     if (busy.current) return;
+    if (!(await trySpendSparkle('dream_photo'))) return;
     busy.current = true;
     setError(null);
     if (dreamAlbum.length > 0) {
@@ -408,6 +430,7 @@ export default function DreamScreen() {
       Toast.show('Already dreaming...', 'hourglass');
       return;
     }
+    if (!(await trySpendSparkle('dream_twin'))) return;
     busy.current = true;
     setError(null);
     if (dreamAlbum.length > 0) {
@@ -469,6 +492,8 @@ export default function DreamScreen() {
       Toast.show('Already dreaming...', 'hourglass');
       return;
     }
+    // Spend 1 sparkle before generating
+    if (!(await trySpendSparkle('dream'))) return;
     busy.current = true;
     setError(null);
     if (__DEV__) console.log('[JustDream] Setting phase to dreaming');
@@ -549,6 +574,10 @@ export default function DreamScreen() {
       <SafeAreaView style={s.root}>
         <View style={s.center}>
           <Image source={{ uri: mascotUrl }} style={s.mascot} contentFit="cover" />
+          <TouchableOpacity style={s.sparklePill} onPress={() => router.push('/sparkleStore')} activeOpacity={0.7}>
+            <Ionicons name="sparkles" size={16} color={colors.accent} />
+            <Text style={s.sparklePillText}>{sparkleBalance}</Text>
+          </TouchableOpacity>
           <Text style={s.title}>Dream</Text>
           <Text style={s.sub}>Let DreamBot create something new</Text>
           {!customPrompt.trim() && (
@@ -623,7 +652,10 @@ export default function DreamScreen() {
             <Ionicons name="close" size={28} color={colors.textSecondary} />
           </TouchableOpacity>
           <Text style={s.headerTitle}>Dream this</Text>
-          <View style={{ width: 28 }} />
+          <TouchableOpacity style={s.sparklePill} onPress={() => router.push('/sparkleStore')} activeOpacity={0.7}>
+            <Ionicons name="sparkles" size={14} color={colors.accent} />
+            <Text style={s.sparklePillText}>{sparkleBalance}</Text>
+          </TouchableOpacity>
         </View>
         <View style={s.previewWrap}>
           <Image source={{ uri: photoUri! }} style={s.previewImg} contentFit="cover" />
@@ -726,7 +758,10 @@ export default function DreamScreen() {
             <Ionicons name="close" size={28} color={colors.textSecondary} />
           </TouchableOpacity>
           <Text style={s.headerTitle}>Your dream</Text>
-          <View style={{ width: 28 }} />
+          <TouchableOpacity style={s.sparklePill} onPress={() => router.push('/sparkleStore')} activeOpacity={0.7}>
+            <Ionicons name="sparkles" size={14} color={colors.accent} />
+            <Text style={s.sparklePillText}>{sparkleBalance}</Text>
+          </TouchableOpacity>
         </View>
         <View style={{ flex: 1, justifyContent: 'center', maxHeight: SCREEN_HEIGHT * 0.45 }}>
           <FlatList
@@ -1034,6 +1069,13 @@ const s = StyleSheet.create({
   modePillActive: { backgroundColor: colors.accent, borderColor: colors.accent },
   modePillText: { color: colors.textSecondary, fontSize: 13, fontWeight: '600' },
   modePillTextActive: { color: '#FFFFFF' },
+  sparklePill: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    backgroundColor: colors.surface, borderRadius: 14,
+    paddingHorizontal: 10, paddingVertical: 5,
+    borderWidth: 1, borderColor: colors.border,
+  },
+  sparklePillText: { color: colors.accent, fontSize: 15, fontWeight: '700' },
   modeHint: { color: colors.textSecondary, fontSize: 13, textAlign: 'center', marginBottom: 12, paddingHorizontal: 20 },
   customPromptWrap: {
     flexDirection: 'row',
