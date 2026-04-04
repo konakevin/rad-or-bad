@@ -216,8 +216,8 @@ export function FullScreenFeed({
           isAiGenerated={familyPost.is_ai_generated}
           hideTabBar={hideTabBar}
           onDreamLikeThis={async () => {
-            // Fetch ai_prompt on-demand if not available from feed
-            let prompt = familyPost.ai_prompt ?? familyPost.caption ?? '';
+            // Always fetch ai_prompt from DB — feed data may not include it
+            let prompt = familyPost.ai_prompt ?? '';
             if (!prompt) {
               const { data } = await supabase
                 .from('uploads')

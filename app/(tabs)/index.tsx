@@ -46,6 +46,7 @@ function useDreamFeed(tab: FeedTab) {
           twin_count: (row.twin_count as number) ?? 0,
           fuse_count: (row.fuse_count as number) ?? 0,
           bot_message: (row.bot_message as string | null) ?? null,
+          ai_prompt: (row.ai_prompt as string | null) ?? null,
         }));
       }
 
