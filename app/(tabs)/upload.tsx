@@ -534,16 +534,6 @@ export default function DreamScreen() {
     if (!isTwinMode) twinTriggered.current = false;
   }, [isTwinMode, phase]);
 
-  // Auto-trigger "Dream Like This" when entering style_ref mode
-  const styleRefTriggered = useRef(false);
-  useMemo(() => {
-    if (isStyleRef && !styleRefTriggered.current && phase === 'pick') {
-      styleRefTriggered.current = true;
-      setTimeout(() => justDream(), 100);
-    }
-    if (!isStyleRef) styleRefTriggered.current = false;
-  }, [isStyleRef, phase]);
-
   async function justDream() {
     if (__DEV__) console.log('[JustDream] START, user:', !!user, 'busy:', busy.current);
     if (!user) {
@@ -651,6 +641,85 @@ export default function DreamScreen() {
     setDreaming(false);
     imgOpacity.value = 0;
     imgScale.value = 0.85;
+  }
+
+  // ── STYLE REF (Dream Like This) ──────────────────────────────────────────
+
+  if (phase === 'pick' && isStyleRef && fusionTarget) {
+    return (
+      <SafeAreaView style={s.root}>
+        <View style={s.header}>
+          <TouchableOpacity
+            onPress={() => {
+              clearDreamMode();
+              reset();
+            }}
+            hitSlop={12}
+          >
+            <Ionicons name="close" size={28} color={colors.textSecondary} />
+          </TouchableOpacity>
+          <Text style={s.headerTitle}>Dream Like This</Text>
+          <TouchableOpacity
+            style={s.sparklePill}
+            onPress={() => router.push('/sparkleStore')}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="sparkles" size={14} color={colors.accent} />
+            <Text style={s.sparklePillText}>{sparkleBalance}</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={s.center}>
+          {/* Reference image thumbnail */}
+          <Image
+            source={{ uri: fusionTarget.imageUrl }}
+            style={{ width: 120, height: 160, borderRadius: 12, marginBottom: 12 }}
+            contentFit="cover"
+          />
+          <Text style={s.sub}>
+            Dreaming in {fusionTarget.username}
+            {"'"}s style
+          </Text>
+
+          {/* Custom prompt input */}
+          <View style={[s.customPromptWrap, { marginTop: 16, alignSelf: 'stretch' }]}>
+            <TextInput
+              style={s.customPromptInput}
+              placeholder="Add your own twist, or leave blank..."
+              placeholderTextColor={colors.textMuted}
+              value={customPrompt}
+              onChangeText={setCustomPrompt}
+              maxLength={300}
+              multiline
+            />
+            {customPrompt.length > 0 && (
+              <TouchableOpacity
+                onPress={() => setCustomPrompt('')}
+                hitSlop={8}
+                style={s.customPromptClear}
+              >
+                <Ionicons name="close-circle" size={18} color={colors.textSecondary} />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {/* Action buttons */}
+          <View style={[s.pickButtonRow, { marginTop: 16, alignSelf: 'stretch' }]}>
+            <TouchableOpacity style={s.ctaHalf} onPress={pickPhoto} activeOpacity={0.7}>
+              <Ionicons name="images" size={18} color={colors.textPrimary} />
+              <Text style={s.ctaSecondaryText}>Use a Photo</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[s.ctaHalf, { backgroundColor: colors.accent }]}
+              onPress={justDream}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="sparkles" size={18} color="#FFF" />
+              <Text style={[s.ctaSecondaryText, { color: '#FFFFFF' }]}>Dream It</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
   }
 
   // ── PICK ──────────────────────────────────────────────────────────────────
