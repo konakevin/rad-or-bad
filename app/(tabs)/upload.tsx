@@ -333,6 +333,39 @@ export default function DreamScreen() {
       const url = result.image_url;
       const p = result.prompt_used;
 
+      // Style ref + photo: auto-post and go home
+      if (isStyleRef && fusionTarget && user) {
+        const imageUrl = await persistImage(url, user.id);
+        const uploadId = await postDream({
+          userId: user.id,
+          imageUrl,
+          prompt: p,
+          fuseOf: fusionTarget.postId,
+        });
+        if (fusionTarget.userId !== user.id) {
+          supabase.from('notifications').insert({
+            recipient_id: fusionTarget.userId,
+            actor_id: user.id,
+            type: 'post_fuse',
+            upload_id: fusionTarget.postId,
+            body: null,
+          });
+        }
+        pinToFeed({
+          id: uploadId,
+          userId: user.id,
+          imageUrl,
+          username: user.user_metadata?.username ?? '',
+          avatarUrl: user.user_metadata?.avatar_url ?? null,
+        });
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Toast.show('Dream posted!', 'sparkles');
+        clearDreamMode();
+        reset();
+        router.replace('/(tabs)');
+        return;
+      }
+
       setDreamAlbum((prev) => {
         const newIndex = prev.length;
         setActiveIndex(newIndex);
@@ -602,6 +635,41 @@ export default function DreamScreen() {
       const url = result.image_url;
       const p = result.prompt_used;
       if (__DEV__) console.log('[JustDream] Image generated:', url.slice(0, 60));
+
+      // Style ref: auto-post and go home
+      if (isStyleRef && fusionTarget && user) {
+        const imageUrl = await persistImage(url, user.id);
+        const uploadId = await postDream({
+          userId: user.id,
+          imageUrl,
+          prompt: p,
+          fuseOf: fusionTarget.postId,
+        });
+        // Notify original post owner
+        if (fusionTarget.userId !== user.id) {
+          supabase.from('notifications').insert({
+            recipient_id: fusionTarget.userId,
+            actor_id: user.id,
+            type: 'post_fuse',
+            upload_id: fusionTarget.postId,
+            body: null,
+          });
+        }
+        pinToFeed({
+          id: uploadId,
+          userId: user.id,
+          imageUrl,
+          username: user.user_metadata?.username ?? '',
+          avatarUrl: user.user_metadata?.avatar_url ?? null,
+        });
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Toast.show('Dream posted!', 'sparkles');
+        clearDreamMode();
+        reset();
+        router.replace('/(tabs)');
+        return;
+      }
+
       setDreamAlbum((prev) => {
         const newIndex = prev.length;
         setActiveIndex(newIndex);
