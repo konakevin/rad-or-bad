@@ -4,10 +4,11 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 // Product ID → sparkle amount mapping
+// SOURCE OF TRUTH: constants/sparklePacks.ts — keep in sync
 const SPARKLE_PACKS: Record<string, number> = {
   'com.konakevin.radorbad.sparkles.25': 25,
   'com.konakevin.radorbad.sparkles.50': 50,
-  'com.konakevin.radorbad.sparkles.100': 100,
+  'com.konakevin.radorbad.sparkles.100_': 100,
   'com.konakevin.radorbad.sparkles.500': 500,
 };
 

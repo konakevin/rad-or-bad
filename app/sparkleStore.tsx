@@ -21,12 +21,7 @@ import {
 } from '@/hooks/useSparkles';
 
 // Fallback display info keyed by product ID
-const PACK_INFO: Record<string, { sparkles: number; icon: string; label: string }> = {
-  'com.konakevin.radorbad.sparkles.25': { sparkles: 25, icon: 'sparkles-outline', label: 'Starter' },
-  'com.konakevin.radorbad.sparkles.50': { sparkles: 50, icon: 'star', label: 'Popular' },
-  'com.konakevin.radorbad.sparkles.100': { sparkles: 100, icon: 'diamond', label: 'Best Value' },
-  'com.konakevin.radorbad.sparkles.500': { sparkles: 500, icon: 'rocket', label: 'Mega Pack' },
-};
+import { PACK_INFO } from '@/constants/sparklePacks';
 
 function PackCard({
   pkg,
