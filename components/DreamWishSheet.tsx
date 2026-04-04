@@ -145,7 +145,7 @@ export function DreamWishSheet({
           const msg =
             recipientIds.size > 0
               ? `Wish set! Sending to ${recipientIds.size} friend${recipientIds.size > 1 ? 's' : ''} tonight`
-              : 'Wish set! Your DreamBot will dream it next';
+              : 'Wish set! DreamBot will dream it next';
           Toast.show(msg, 'sparkles', 3500);
           onClose();
         },

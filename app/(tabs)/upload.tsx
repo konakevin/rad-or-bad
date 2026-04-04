@@ -550,7 +550,7 @@ export default function DreamScreen() {
         <View style={s.center}>
           <Image source={{ uri: mascotUrl }} style={s.mascot} contentFit="cover" />
           <Text style={s.title}>Dream</Text>
-          <Text style={s.sub}>Let your DreamBot create something new</Text>
+          <Text style={s.sub}>Let DreamBot create something new</Text>
           {!customPrompt.trim() && (
             <>
               <ScrollView
@@ -705,7 +705,7 @@ export default function DreamScreen() {
         <View style={s.center}>
           <Image source={{ uri: loadingMascot }} style={s.loadingMascot} contentFit="cover" />
           <Text style={s.title}>Dreaming...</Text>
-          <Text style={s.sub}>Your DreamBot is dreaming your photo</Text>
+          <Text style={s.sub}>DreamBot is dreaming your photo</Text>
           <ActivityIndicator size="small" color={colors.accent} />
         </View>
       </SafeAreaView>
