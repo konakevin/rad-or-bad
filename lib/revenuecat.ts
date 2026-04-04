@@ -1,7 +1,7 @@
 import Purchases, { LOG_LEVEL, type PurchasesPackage } from 'react-native-purchases';
 import { Platform } from 'react-native';
 
-const RC_IOS_KEY = 'test_tEeLFdbkOGpyiarJlTELpIFpGAc';
+const RC_IOS_KEY = 'appl_gDwFXEmOsQLWUTUndcldpmruekW';
 const RC_ANDROID_KEY = 'YOUR_REVENUECAT_ANDROID_API_KEY';
 
 let configured = false;
