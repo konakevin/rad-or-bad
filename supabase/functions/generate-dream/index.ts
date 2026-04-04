@@ -343,7 +343,7 @@ Deno.serve(async (req) => {
 
     // If photo is attached, tell the concept generator to reimagine it
     if (input_image) {
-      conceptBrief += `\n\nIMPORTANT: This is a PHOTO REIMAGINING. The user uploaded a photo. Your concept should reimagine the photo as a full creative dream — not apply a filter. Transform the scene, change the environment, add fantastical elements. The photo is inspiration, not something to preserve.`;
+      conceptBrief += `\n\nIMPORTANT: This is a PHOTO REIMAGINING. The user uploaded a photo. KEEP THE MAIN SUBJECT — whatever or whoever is in the photo MUST remain the focus. Reimagine everything AROUND the subject: transform the environment, change the art style, add fantastical elements, alter the lighting and mood. The subject stays, the world changes. This is NOT a replacement — it's a creative reimagining of the same subject in a dream world.`;
     }
     try {
       const conceptRaw = await enhanceViaHaiku(conceptBrief, '', ANTHROPIC_KEY, 300);
