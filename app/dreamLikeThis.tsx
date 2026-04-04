@@ -14,11 +14,14 @@ import {
   StyleSheet,
   ActivityIndicator,
   Dimensions,
+  Modal,
+  Pressable,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -41,7 +44,7 @@ import { DEFAULT_RECIPE } from '@/types/recipe';
 import { isVibeProfile } from '@/lib/migrateRecipe';
 import { generateFromVibeProfile } from '@/lib/dreamApi';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const PREVIEW_WIDTH = SCREEN_WIDTH - 48;
 
 type Phase = 'loading' | 'pick' | 'dreaming' | 'reveal' | 'posting';
@@ -78,12 +81,74 @@ export default function DreamLikeThisScreen() {
   const [posting, setPosting] = useState(false);
 
   const busy = useRef(false);
+  const [fullscreen, setFullscreen] = useState(false);
   const imgScale = useSharedValue(0.85);
   const imgOpacity = useSharedValue(0);
   const revealStyle = useAnimatedStyle(() => ({
     opacity: imgOpacity.value,
     transform: [{ scale: imgScale.value }],
   }));
+
+  // Fullscreen preview
+  const fsScale = useSharedValue(0);
+  const fsOpacity = useSharedValue(0);
+  const fsStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: 0.5 + fsScale.value * 0.5 }],
+    opacity: fsOpacity.value,
+  }));
+  const fsOverlayStyle = useAnimatedStyle(() => ({
+    opacity: fsOpacity.value,
+  }));
+
+  // Pinch to zoom
+  const pinchScale = useSharedValue(1);
+  const pinchTransX = useSharedValue(0);
+  const pinchTransY = useSharedValue(0);
+  const pinchFocalX = useSharedValue(0);
+  const pinchFocalY = useSharedValue(0);
+  const pinchStartX = useSharedValue(0);
+  const pinchStartY = useSharedValue(0);
+
+  const pinchGesture = Gesture.Pinch()
+    .onStart((e) => {
+      pinchFocalX.value = e.focalX - SCREEN_WIDTH / 2;
+      pinchFocalY.value = e.focalY - SCREEN_HEIGHT / 2;
+      pinchStartX.value = e.focalX;
+      pinchStartY.value = e.focalY;
+    })
+    .onUpdate((e) => {
+      const sc = Math.max(1, Math.min(5, e.scale));
+      pinchScale.value = sc;
+      pinchTransX.value = pinchFocalX.value * (1 - sc) + (e.focalX - pinchStartX.value);
+      pinchTransY.value = pinchFocalY.value * (1 - sc) + (e.focalY - pinchStartY.value);
+    })
+    .onEnd(() => {
+      pinchScale.value = withTiming(1, { duration: 200 });
+      pinchTransX.value = withTiming(0, { duration: 200 });
+      pinchTransY.value = withTiming(0, { duration: 200 });
+    });
+
+  const pinchStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: pinchTransX.value },
+      { translateY: pinchTransY.value },
+      { scale: pinchScale.value },
+    ],
+  }));
+
+  function openFullscreen() {
+    setFullscreen(true);
+    fsScale.value = 0;
+    fsOpacity.value = 0;
+    fsScale.value = withTiming(1, { duration: 300 });
+    fsOpacity.value = withTiming(1, { duration: 250 });
+  }
+
+  function closeFullscreen() {
+    fsScale.value = withTiming(0, { duration: 250 });
+    fsOpacity.value = withTiming(0, { duration: 250 });
+    setTimeout(() => setFullscreen(false), 260);
+  }
 
   // ── Fetch reference post on mount ─────────────────────────────────
   useEffect(() => {
@@ -174,12 +239,15 @@ export default function DreamLikeThisScreen() {
       };
 
       if (photoUri && photoBase64) {
-        // Photo + style ref: apply the reference style to user's photo
+        // Photo + style ref: extract ONLY the art medium (first comma segment)
+        // and tell Kontext to apply it. Sending the full prompt causes Kontext
+        // to replace the photo's subject with the reference scene.
         const refUrl = `data:image/jpeg;base64,${photoBase64}`;
-        if (__DEV__) console.log('[DreamLikeThis] Photo + style ref');
+        const artStyle = refPost.prompt.split(',')[0].trim();
+        if (__DEV__) console.log('[DreamLikeThis] Photo + style ref, art style:', artStyle);
         const stylePrompt = customPrompt.trim()
-          ? `Apply this exact art style to the photo: ${refPost.prompt.slice(0, 250)}. Also: ${customPrompt.trim()}. Keep the photo's subject unchanged.`
-          : `Apply this exact art style and visual treatment to the photo, keeping the subject unchanged: ${refPost.prompt.slice(0, 250)}`;
+          ? `Render this photo as ${artStyle}. ${customPrompt.trim()}. Do not change the person or subject.`
+          : `Render this photo as ${artStyle}. Keep the person and subject exactly as they are, only change the art style and rendering technique.`;
         result = await generateDream({
           mode: 'flux-kontext',
           prompt: stylePrompt,
@@ -392,15 +460,40 @@ export default function DreamLikeThisScreen() {
           </TouchableOpacity>
         </View>
         <View style={s.revealCenter}>
-          <Animated.View style={[s.revealBorder, revealStyle]}>
-            <Image
-              source={{ uri: resultUrl }}
-              style={s.revealImg}
-              contentFit="cover"
-              transition={300}
-            />
-          </Animated.View>
+          <TouchableOpacity activeOpacity={0.9} onPress={openFullscreen}>
+            <Animated.View style={[s.revealBorder, revealStyle]}>
+              <Image
+                source={{ uri: resultUrl }}
+                style={s.revealImg}
+                contentFit="cover"
+                transition={300}
+              />
+            </Animated.View>
+          </TouchableOpacity>
         </View>
+
+        <Modal visible={fullscreen} transparent animationType="none" statusBarTranslucent>
+          <Pressable style={StyleSheet.absoluteFill} onPress={closeFullscreen}>
+            <Animated.View style={[s.fsOverlay, fsOverlayStyle]}>
+              <GestureDetector gesture={pinchGesture}>
+                <Animated.View style={[s.fsImageWrap, fsStyle]}>
+                  <Animated.View style={[{ width: '100%', height: '80%' }, pinchStyle]}>
+                    <Image
+                      source={{ uri: resultUrl }}
+                      style={{ width: '100%', height: '100%', borderRadius: 4 }}
+                      contentFit="contain"
+                    />
+                  </Animated.View>
+                </Animated.View>
+              </GestureDetector>
+              <TouchableOpacity style={s.fsClose} onPress={closeFullscreen} activeOpacity={0.7}>
+                <View style={s.fsCloseCircle}>
+                  <Ionicons name="close" size={20} color="#FFFFFF" />
+                </View>
+              </TouchableOpacity>
+            </Animated.View>
+          </Pressable>
+        </Modal>
         <View style={s.footer}>
           <TouchableOpacity style={s.cta} onPress={handleDream} activeOpacity={0.7}>
             <Ionicons name="sparkles" size={20} color="#FFF" />
@@ -543,5 +636,27 @@ const s = StyleSheet.create({
     width: PREVIEW_WIDTH,
     height: Math.min(PREVIEW_WIDTH * 1.75, 400),
     borderRadius: 20,
+  },
+  fsOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.92)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  fsImageWrap: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 8,
+  },
+  fsClose: { position: 'absolute', top: 60, right: 20 },
+  fsCloseCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
