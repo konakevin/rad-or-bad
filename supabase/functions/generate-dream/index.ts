@@ -350,6 +350,11 @@ Deno.serve(async (req) => {
     let concept: ConceptRecipe;
     let conceptBrief = buildConceptPrompt(vibeProfile, promptMode, Math.random());
 
+    // Inject style reference BEFORE concept generation so Haiku uses it
+    if (hint) {
+      conceptBrief += `\n\n${hint}`;
+    }
+
     // If photo is attached, tell the concept generator to reimagine it
     if (input_image) {
       conceptBrief += `\n\nIMPORTANT: This is a PHOTO REIMAGINING. The user uploaded a photo. KEEP THE MAIN SUBJECT — whatever or whoever is in the photo MUST remain the focus. Reimagine everything AROUND the subject: transform the environment, change the art style, add fantastical elements, alter the lighting and mood. The subject stays, the world changes. This is NOT a replacement — it's a creative reimagining of the same subject in a dream world.`;
@@ -368,10 +373,6 @@ Deno.serve(async (req) => {
       finalPrompt = polished.length >= 10 ? polished : buildFallbackFluxPrompt(concept);
     } catch {
       finalPrompt = buildFallbackFluxPrompt(concept);
-    }
-
-    if (hint) {
-      finalPrompt = `${finalPrompt}, ${hint}`;
     }
 
     lap('two-pass-done');
