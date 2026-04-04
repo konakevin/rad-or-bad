@@ -574,7 +574,7 @@ export default function DreamScreen() {
         // If style_ref mode, pass the reference prompt as a style hint
         const styleHint =
           isStyleRef && fusionTarget?.prompt
-            ? `STYLE REFERENCE: "${fusionTarget.prompt.slice(0, 200)}". Match this art style, lighting, color palette, and mood — but create a completely different subject and scene.`
+            ? `STYLE TO COPY: "${fusionTarget.prompt.slice(0, 200)}". COPY the art medium, art style, color palette, lighting, and visual treatment from this reference EXACTLY. But create a NEW scene using the user's interests, personal anchors, and mood from their profile above. Same look, different content.`
             : undefined;
         result = vibeProfile
           ? await generateFromVibeProfile(vibeProfile, {
