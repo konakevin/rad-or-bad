@@ -11,28 +11,22 @@ export interface FamilyMember {
   ai_prompt: string | null;
 }
 
-interface DreamFamily {
-  twins: FamilyMember[];
-  fuses: FamilyMember[];
-}
-
 export function useDreamFamily(uploadId: string, enabled: boolean) {
   return useQuery({
     queryKey: ['dreamFamily', uploadId],
-    queryFn: async (): Promise<DreamFamily> => {
-      // Fetch twins
-      const { data: twinData } = await supabase
-        .from('uploads')
-        .select('id, user_id, image_url, created_at, ai_prompt, users!inner(username, avatar_url)')
-        .eq('twin_of', uploadId)
-        .eq('is_active', true)
-        .order('created_at', { ascending: false });
-
-      // Fetch fuses
+    queryFn: async (): Promise<FamilyMember[]> => {
+      // Fetch all fusions (both twin_of and fuse_of point here)
       const { data: fuseData } = await supabase
         .from('uploads')
         .select('id, user_id, image_url, created_at, ai_prompt, users!inner(username, avatar_url)')
         .eq('fuse_of', uploadId)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      const { data: twinData } = await supabase
+        .from('uploads')
+        .select('id, user_id, image_url, created_at, ai_prompt, users!inner(username, avatar_url)')
+        .eq('twin_of', uploadId)
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
@@ -49,10 +43,14 @@ export function useDreamFamily(uploadId: string, enabled: boolean) {
         };
       }
 
-      return {
-        twins: (twinData ?? []).map(mapRow),
-        fuses: (fuseData ?? []).map(mapRow),
-      };
+      // Combine both into one list, deduplicate by id
+      const all = [...(fuseData ?? []).map(mapRow), ...(twinData ?? []).map(mapRow)];
+      const seen = new Set<string>();
+      return all.filter((m) => {
+        if (seen.has(m.id)) return false;
+        seen.add(m.id);
+        return true;
+      });
     },
     enabled: enabled && !!uploadId,
     staleTime: 30_000,

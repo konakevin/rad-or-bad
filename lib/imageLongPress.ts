@@ -31,6 +31,7 @@ export function handleImageLongPress(opts: {
   id: string;
   imageUrl: string;
   onDelete?: () => void;
+  onDreamLikeThis?: () => void;
 }) {
   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
 

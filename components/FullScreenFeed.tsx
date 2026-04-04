@@ -68,8 +68,7 @@ export function FullScreenFeed({
   const { mutate: toggleFavorite } = useToggleFavorite();
   const { data: likeIds = new Set<string>() } = useLikeIds();
   const { mutate: toggleLike } = useToggleLike();
-  const setTwin = useFusionStore((s) => s.setTwin);
-  const setFuse = useFusionStore((s) => s.setFuse);
+  const setStyleRef = useFusionStore((s) => s.setStyleRef);
   const [familyPostId, setFamilyPostId] = useState<string | null>(null);
   const [familyPost, setFamilyPost] = useState<DreamPostItem | null>(null);
   const [commentPost, setCommentPost] = useState<DreamPostItem | null>(null);
@@ -215,10 +214,9 @@ export function FullScreenFeed({
           post={familyPost}
           uploadId={familyPost.id}
           isAiGenerated={familyPost.is_ai_generated}
-          aiPrompt={familyPost.ai_prompt ?? null}
           hideTabBar={hideTabBar}
-          onTwin={() => {
-            setTwin({
+          onDreamLikeThis={() => {
+            setStyleRef({
               postId: familyPost.id,
               prompt: familyPost.ai_prompt ?? familyPost.caption ?? '',
               imageUrl: familyPost.image_url,
@@ -227,17 +225,6 @@ export function FullScreenFeed({
               recipeId: familyPost.recipe_id ?? null,
             });
             router.navigate('/(tabs)/upload');
-          }}
-          onFuse={() => {
-            setFuse({
-              postId: familyPost.id,
-              prompt: familyPost.ai_prompt ?? familyPost.caption ?? '',
-              imageUrl: familyPost.image_url,
-              username: familyPost.username,
-              userId: familyPost.user_id,
-              recipeId: familyPost.recipe_id ?? null,
-            });
-            router.push('/fusion');
           }}
         />
       )}

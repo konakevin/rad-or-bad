@@ -118,6 +118,7 @@ export default function DreamScreen() {
   const fusionTarget = useFusionStore((s) => s.target);
   const clearDreamMode = useFusionStore((s) => s.clear);
   const isTwinMode = dreamMode === 'twin' && !!fusionTarget;
+  const isStyleRef = dreamMode === 'style_ref' && !!fusionTarget;
 
   // Derived from album for backward compat
   const activeDream = dreamAlbum[activeIndex] ?? null;
@@ -413,7 +414,19 @@ export default function DreamScreen() {
         recipeId,
         fromWish: postWish,
         twinOf: isTwinMode ? fusionTarget?.postId : null,
+        fuseOf: isStyleRef ? fusionTarget?.postId : null,
       });
+
+      // Notify original post owner when someone fuses their dream
+      if (isStyleRef && fusionTarget && fusionTarget.userId !== user.id) {
+        supabase.from('notifications').insert({
+          recipient_id: fusionTarget.userId,
+          actor_id: user.id,
+          type: 'post_fuse',
+          upload_id: fusionTarget.postId,
+          body: null,
+        });
+      }
       if (__DEV__) console.log('[Post] Upload created:', uploadId);
 
       pinToFeed({
@@ -521,6 +534,16 @@ export default function DreamScreen() {
     if (!isTwinMode) twinTriggered.current = false;
   }, [isTwinMode, phase]);
 
+  // Auto-trigger "Dream Like This" when entering style_ref mode
+  const styleRefTriggered = useRef(false);
+  useMemo(() => {
+    if (isStyleRef && !styleRefTriggered.current && phase === 'pick') {
+      styleRefTriggered.current = true;
+      setTimeout(() => justDream(), 100);
+    }
+    if (!isStyleRef) styleRefTriggered.current = false;
+  }, [isStyleRef, phase]);
+
   async function justDream() {
     if (__DEV__) console.log('[JustDream] START, user:', !!user, 'busy:', busy.current);
     if (!user) {
@@ -558,9 +581,17 @@ export default function DreamScreen() {
         if (__DEV__) console.log('[JustDream] Loading profile...');
         const { recipe, vibeProfile } = await loadProfile();
         if (__DEV__) console.log('[JustDream] Profile loaded, generating via Edge Function...');
+        // If style_ref mode, pass the reference prompt as a style hint
+        const styleHint =
+          isStyleRef && fusionTarget?.prompt
+            ? `STYLE REFERENCE: "${fusionTarget.prompt.slice(0, 200)}". Match this art style, lighting, color palette, and mood — but create a completely different subject and scene.`
+            : undefined;
         result = vibeProfile
-          ? await generateFromVibeProfile(vibeProfile, { promptMode: selectedMode })
-          : await generateFromRecipe(recipe!);
+          ? await generateFromVibeProfile(vibeProfile, {
+              promptMode: selectedMode,
+              hint: styleHint,
+            })
+          : await generateFromRecipe(recipe!, { hint: styleHint });
       }
       const url = result.image_url;
       const p = result.prompt_used;

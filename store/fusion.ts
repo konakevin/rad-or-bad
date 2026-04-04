@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type DreamMode = 'normal' | 'twin' | 'fuse';
+export type DreamMode = 'normal' | 'twin' | 'fuse' | 'style_ref';
 
 export interface FusionTarget {
   postId: string;
@@ -17,6 +17,7 @@ interface FusionStore {
   setTarget: (target: FusionTarget | null) => void;
   setTwin: (target: FusionTarget) => void;
   setFuse: (target: FusionTarget) => void;
+  setStyleRef: (target: FusionTarget) => void;
   clear: () => void;
 }
 
@@ -26,5 +27,6 @@ export const useFusionStore = create<FusionStore>((set) => ({
   setTarget: (target) => set({ target, mode: target ? 'fuse' : 'normal' }),
   setTwin: (target) => set({ target, mode: 'twin' }),
   setFuse: (target) => set({ target, mode: 'fuse' }),
+  setStyleRef: (target: FusionTarget) => set({ target, mode: 'style_ref' }),
   clear: () => set({ target: null, mode: 'normal' }),
 }));

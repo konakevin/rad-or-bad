@@ -1,9 +1,9 @@
 /**
- * DreamFamilySheet — shows twins and fuses of a dream post.
- * Image slides up to thumbnail, family content flows below — matches CommentOverlay pattern.
+ * DreamFamilySheet — shows fusions of a dream post + "Dream Like This" CTA.
+ * Image slides up to thumbnail, fusion grid below — matches CommentOverlay pattern.
  */
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -41,17 +41,13 @@ const TILE_SIZE = (SCREEN_WIDTH - 48 - GRID_GAP) / 2;
 const ANIM_DURATION = 250;
 const EASING = Easing.bezier(0.25, 0.1, 0.25, 1);
 
-type Tab = 'twins' | 'fuses';
-
 interface Props {
   visible: boolean;
   onClose: () => void;
   post: DreamPostItem;
   uploadId: string;
   isAiGenerated: boolean;
-  aiPrompt: string | null;
-  onTwin: () => void;
-  onFuse: () => void;
+  onDreamLikeThis: () => void;
   hideTabBar?: boolean;
 }
 
@@ -93,19 +89,12 @@ export function DreamFamilySheet({
   post,
   uploadId,
   isAiGenerated,
-  aiPrompt,
-  onTwin,
-  onFuse,
+  onDreamLikeThis,
   hideTabBar,
 }: Props) {
   const insets = useSafeAreaInsets();
-  const [tab, setTab] = useState<Tab>('twins');
-  const { data, isLoading } = useDreamFamily(uploadId, visible);
-  const twins = data?.twins ?? [];
-  const fuses = data?.fuses ?? [];
-  const items = tab === 'twins' ? twins : fuses;
+  const { data: fusions = [], isLoading } = useDreamFamily(uploadId, visible);
 
-  // ── Animation ────────────────────────────────────────────────────────────
   const progress = useSharedValue(0);
   const dragY = useSharedValue(0);
   const closing = useRef(false);
@@ -113,7 +102,10 @@ export function DreamFamilySheet({
   useEffect(() => {
     if (visible) {
       closing.current = false;
-      progress.value = withTiming(1, { duration: ANIM_DURATION, easing: EASING });
+      progress.value = withTiming(1, {
+        duration: ANIM_DURATION,
+        easing: EASING,
+      });
     }
   }, [visible]);
 
@@ -146,7 +138,7 @@ export function DreamFamilySheet({
     const p = progress.value;
     const dy = dragY.value;
     return {
-      position: 'absolute',
+      position: 'absolute' as const,
       left: 0,
       top: 0,
       width: interpolate(p, [0, 1], [SCREEN_WIDTH, THUMB_WIDTH]),
@@ -154,7 +146,9 @@ export function DreamFamilySheet({
       borderRadius: interpolate(p, [0, 1], [0, 12]),
       transform: [
         { translateX: interpolate(p, [0, 1], [0, thumbLeft]) },
-        { translateY: interpolate(p, [0, 1], [0, insets.top + THUMB_MARGIN_TOP]) + dy * 0.3 },
+        {
+          translateY: interpolate(p, [0, 1], [0, insets.top + THUMB_MARGIN_TOP]) + dy * 0.3,
+        },
       ],
       zIndex: 10,
     };
@@ -167,7 +161,9 @@ export function DreamFamilySheet({
 
   const paneStyle = useAnimatedStyle(() => ({
     transform: [
-      { translateY: interpolate(progress.value, [0, 1], [SCREEN_HEIGHT, 0]) + dragY.value },
+      {
+        translateY: interpolate(progress.value, [0, 1], [SCREEN_HEIGHT, 0]) + dragY.value,
+      },
     ],
   }));
 
@@ -180,14 +176,18 @@ export function DreamFamilySheet({
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
       <Animated.View style={[s.overlay, overlayStyle]} pointerEvents="box-none">
-        {/* Tap header to dismiss */}
         <TouchableOpacity
-          style={{ position: 'absolute', top: 0, left: 0, right: 0, height: HEADER_HEIGHT }}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: HEADER_HEIGHT,
+          }}
           onPress={dismiss}
           activeOpacity={1}
         />
 
-        {/* Floating thumbnail */}
         <Animated.View style={imageStyle}>
           <TouchableOpacity onPress={dismiss} activeOpacity={0.9} style={{ flex: 1 }}>
             <Image
@@ -199,7 +199,6 @@ export function DreamFamilySheet({
           </TouchableOpacity>
         </Animated.View>
 
-        {/* Username + close below thumbnail */}
         <Animated.View
           style={[
             s.thumbMeta,
@@ -218,56 +217,23 @@ export function DreamFamilySheet({
             <Text style={s.thumbUsername} numberOfLines={1}>
               {post.username}
             </Text>
-            <Text style={s.thumbLabel}>Dream Family</Text>
+            <Text style={s.thumbLabel}>
+              {fusions.length} {fusions.length === 1 ? 'fusion' : 'fusions'}
+            </Text>
           </View>
           <TouchableOpacity onPress={dismiss} hitSlop={12}>
             <Ionicons name="chevron-down" size={24} color={colors.textSecondary} />
           </TouchableOpacity>
         </Animated.View>
 
-        {/* Content pane */}
         <GestureDetector gesture={panGesture}>
           <Animated.View style={[s.pane, { top: HEADER_HEIGHT }, paneStyle]}>
-            {/* Handle */}
             <View style={s.handleRow}>
               <View style={s.handle} />
             </View>
 
-            {/* Tabs */}
-            <View style={s.tabs}>
-              <TouchableOpacity
-                style={[s.tab, tab === 'twins' && s.tabActive]}
-                onPress={() => setTab('twins')}
-                activeOpacity={0.7}
-              >
-                <Ionicons
-                  name="dice-outline"
-                  size={16}
-                  color={tab === 'twins' ? colors.textPrimary : colors.textSecondary}
-                />
-                <Text style={[s.tabText, tab === 'twins' && s.tabTextActive]}>
-                  Twins{twins.length > 0 ? ` (${twins.length})` : ''}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[s.tab, tab === 'fuses' && s.tabActive]}
-                onPress={() => setTab('fuses')}
-                activeOpacity={0.7}
-              >
-                <Ionicons
-                  name="git-merge-outline"
-                  size={16}
-                  color={tab === 'fuses' ? colors.textPrimary : colors.textSecondary}
-                />
-                <Text style={[s.tabText, tab === 'fuses' && s.tabTextActive]}>
-                  Fuses{fuses.length > 0 ? ` (${fuses.length})` : ''}
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Grid */}
             <FlatList
-              data={items}
+              data={fusions}
               keyExtractor={(item) => item.id}
               numColumns={2}
               columnWrapperStyle={s.gridRow}
@@ -280,25 +246,18 @@ export function DreamFamilySheet({
                   ) : (
                     <>
                       <Ionicons
-                        name={tab === 'twins' ? 'dice-outline' : 'git-merge-outline'}
+                        name="git-network-outline"
                         size={36}
                         color="rgba(255,255,255,0.15)"
                       />
-                      <Text style={s.emptyText}>
-                        {tab === 'twins' ? 'No twins yet' : 'No fuses yet'}
-                      </Text>
-                      <Text style={s.emptySubtext}>
-                        {tab === 'twins'
-                          ? 'Twin this dream to see parallel versions'
-                          : 'Fuse with this dream to blend styles'}
-                      </Text>
+                      <Text style={s.emptyText}>No fusions yet</Text>
+                      <Text style={s.emptySubtext}>Be the first to dream like this</Text>
                     </>
                   )}
                 </View>
               }
             />
 
-            {/* Action buttons */}
             {isAiGenerated && (
               <View style={[s.actions, { paddingBottom: insets.bottom + (hideTabBar ? 16 : 75) }]}>
                 <TouchableOpacity
@@ -306,24 +265,13 @@ export function DreamFamilySheet({
                   onPress={() => {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                     dismiss();
-                    setTimeout(onTwin, 300);
+                    setTimeout(onDreamLikeThis, 300);
                   }}
                   activeOpacity={0.7}
                 >
-                  <Ionicons name="dice-outline" size={18} color="#FFFFFF" />
-                  <Text style={s.actionText}>Twin this dream</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[s.actionButton, s.actionButtonSecondary]}
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                    dismiss();
-                    setTimeout(onFuse, 300);
-                  }}
-                  activeOpacity={0.7}
-                >
-                  <Ionicons name="git-merge-outline" size={18} color={colors.accent} />
-                  <Text style={[s.actionText, s.actionTextSecondary]}>Fuse with this dream</Text>
+                  <Ionicons name="sparkles" size={18} color="#FFFFFF" />
+                  <Text style={s.actionText}>Dream Like This</Text>
+                  <Text style={s.actionCost}>1 ✨</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -339,7 +287,6 @@ const s = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     backgroundColor: colors.background,
   },
-  // ── Thumbnail meta ─────────────────────────────────────────────────────────
   thumbMeta: {
     position: 'absolute',
     left: 16,
@@ -371,21 +318,9 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  thumbAvatarText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  thumbUsername: {
-    color: colors.textPrimary,
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  thumbLabel: {
-    color: colors.textSecondary,
-    fontSize: 12,
-  },
-  // ── Content pane ───────────────────────────────────────────────────────────
+  thumbAvatarText: { color: '#FFFFFF', fontSize: 12, fontWeight: '700' },
+  thumbUsername: { color: colors.textPrimary, fontSize: 14, fontWeight: '700' },
+  thumbLabel: { color: colors.textSecondary, fontSize: 12 },
   pane: {
     position: 'absolute',
     left: 0,
@@ -395,74 +330,29 @@ const s = StyleSheet.create({
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
   },
-  handleRow: {
-    alignItems: 'center',
-    paddingTop: 8,
-    paddingBottom: 4,
-  },
+  handleRow: { alignItems: 'center', paddingTop: 8, paddingBottom: 4 },
   handle: {
     width: 36,
     height: 4,
     borderRadius: 2,
     backgroundColor: 'rgba(255,255,255,0.2)',
   },
-  tabs: {
-    flexDirection: 'row',
-    marginHorizontal: 16,
-    marginBottom: 12,
-    borderRadius: 12,
-    backgroundColor: colors.background,
-    padding: 3,
-  },
-  tab: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 10,
-    borderRadius: 10,
-  },
-  tabActive: {
-    backgroundColor: colors.card,
-  },
-  tabText: {
-    color: colors.textSecondary,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  tabTextActive: {
-    color: colors.textPrimary,
-  },
-  grid: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-  gridRow: {
-    gap: GRID_GAP,
-    marginBottom: GRID_GAP,
-  },
+  grid: { paddingHorizontal: 16, paddingBottom: 16 },
+  gridRow: { gap: GRID_GAP, marginBottom: GRID_GAP },
   tile: {
     width: TILE_SIZE,
     borderRadius: 12,
     overflow: 'hidden',
     backgroundColor: colors.card,
   },
-  tileImage: {
-    width: TILE_SIZE,
-    height: TILE_SIZE * 1.4,
-  },
+  tileImage: { width: TILE_SIZE, height: TILE_SIZE * 1.4 },
   tileInfo: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     padding: 8,
   },
-  tileAvatar: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-  },
+  tileAvatar: { width: 20, height: 20, borderRadius: 10 },
   tileAvatarFallback: {
     width: 20,
     height: 20,
@@ -471,11 +361,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  tileAvatarText: {
-    color: colors.textPrimary,
-    fontSize: 10,
-    fontWeight: '700',
-  },
+  tileAvatarText: { color: colors.textPrimary, fontSize: 10, fontWeight: '700' },
   tileUsername: {
     color: colors.textSecondary,
     fontSize: 12,
@@ -488,21 +374,14 @@ const s = StyleSheet.create({
     paddingBottom: 20,
     gap: 8,
   },
-  emptyText: {
-    color: colors.textPrimary,
-    fontSize: 16,
-    fontWeight: '700',
-  },
+  emptyText: { color: colors.textPrimary, fontSize: 16, fontWeight: '700' },
   emptySubtext: {
     color: colors.textSecondary,
     fontSize: 14,
     textAlign: 'center',
     paddingHorizontal: 20,
   },
-  actions: {
-    paddingHorizontal: 16,
-    gap: 10,
-  },
+  actions: { paddingHorizontal: 16, gap: 10 },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -512,17 +391,10 @@ const s = StyleSheet.create({
     borderRadius: 14,
     paddingVertical: 14,
   },
-  actionButtonSecondary: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: colors.accent,
-  },
-  actionText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  actionTextSecondary: {
-    color: colors.accent,
+  actionText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
+  actionCost: {
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
