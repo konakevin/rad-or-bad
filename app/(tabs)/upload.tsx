@@ -294,7 +294,7 @@ export default function DreamScreen() {
         const { recipe: loadedRecipe, vibeProfile } = await loadProfile();
         const photoRefHint =
           isStyleRef && fusionTarget?.prompt
-            ? `STYLE TO COPY: "${fusionTarget.prompt.slice(0, 200)}". COPY the art medium, art style, color palette, lighting EXACTLY. Apply it to this photo.`
+            ? `CRITICAL OVERRIDE — IGNORE the user's art_styles listed above. Instead, the "style" field in your JSON MUST be extracted from this reference prompt: "${fusionTarget.prompt.slice(0, 200)}". Whatever art medium appears in this reference (e.g. pencil sketch, pixel art, LEGO, watercolor) — use that EXACT medium as your "style" value. Do NOT substitute with the user's preferred styles. Apply this style to the uploaded photo.`
             : undefined;
         if (__DEV__) {
           console.log('[PhotoDream] isStyleRef:', isStyleRef);
@@ -650,19 +650,20 @@ export default function DreamScreen() {
     }
   }
 
-  // Reset all state when user leaves the Dream tab
+  // Reset stale state when user leaves/returns to Dream tab
   useFocusEffect(
     useCallback(() => {
       // On focus: reset busy ref in case it got stuck
       busy.current = false;
       return () => {
-        // On blur: clear fusion store so style_ref/twin don't persist
-        clearDreamMode();
-        // Clear cached profiles so next visit fetches fresh
+        // On blur: clear cached profiles so next visit fetches fresh
+        // NOTE: Do NOT clearDreamMode() here — it races with "Dream Like This"
+        // navigation which sets the fusion store BEFORE this blur cleanup runs.
+        // Fusion store is cleared in reset() which runs on explicit exit (X button, post).
         setCachedRecipe(null);
         setCachedVibeProfile(null);
       };
-    }, [clearDreamMode])
+    }, [])
   );
 
   function reset() {
