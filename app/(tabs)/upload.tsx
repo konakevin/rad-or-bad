@@ -1,4 +1,5 @@
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useCallback } from 'react';
+import { useFocusEffect } from 'expo-router';
 import {
   View,
   Text,
@@ -649,6 +650,21 @@ export default function DreamScreen() {
     }
   }
 
+  // Reset all state when user leaves the Dream tab
+  useFocusEffect(
+    useCallback(() => {
+      // On focus: reset busy ref in case it got stuck
+      busy.current = false;
+      return () => {
+        // On blur: clear fusion store so style_ref/twin don't persist
+        clearDreamMode();
+        // Clear cached profiles so next visit fetches fresh
+        setCachedRecipe(null);
+        setCachedVibeProfile(null);
+      };
+    }, [clearDreamMode])
+  );
+
   function reset() {
     setPhase('pick');
     setPhotoUri(null);
@@ -667,6 +683,8 @@ export default function DreamScreen() {
     setCachedRecipe(null);
     setCachedVibeProfile(null);
     clearDreamMode();
+    busy.current = false;
+    twinTriggered.current = false;
     imgOpacity.value = 0;
     imgScale.value = 0.85;
   }
