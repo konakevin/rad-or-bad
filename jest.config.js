@@ -2,7 +2,8 @@ module.exports = {
   testMatch: ['**/__tests__/**/*.test.ts?(x)'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
-    // Map _shared Deno-style imports to their source types
+    '^@engine/(.*)$': '<rootDir>/supabase/functions/_shared/$1',
+    // Map Deno-style .ts imports used by _shared files
     '^\\.\\./vibeProfile\\.ts$': '<rootDir>/types/vibeProfile',
     '^\\.\\./recipe\\.ts$': '<rootDir>/types/recipe',
     '^\\./vibeProfile\\.ts$': '<rootDir>/types/vibeProfile',
