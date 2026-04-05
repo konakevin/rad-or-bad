@@ -72,27 +72,11 @@ interface GenerateResult {
 }
 
 export function useDreamGeneration(deps: GenerationDeps) {
-  const {
-    phase,
-    setPhase,
-    isStyleRef,
-    isTwinMode,
-    fusionTarget,
-    photoBase64,
-    photoUri,
-    photoFromUpload,
-    userHint,
-    albumLength,
-    selectedMode,
-    customPrompt,
-    makeControlState,
-    addDream,
-    dreaming,
-    setDreaming,
-    posting,
-    setPosting,
-    setError,
-  } = deps;
+  const { setPhase, setDreaming, setPosting, setError, photoFromUpload } = deps;
+
+  // Use a ref for frequently-changing values to avoid callback recreation
+  const depsRef = useRef(deps);
+  depsRef.current = deps;
 
   const user = useAuthStore((s) => s.user);
   const { data: sparkleBalance = 0 } = useSparkleBalance();
@@ -153,7 +137,7 @@ export function useDreamGeneration(deps: GenerationDeps) {
   // ── Shared pre/post generation helpers ────────────────────────────────
 
   function startGeneration() {
-    if (albumLength > 0) {
+    if (depsRef.current.albumLength > 0) {
       setDreaming(true);
     } else {
       imgOpacity.value = 0;
@@ -164,15 +148,15 @@ export function useDreamGeneration(deps: GenerationDeps) {
   }
 
   function finishGeneration(result: GenerateResult) {
-    addDream({
+    depsRef.current.addDream({
       url: result.image_url,
       prompt: result.prompt_used,
       fromWish: null,
-      fromUpload: photoFromUpload.current,
+      fromUpload: depsRef.current.photoFromUpload.current,
       dreamMode: result.dream_mode,
       archetype: result.archetype,
       aiConcept: result.ai_concept ?? null,
-      controlState: makeControlState(),
+      controlState: depsRef.current.makeControlState(),
     });
     setDreaming(false);
     setPhase('reveal');
@@ -188,7 +172,6 @@ export function useDreamGeneration(deps: GenerationDeps) {
     const msg = err instanceof Error ? err.message : 'Unknown error';
     if (__DEV__) console.error(`[${label}] ERROR:`, msg, err);
 
-    // NSFW content flagged by safety filters — refund the sparkle
     if (msg.includes('NSFW_CONTENT') && user) {
       try {
         await supabase.rpc('grant_sparkles', {
@@ -210,12 +193,14 @@ export function useDreamGeneration(deps: GenerationDeps) {
 
     setError(msg.includes('NSFW_CONTENT') ? 'Content flagged by safety filters' : msg);
     setDreaming(false);
-    setPhase(albumLength > 0 ? 'reveal' : fallbackPhase);
+    setPhase(depsRef.current.albumLength > 0 ? 'reveal' : fallbackPhase);
   }
 
   // ── Photo dream ───────────────────────────────────────────────────────
 
   const dream = useCallback(async () => {
+    const { photoUri, photoBase64, isStyleRef, fusionTarget, userHint, selectedMode } =
+      depsRef.current;
     if (!photoUri || !user) return;
     if (busy.current) return;
     if (!(await trySpendSparkle('dream_photo'))) return;
@@ -230,7 +215,6 @@ export function useDreamGeneration(deps: GenerationDeps) {
       let result: GenerateResult;
 
       if (isStyleRef) {
-        // Dream Like This + Photo: apply the reference art style to the user's photo
         const refPrompt = fusionTarget?.prompt;
         if (!refPrompt) throw new Error('No style reference prompt available for this dream');
         if (__DEV__) {
@@ -284,24 +268,12 @@ export function useDreamGeneration(deps: GenerationDeps) {
     } finally {
       busy.current = false;
     }
-  }, [
-    photoUri,
-    photoBase64,
-    user,
-    isStyleRef,
-    fusionTarget,
-    userHint,
-    selectedMode,
-    trySpendSparkle,
-    loadProfile,
-    albumLength,
-    makeControlState,
-    addDream,
-  ]);
+  }, [user, trySpendSparkle, loadProfile]);
 
   // ── Text-only dream ───────────────────────────────────────────────────
 
   const justDream = useCallback(async () => {
+    const { customPrompt, isStyleRef, fusionTarget, selectedMode } = depsRef.current;
     if (__DEV__) console.log('[JustDream] START, user:', !!user, 'busy:', busy.current);
     if (!user) {
       Toast.show('Not logged in', 'close-circle');
@@ -353,22 +325,12 @@ export function useDreamGeneration(deps: GenerationDeps) {
       if (__DEV__) console.log('[JustDream] DONE, resetting busy');
       busy.current = false;
     }
-  }, [
-    user,
-    customPrompt,
-    isStyleRef,
-    fusionTarget,
-    selectedMode,
-    trySpendSparkle,
-    loadProfile,
-    albumLength,
-    makeControlState,
-    addDream,
-  ]);
+  }, [user, trySpendSparkle, loadProfile]);
 
   // ── Twin dream ────────────────────────────────────────────────────────
 
   const twinDream = useCallback(async () => {
+    const { fusionTarget } = depsRef.current;
     if (!user || !fusionTarget) return;
     if (busy.current) {
       Toast.show('Already dreaming...', 'hourglass');
@@ -389,16 +351,17 @@ export function useDreamGeneration(deps: GenerationDeps) {
     } finally {
       busy.current = false;
     }
-  }, [user, fusionTarget, trySpendSparkle, albumLength, makeControlState, addDream]);
+  }, [user, trySpendSparkle]);
 
   // ── Post dream ────────────────────────────────────────────────────────
 
   const post = useCallback(
     async (currentDream: DreamAlbumItem | null, currentIndex: number, totalCount: number) => {
+      const { posting: isPosting, isStyleRef, isTwinMode, fusionTarget } = depsRef.current;
       if (__DEV__) {
         console.log('[Post] START — dream:', !!currentDream, 'user:', !!user);
       }
-      if (!currentDream || !user || posting) return;
+      if (!currentDream || !user || isPosting) return;
 
       const multiImage = totalCount > 1;
       if (!multiImage) setPhase('posting');
@@ -461,7 +424,7 @@ export function useDreamGeneration(deps: GenerationDeps) {
         return { success: false, isLastDream: false };
       }
     },
-    [user, posting, isStyleRef, isTwinMode, fusionTarget, loadProfile]
+    [user, loadProfile]
   );
 
   const resetBusy = useCallback(() => {
@@ -472,9 +435,9 @@ export function useDreamGeneration(deps: GenerationDeps) {
     // State
     resetBusy,
     sparkleBalance,
-    isStyleRef,
-    isTwinMode,
-    fusionTarget,
+    isStyleRef: depsRef.current.isStyleRef,
+    isTwinMode: depsRef.current.isTwinMode,
+    fusionTarget: depsRef.current.fusionTarget,
     // Animation
     imgScale,
     imgOpacity,

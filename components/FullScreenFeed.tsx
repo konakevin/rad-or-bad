@@ -60,7 +60,7 @@ export function FullScreenFeed({
   posts,
   isLoading,
   isRefreshing,
-  onRefresh,
+  onRefresh: onRefreshProp,
   onEndReached,
   initialIndex = 0,
   onIndexChange,
@@ -72,6 +72,12 @@ export function FullScreenFeed({
   const insets = useSafeAreaInsets();
   const internalRef = useRef<FlatList>(null);
   const ref = listRef ?? internalRef;
+
+  const handleRefresh = useCallback(() => {
+    onRefreshProp?.();
+    // Scroll to top after refresh so user sees fresh content
+    setTimeout(() => ref.current?.scrollToOffset({ offset: 0, animated: true }), 300);
+  }, [onRefreshProp, ref]);
 
   const user = useAuthStore((s) => s.user);
   const queryClient = useQueryClient();
@@ -179,10 +185,10 @@ export function FullScreenFeed({
         onEndReached={onEndReached}
         onEndReachedThreshold={2}
         refreshControl={
-          onRefresh ? (
+          onRefreshProp ? (
             <RefreshControl
               refreshing={!!isRefreshing}
-              onRefresh={onRefresh}
+              onRefresh={handleRefresh}
               tintColor={colors.accent}
             />
           ) : undefined

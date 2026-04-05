@@ -10,6 +10,7 @@ import { useRef, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Pressable, StyleSheet, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
+import { timeAgo } from '@/lib/timeAgo';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import Animated, {
   useSharedValue,
@@ -379,7 +380,10 @@ export function DreamCard({
                   <Text style={s.avatarText}>{(item.username || '?')[0].toUpperCase()}</Text>
                 </View>
               )}
-              <Text style={s.username}>{item.username ?? 'dreamer'}</Text>
+              <View>
+                <Text style={s.username}>{item.username ?? 'dreamer'}</Text>
+                <Text style={s.timestamp}>{timeAgo(item.created_at)}</Text>
+              </View>
             </TouchableOpacity>
             {item.from_wish && (
               <TouchableOpacity
@@ -516,6 +520,15 @@ const s = StyleSheet.create({
     textShadowColor: 'rgba(0,0,0,0.5)',
     textShadowRadius: 4,
     textShadowOffset: { width: 0, height: 1 },
+  },
+  timestamp: {
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: 13,
+    fontWeight: '600',
+    textShadowColor: 'rgba(0,0,0,0.8)',
+    textShadowRadius: 6,
+    textShadowOffset: { width: 0, height: 1 },
+    marginTop: 1,
   },
   botMessage: {
     color: 'rgba(255,255,255,0.75)',
