@@ -10,7 +10,7 @@
  *   useDreamGeneration — all 6 generation paths, sparkle spending, posting
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useFocusEffect } from 'expo-router';
 import {
   View,
@@ -36,6 +36,7 @@ import { colors } from '@/constants/theme';
 import { MASCOT_URLS } from '@/constants/mascots';
 import { PROMPT_MODE_TILES } from '@/constants/promptModes';
 import { Toast } from '@/components/Toast';
+import { showAlert } from '@/components/CustomAlert';
 import { formatCompact } from '@/lib/formatNumber';
 import { usePhotoInput } from '@/hooks/usePhotoInput';
 import { useDreamAlbum } from '@/hooks/useDreamAlbum';
@@ -94,8 +95,25 @@ export default function DreamScreen() {
   useFocusEffect(
     useCallback(() => {
       gen.resetBusy();
+      return () => {
+        // If user navigates away via tab bar with unsaved dreams, warn them next focus
+        if (album.album.length > 0 && phase === 'reveal') {
+          // Can't show alert from blur — set flag for next focus
+          pendingDiscardRef.current = true;
+        }
+      };
+    }, [album.album.length, phase])
+  );
+
+  const pendingDiscardRef = useRef(false);
+  useFocusEffect(
+    useCallback(() => {
+      if (pendingDiscardRef.current) {
+        pendingDiscardRef.current = false;
+        confirmDiscard();
+      }
       return () => {};
-    }, [])
+    }, [album.album.length])
   );
 
   // ── Reset ─────────────────────────────────────────────────────────────
@@ -110,6 +128,23 @@ export default function DreamScreen() {
     gen.resetBusy();
     gen.imgOpacity.value = 0;
     gen.imgScale.value = 0.85;
+  }
+
+  /** Prompt user before discarding unsaved dreams */
+  function confirmDiscard() {
+    if (album.album.length === 0) {
+      reset();
+      return;
+    }
+    const count = album.album.length;
+    showAlert(
+      'Unsaved dreams',
+      `You have ${count} unsaved ${count === 1 ? 'dream' : 'dreams'} that will be lost.`,
+      [
+        { text: 'Discard', style: 'destructive', onPress: () => reset() },
+        { text: 'Go Back', style: 'cancel' },
+      ]
+    );
   }
 
   // ── Fullscreen preview animations ─────────────────────────────────────
@@ -372,7 +407,7 @@ export default function DreamScreen() {
     return (
       <SafeAreaView style={s.root}>
         <View style={s.header}>
-          <TouchableOpacity onPress={reset} hitSlop={12}>
+          <TouchableOpacity onPress={confirmDiscard} hitSlop={12}>
             <Ionicons name="close" size={28} color={colors.textSecondary} />
           </TouchableOpacity>
           <Text style={s.headerTitle}>Your dream</Text>

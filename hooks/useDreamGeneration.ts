@@ -184,11 +184,31 @@ export function useDreamGeneration(deps: GenerationDeps) {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   }
 
-  function handleError(err: unknown, label: string, fallbackPhase: Phase) {
+  async function handleError(err: unknown, label: string, fallbackPhase: Phase) {
     const msg = err instanceof Error ? err.message : 'Unknown error';
     if (__DEV__) console.error(`[${label}] ERROR:`, msg, err);
-    Toast.show(`Dream error: ${msg}`, 'close-circle');
-    setError(msg);
+
+    // NSFW content flagged by safety filters — refund the sparkle
+    if (msg.includes('NSFW_CONTENT') && user) {
+      try {
+        await supabase.rpc('grant_sparkles', {
+          p_user_id: user.id,
+          p_amount: 1,
+          p_reason: 'nsfw_refund',
+        });
+        if (__DEV__) console.log(`[${label}] Sparkle refunded for NSFW`);
+      } catch {
+        if (__DEV__) console.warn(`[${label}] Failed to refund sparkle`);
+      }
+      Toast.show(
+        'This dream was flagged by our safety filters. Your sparkle has been refunded.',
+        'shield-checkmark'
+      );
+    } else {
+      Toast.show(`Dream error: ${msg}`, 'close-circle');
+    }
+
+    setError(msg.includes('NSFW_CONTENT') ? 'Content flagged by safety filters' : msg);
     setDreaming(false);
     setPhase(albumLength > 0 ? 'reveal' : fallbackPhase);
   }

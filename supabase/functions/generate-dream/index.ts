@@ -770,7 +770,14 @@ async function generateImage(
       if (url) return url;
     }
     if (pollData.status === 'failed' || pollData.status === 'canceled') {
-      throw new Error(`Generation ${pollData.status}: ${pollData.error ?? 'unknown'}`);
+      const errMsg = pollData.error ?? 'unknown';
+      const isNsfw =
+        /nsfw|safety|content.?filter|inappropriate|violat/i.test(errMsg) ||
+        /nsfw|safety/i.test(JSON.stringify(pollData.logs ?? ''));
+      if (isNsfw) {
+        throw new Error('NSFW_CONTENT: The generated image was flagged by our safety filters.');
+      }
+      throw new Error(`Generation ${pollData.status}: ${errMsg}`);
     }
   }
   throw new Error('Generation timed out');

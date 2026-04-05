@@ -188,9 +188,24 @@ export function FullScreenFeed({
             onFamily={
               item.is_ai_generated
                 ? () => {
-                    if (__DEV__) console.log('[Feed] onFamily tapped, postId:', item.id);
-                    setFamilyPostId(item.id);
-                    setFamilyPost(item);
+                    const fuseCount = (item.twin_count ?? 0) + (item.fuse_count ?? 0);
+                    if (fuseCount === 0) {
+                      // No fusions — go straight to Dream Like This
+                      if (__DEV__)
+                        console.log('[Feed] No fusions, skipping sheet → Dream Like This');
+                      const params = new URLSearchParams({
+                        postId: item.id,
+                        imageUrl: item.image_url,
+                        username: item.username,
+                        userId: item.user_id,
+                        ...(item.ai_prompt ? { prompt: item.ai_prompt } : {}),
+                      });
+                      router.push(`/dreamLikeThis?${params.toString()}`);
+                    } else {
+                      if (__DEV__) console.log('[Feed] onFamily tapped, postId:', item.id);
+                      setFamilyPostId(item.id);
+                      setFamilyPost(item);
+                    }
                   }
                 : undefined
             }

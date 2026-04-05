@@ -340,8 +340,26 @@ export default function DreamLikeThisScreen() {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Unknown error';
       if (__DEV__) console.error('[DreamLikeThis] Error:', msg);
-      Toast.show(`Dream error: ${msg}`, 'close-circle');
-      setError(msg);
+
+      if (msg.includes('NSFW_CONTENT') && user) {
+        try {
+          await supabase.rpc('grant_sparkles', {
+            p_user_id: user.id,
+            p_amount: 1,
+            p_reason: 'nsfw_refund',
+          });
+        } catch {
+          if (__DEV__) console.warn('[DreamLikeThis] Failed to refund sparkle');
+        }
+        Toast.show(
+          'This dream was flagged by our safety filters. Your sparkle has been refunded.',
+          'shield-checkmark'
+        );
+        setError('Content flagged by safety filters');
+      } else {
+        Toast.show(`Dream error: ${msg}`, 'close-circle');
+        setError(msg);
+      }
       setPhase('pick');
     } finally {
       busy.current = false;
@@ -507,10 +525,24 @@ export default function DreamLikeThisScreen() {
 
   // ── REVEAL ────────────────────────────────────────────────────────
   if (phase === 'reveal' && resultUrl) {
+    function confirmBack() {
+      showAlert('Unsaved dream', 'Your dream result will be lost.', [
+        {
+          text: 'Discard',
+          style: 'destructive',
+          onPress: () => {
+            setPhase('pick');
+            setResultUrl(null);
+          },
+        },
+        { text: 'Go Back', style: 'cancel' },
+      ]);
+    }
+
     return (
       <SafeAreaView style={s.root}>
         <View style={s.header}>
-          <TouchableOpacity onPress={() => setPhase('pick')} hitSlop={12}>
+          <TouchableOpacity onPress={confirmBack} hitSlop={12}>
             <Ionicons name="arrow-back" size={28} color={colors.textSecondary} />
           </TouchableOpacity>
           <Text style={s.headerTitle}>Your dream</Text>
