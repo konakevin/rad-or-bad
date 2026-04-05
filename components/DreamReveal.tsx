@@ -46,6 +46,10 @@ interface Props {
 
   onIndexChange: (index: number) => void;
   onRemove: (index: number) => void;
+  onPost?: (index: number) => void;
+
+  /** Compact mode — shrinks carousel to thumbnail when keyboard is open */
+  compact?: boolean;
 
   /** Shared values for reveal animation on the latest dream */
   imgOpacity: { value: number };
@@ -62,6 +66,8 @@ export function DreamReveal({
   dreaming,
   onIndexChange,
   onRemove,
+  onPost,
+  compact,
   imgOpacity,
   imgScale,
   children,
@@ -147,7 +153,13 @@ export function DreamReveal({
 
   return (
     <>
-      <View style={{ flex: 1, justifyContent: 'center', maxHeight: SCREEN_HEIGHT * 0.45 }}>
+      <View
+        style={
+          compact
+            ? { height: 190, justifyContent: 'center' }
+            : { flex: 1, justifyContent: 'center', maxHeight: SCREEN_HEIGHT * 0.35 }
+        }
+      >
         <FlatList
           ref={albumRef}
           data={album}
@@ -176,38 +188,55 @@ export function DreamReveal({
               onPress={() => openFullscreen(index)}
               onLongPress={() => shareImage(item.url)}
               delayLongPress={500}
-              style={{ width: PREVIEW_WIDTH, marginRight: ITEM_SPACING }}
+              style={{
+                width: compact ? 120 : PREVIEW_WIDTH,
+                marginRight: compact ? 8 : ITEM_SPACING,
+              }}
             >
               <Animated.View
                 style={[s.revealBorder, index === album.length - 1 ? revealStyle : undefined]}
               >
                 <Image
                   source={{ uri: item.url }}
-                  style={s.revealImg}
+                  style={compact ? s.revealImgCompact : s.revealImg}
                   contentFit="cover"
                   transition={300}
                 />
-                {dreaming && index === activeIndex && (
+                {dreaming && (
                   <View style={s.dreamingOverlay}>
                     <ActivityIndicator size="large" color={colors.accent} />
                     <Text style={s.dreamingText}>Dreaming...</Text>
                   </View>
                 )}
-                {album.length > 1 && !dreaming && (
-                  <TouchableOpacity
-                    style={s.dismissBadge}
-                    onPress={() => onRemove(index)}
-                    hitSlop={8}
-                    activeOpacity={0.7}
-                  >
-                    <Ionicons name="close" size={14} color="#FFFFFF" />
-                  </TouchableOpacity>
+                {!dreaming && !compact && (
+                  <>
+                    {album.length > 1 && (
+                      <TouchableOpacity
+                        style={s.dismissBadge}
+                        onPress={() => onRemove(index)}
+                        hitSlop={8}
+                        activeOpacity={0.7}
+                      >
+                        <Ionicons name="close" size={14} color="#FFFFFF" />
+                      </TouchableOpacity>
+                    )}
+                    {onPost && (
+                      <TouchableOpacity
+                        style={s.postBadge}
+                        onPress={() => onPost(index)}
+                        hitSlop={8}
+                        activeOpacity={0.7}
+                      >
+                        <Ionicons name="add" size={18} color="#FFFFFF" />
+                      </TouchableOpacity>
+                    )}
+                  </>
                 )}
               </Animated.View>
             </TouchableOpacity>
           )}
         />
-        {album.length > 1 && (
+        {album.length > 1 && !compact && (
           <View style={s.dotRow}>
             {album.map((_, i) => (
               <View key={i} style={[s.dot, i === activeIndex && s.dotActive]} />
@@ -249,14 +278,19 @@ export function DreamReveal({
 const s = StyleSheet.create({
   revealBorder: {
     borderRadius: 20,
-    overflow: 'hidden',
     borderWidth: 1,
     borderColor: colors.border,
   },
   revealImg: {
     width: PREVIEW_WIDTH,
-    height: Math.min(PREVIEW_WIDTH * 1.75, 400),
+    height: Math.min(PREVIEW_WIDTH * 1.3, 300),
     borderRadius: 20,
+    overflow: 'hidden',
+  },
+  revealImgCompact: {
+    width: 120,
+    height: 170,
+    borderRadius: 12,
   },
   dreamingOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -265,8 +299,9 @@ const s = StyleSheet.create({
     justifyContent: 'center',
     gap: 10,
     borderRadius: 20,
+    paddingHorizontal: 16,
   },
-  dreamingText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
+  dreamingText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700', textAlign: 'center' },
   dismissBadge: {
     position: 'absolute',
     top: 8,
@@ -275,6 +310,17 @@ const s = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     backgroundColor: 'rgba(0,0,0,0.6)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  postBadge: {
+    position: 'absolute',
+    bottom: 10,
+    right: 10,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
   },
